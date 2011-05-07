@@ -45,19 +45,9 @@ class GL2JNIView extends GLSurfaceView {
                              new ConfigChooser(8, 8, 8, 8, depth, stencil) :
                              new ConfigChooser(5, 6, 5, 0, depth, stencil) );
         
-        this.setRenderMode(RENDERMODE_WHEN_DIRTY);
         Renderer renderer = new Renderer();
 
-		String vertexShader;
-		try {
-			vertexShader = readFile("shaders/vertex.gls");
-			String fragmentShader = readFile("shaders/fragment.gls");
-	        renderer.setShader(vertexShader, GL2JNILib.GL_VERTEX_SHADER);
-	        renderer.setShader(fragmentShader, GL2JNILib.GL_FRAGMENT_SHADER);
-	        setRenderer(renderer);
-		} catch (IOException e) {
-			Log.e("Failed to load shaders", e);
-		}
+	    setRenderer(renderer);
     }
 
     private String readFile(String name) throws IOException{
@@ -218,7 +208,7 @@ class GL2JNIView extends GLSurfaceView {
         }
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            loadShaders();
+            //loadShaders();
         }
 
         private void loadShaders() {

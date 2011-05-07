@@ -27,9 +27,11 @@ public class Brains extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         assets = getAssets();
+        GL2JNILib.assets = assets;
         createStorageDirectory();
         //mGLSurfaceView = new TouchView(this, new ViewRenderer(getAssets()));
         mGLSurfaceView = new GL2JNIView(getApplication(), assets);
+        mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_WHEN_DIRTY);
         setContentView(mGLSurfaceView);
     }
     

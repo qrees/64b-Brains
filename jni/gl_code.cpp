@@ -20,6 +20,10 @@
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
+char * load_asset(const char * source);
+
+JNIEnv * _env;
+
 static void printGLString(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
     LOGI("GL %s = %s\n", name, v);
@@ -32,19 +36,6 @@ static void checkGlError(const char* op) {
     }
 }
 
-static const char gVertexShader[] = 
-    "attribute vec4 vPosition;\n"
-    "void main() {\n"
-    "  gl_Position = vPosition;\n"
-    "}\n";
-
-static const char gFragmentShader[] = 
-    "precision mediump float;\n"
-    "void main() {\n"
-    "  gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);\n"
-    "}\n";
-
-
 GLuint loadShader(GLenum shaderType, const char* pSource) {
     GLuint shader = glCreateShader(shaderType);
     if (shader) {
@@ -52,9 +43,11 @@ GLuint loadShader(GLenum shaderType, const char* pSource) {
         glCompileShader(shader);
         GLint compiled = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-        if (!compiled) {
+        if (compiled != GL_TRUE) {
+        	LOGE("Failed to compile shader: %s\n", pSource);
             GLint infoLen = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+    		LOGE("Log length %i\n", infoLen);
             if (infoLen) {
                 char* buf = (char*) malloc(infoLen);
                 if (buf) {
@@ -62,7 +55,8 @@ GLuint loadShader(GLenum shaderType, const char* pSource) {
                     LOGE("Could not compile shader %d:\n%s\n",
                             shaderType, buf);
                     free(buf);
-                }
+                }else
+    				LOGE("Failed to allocate memory for program log");
                 glDeleteShader(shader);
                 shader = 0;
             }
@@ -75,6 +69,30 @@ GLuint loadShader(GLenum shaderType, const char* pSource) {
     return shader;
 }
 
+GLuint linkProgram(GLuint program){
+	glLinkProgram(program);
+	GLint linkStatus = GL_FALSE;
+	glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+	if (linkStatus != GL_TRUE) {
+		GLint bufLength = 0;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
+		LOGE("Log length %i\n", bufLength);
+		if (bufLength) {
+			char* buf = (char*) malloc(bufLength);
+			if (buf) {
+				glGetProgramInfoLog(program, bufLength, NULL, buf);
+				LOGE("Could not link program:\n%s\n", buf);
+				free(buf);
+			}else
+				LOGE("Failed to allocate memory for program log");
+		}
+        glDeleteProgram(program);
+	}else{
+		LOGI("Program linked succesfully\n");
+	}
+	return linkStatus;
+}
+
 GLuint createProgram(GLuint vertexShader, GLuint pixelShader) {
     GLuint program = glCreateProgram();
     if (program) {
@@ -82,37 +100,24 @@ GLuint createProgram(GLuint vertexShader, GLuint pixelShader) {
         checkGlError("glAttachShader");
         glAttachShader(program, pixelShader);
         checkGlError("glAttachShader");
-        glLinkProgram(program);
-        GLint linkStatus = GL_FALSE;
-        glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-        if (linkStatus != GL_TRUE) {
-            GLint bufLength = 0;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
-            if (bufLength) {
-                char* buf = (char*) malloc(bufLength);
-                if (buf) {
-                    glGetProgramInfoLog(program, bufLength, NULL, buf);
-                    LOGE("Could not link program:\n%s\n", buf);
-                    free(buf);
-                }
-            }
-            glDeleteProgram(program);
-            program = 0;
-        }else{
-        	LOGI("Program linked succesfully\n");
-        }
+        GLuint status = linkProgram(program);
+        if(status != GL_TRUE)
+        	program = 0;
     }else{
     	LOGE("Failed to create program\n");
     }
     return program;
 }
 
+
 GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
+	LOGI("loading vertex shader");
     GLuint vertexShader = loadShader(GL_VERTEX_SHADER, pVertexSource);
     if (!vertexShader) {
         return 0;
     }
-
+    
+    LOGI("loading fragment shader");
     GLuint pixelShader = loadShader(GL_FRAGMENT_SHADER, pFragmentSource);
     if (!pixelShader) {
         return 0;
@@ -125,6 +130,16 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 GLuint gProgram;
 GLuint gvPositionHandle;
 
+GLfloat vertexPos[3 * 3] = {
+	 0.0f,  0.5f, 0.0f,
+	-0.5f, -0.5f, 0.0f,
+	 0.5f, -0.5f, 0.0f
+};
+GLfloat colors[4 * 3] = {
+		1.0f, 0.0f, 0.0f, 1.0f,
+		0.0f, 1.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f, 1.0f };
+
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
     printGLString("Vendor", GL_VENDOR);
@@ -132,27 +147,26 @@ bool setupGraphics(int w, int h) {
     printGLString("Extensions", GL_EXTENSIONS);
 
     LOGI("setupGraphics(%d, %d)", w, h);
-    //gProgram = createProgram(gVertexShader, gFragmentShader);
+    char * gVertexShader = load_asset("shaders/vertex_attrib.gls");
+    char * gFragmentShader = load_asset("shaders/fragment_attrib.gls");
+    gProgram = createProgram(gVertexShader, gFragmentShader);
     if (!gProgram) {
         LOGE("Could not create program.");
         return false;
     }
-    gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
-    checkGlError("glGetAttribLocation");
-    LOGI("glGetAttribLocation(\"vPosition\") = %d\n",
-            gvPositionHandle);
 
     glViewport(0, 0, w, h);
-	
-//	mMvpLoc = getUniformLocation("uMvp");
-//	glUniformMatrix4fv(mMvpLoc, 1, false, mMvp.pointer());
-
 	checkGlError("glViewport");
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, colors);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, vertexPos);
+	glBindAttribLocation(gProgram, 0, "a_color");
+	glBindAttribLocation(gProgram, 1, "a_position");	
+	
     return true;
 }
-
-const GLfloat gTriangleVertices[] = { 0.0f, 0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f };
 
 class Mesh {
 public:
@@ -178,12 +192,24 @@ void renderFrame() {
     glUseProgram(gProgram);
     checkGlError("glUseProgram");
 
-    glVertexAttribPointer(gvPositionHandle, 2, GL_FLOAT, GL_FALSE, 0, gTriangleVertices);
-    checkGlError("glVertexAttribPointer");
-    glEnableVertexAttribArray(gvPositionHandle);
-    checkGlError("glEnableVertexAttribArray");
     glDrawArrays(GL_TRIANGLES, 0, 3);
     checkGlError("glDrawArrays");
+}
+
+char * load_asset(const char * source){
+	jstring jstr = _env->NewStringUTF(source);
+	jclass jclass = _env->FindClass( "info/qrees/android/brains/GL2JNILib");
+	jmethodID messageMe = _env->GetStaticMethodID(jclass, "loadAsset", "(Ljava/lang/String;)Ljava/lang/String;");
+	jobject result = _env->CallStaticObjectMethod(jclass, messageMe, jstr);
+	
+	const char* str = _env->GetStringUTFChars((jstring) result, NULL);
+	LOGI("Loaded asset %s:\n%s", source, str);
+	int len = strlen(str);
+	char * ret_str = new char[len+1];
+	strcpy(ret_str, str);
+	ret_str[len] = 0;
+	_env->ReleaseStringUTFChars((jstring)result, str);
+	return ret_str;
 }
 
 extern "C" {
@@ -195,16 +221,19 @@ extern "C" {
 
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_init(JNIEnv * env, jobject obj,  jint width, jint height)
 {
+	_env = env;
     setupGraphics(width, height);
 }
 
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_step(JNIEnv * env, jobject obj)
 {
+	_env = env;
     renderFrame();
 }
 
 JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(JNIEnv * env, jobject obj, jstring javaString, jint shaderType)
 {
+	_env = env;
 	const char *nativeString = env->GetStringUTFChars(javaString, 0);
 	
 	LOGI("Loading shader: %s\n", nativeString);
@@ -216,6 +245,7 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(JNIEn
 
 JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader)
 {
+	_env = env;
 	gProgram = createProgram(vertexShader, pixelShader);
 	return gProgram;
 }
