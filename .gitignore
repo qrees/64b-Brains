@@ -1,0 +1,14 @@
+# binaries
+*.class
+*.o
+
+# packaged application
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# folders
+bin/
+gen/
