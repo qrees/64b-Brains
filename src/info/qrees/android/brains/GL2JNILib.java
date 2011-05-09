@@ -10,7 +10,6 @@ import android.content.res.AssetManager;
 public class GL2JNILib {
 
      static {
-    	 //System.loadLibrary("stlport_shared");
          System.loadLibrary("gl2jni");
      }
      static final int GL_FRAGMENT_SHADER = 0x8B30;
