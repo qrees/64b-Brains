@@ -10,9 +10,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
 
-using namespace std;
+#include "gl_code.h"
+
 
 #ifdef __CDT_PARSER__
 #define JNIEXPORT
@@ -129,8 +129,11 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
     return program;
 }
 
-GLuint gProgram;
+//GLuint gProgram;
 GLuint gvPositionHandle;
+AutoPtr<Shader> vertexShader(new Shader());
+AutoPtr<Shader> fragmentShader(new Shader());
+AutoPtr<Program> program;
 
 GLfloat vertexPos[3 * 3] = { 0.0f, 0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, -0.5f,
         0.0f };
@@ -146,8 +149,11 @@ bool setupGraphics(int w, int h) {
     LOGI("setupGraphics(%d, %d)", w, h);
     char * gVertexShader = load_asset("shaders/vertex_attrib.gls");
     char * gFragmentShader = load_asset("shaders/fragment_attrib.gls");
-    gProgram = createProgram(gVertexShader, gFragmentShader);
-    if (!gProgram) {
+    vertexShader->load(gVertexShader, GL_VERTEX_SHADER);
+    fragmentShader->load(gFragmentShader, GL_FRAGMENT_SHADER);
+    program->make(vertexShader, fragmentShader);
+    //gProgram = createProgram(gVertexShader, gFragmentShader);
+    if (!program->isValid()) {
         LOGE("Could not create program.");
         return false;
     }
@@ -159,149 +165,145 @@ bool setupGraphics(int w, int h) {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, colors);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, vertexPos);
-    glBindAttribLocation(gProgram, 0, "a_color");
-    glBindAttribLocation(gProgram, 1, "a_position");
+    glBindAttribLocation(program->getName(), 0, "a_color");
+    glBindAttribLocation(program->getName(), 1, "a_position");
 
     return true;
 }
 
-class Shader {
-private:
-    string _source;
-    GLuint _id;
-    GLenum _type;
-    char * _log;
-public:
-    Shader() {
-        throwJNI("Cannot initialize shader without source");
-    }
-    ;
-    Shader(const Shader& copy) {
-        _log = 0;
-        _id = copy._id;
-        _type = copy._type;
-        _source = copy._source;
-    }
-    ;
-    Shader(const char * source, GLenum shaderType) {
-        _source = string(source);
-        _type = shaderType;
-        _id = 0;
-        _log = 0;
-        _compile();
-    }
-    ;
-
-    char * getInfo() {
+Shader::Shader() {
+    valid = false;
+    _id = 0;
+    _source = string("");
+}
+Shader::~Shader(){
+    if(_id)
+        glDeleteShader(_id);
+}
+Shader::Shader(const char * source, GLenum shaderType) {
+    load(source, shaderType);
+}
+void Shader::load(const char*source, GLenum shaderType){
+    _source = string(source);
+    _type = shaderType;
+    _id = 0;
+    _log = 0;
+    _compile();
+}
+char * Shader::getInfo() {
+    if (_log)
+        delete[] _log;
+    _log = 0;
+    GLint infoLen = 0;
+    glGetShaderiv(_id, GL_INFO_LOG_LENGTH, &infoLen);
+    LOGE("Log length %i\n", infoLen);
+    if (infoLen) {
+        _log = new char[infoLen];
         if (_log)
-            delete[] _log;
-        _log = 0;
-        GLint infoLen = 0;
-        glGetShaderiv(_id, GL_INFO_LOG_LENGTH, &infoLen);
-        LOGE("Log length %i\n", infoLen);
-        if (infoLen) {
-            _log = new char[infoLen];
-            if (_log)
-                return _log;
-            else
-                LOGE("Failed to allocate memory for program log");
-        }
-        return _log;
+            return _log;
+        else
+            LOGE("Failed to allocate memory for program log");
     }
+    return _log;
+}
 
-    bool isValid() {
-        return _id != 0;
-    }
+bool Shader::isValid() {
+    return _id != 0 & valid;
+}
 
-    GLuint _compile() {
-        GLuint _id = glCreateShader(_type);
-        if (_id) {
-            const char * source = _source.c_str();
-            glShaderSource(_id, 1, &source, NULL);
-            glCompileShader(_id);
-            GLint compiled = 0;
-            glGetShaderiv(_id, GL_COMPILE_STATUS, &compiled);
-            if (compiled != GL_TRUE) {
-                LOGE("Failed to compile shader: %s\n", _source.c_str());
-                char * info = getInfo();
-                if (info)
-                    LOGE("Could not compile shader %d:\n%s\n",
-                            _type, info);
-                glDeleteShader(_id);
-                _id = 0;
-            } else {
-                LOGI("Shader compilled succesfully\n");
-            }
-        } else {
-            LOGE("Failed to create shader\n");
-        }
-        return _id;
-    }
-
-    GLuint getName() {
-        return _id;
-    }
-};
-
-class Program {
-    Shader _vertex;
-    Shader _fragment;
-    GLuint _id;
-    char * _log;
-
-    Program(Shader vertexShader, Shader fragmentShader) {
-        _vertex = vertexShader;
-        _fragment = fragmentShader;
-        _log = 0;
-    }
-
-    char * getInfo() {
-        if (_log)
-            delete[] _log;
-        GLint bufLength = 0;
-        _log = 0;
-        glGetProgramiv(_id, GL_INFO_LOG_LENGTH, &bufLength);
-        LOGE("Log length %i\n", bufLength);
-        if (bufLength) {
-            _log = new char[bufLength];
-            if (!_log)
-                LOGE("Failed to allocate memory for program log");
-        }
-        return _log;
-    }
-
-    GLuint _link() {
-        glLinkProgram(_id);
-        GLint linkStatus = GL_FALSE;
-        glGetProgramiv(_id, GL_LINK_STATUS, &linkStatus);
-        if (linkStatus != GL_TRUE) {
+GLuint Shader::_compile() {
+    GLuint _id = glCreateShader(_type);
+    if (_id) {
+        const char * source = _source.c_str();
+        glShaderSource(_id, 1, &source, NULL);
+        glCompileShader(_id);
+        GLint compiled = 0;
+        glGetShaderiv(_id, GL_COMPILE_STATUS, &compiled);
+        if (compiled != GL_TRUE) {
+            LOGE("Failed to compile shader: %s\n", _source.c_str());
             char * info = getInfo();
             if (info)
-                LOGE("Could not link program:\n%s\n", info);
-            glDeleteProgram(_id);
+                LOGE("Could not compile shader %d:\n%s\n",
+                        _type, info);
+            glDeleteShader(_id);
             _id = 0;
         } else {
-            LOGI("Program linked succesfully\n");
+            LOGI("Shader compilled succesfully\n");
+            valid = true;
         }
-        return linkStatus;
+    } else {
+        LOGE("Failed to create shader\n");
     }
+    return _id;
+}
 
-    GLuint _create(GLuint vertexShader, GLuint pixelShader) {
-        GLuint _id = glCreateProgram();
-        if (_id) {
-            glAttachShader(_id, _vertex.getName());
-            checkGlError("glAttachShader");
-            glAttachShader(_id, _fragment.getName());
-            checkGlError("glAttachShader");
-            GLuint status = _link();
-            if (status != GL_TRUE)
-                _id = 0;
-        } else {
-            LOGE("Failed to create program\n");
-        }
-        return _id;
+GLuint Shader::getName() {
+    return _id;
+}
+
+Program::Program(AShader vertexShader, AShader fragmentShader) {
+    _id = 0;
+    make(vertexShader, fragmentShader);
+}
+Program::Program(){
+    _id = 0;
+}
+Program::~Program(){
+    if(_id)
+        glDeleteProgram(_id);
+}
+void Program::make(AShader vertexShader, AShader fragmentShader){
+    _vertex = vertexShader;
+    _fragment = fragmentShader;
+    _log = 0;
+    _create();
+}
+char * Program::getInfo() {
+    if (_log)
+        delete[] _log;
+    GLint bufLength = 0;
+    _log = 0;
+    glGetProgramiv(_id, GL_INFO_LOG_LENGTH, &bufLength);
+    LOGE("Log length %i\n", bufLength);
+    if (bufLength) {
+        _log = new char[bufLength];
+        if (!_log)
+            LOGE("Failed to allocate memory for program log");
     }
-};
+    return _log;
+}
+
+GLuint Program::_link() {
+    glLinkProgram(_id);
+    GLint linkStatus = GL_FALSE;
+    glGetProgramiv(_id, GL_LINK_STATUS, &linkStatus);
+    if (linkStatus != GL_TRUE) {
+        char * info = getInfo();
+        if (info)
+            LOGE("Could not link program:\n%s\n", info);
+        glDeleteProgram(_id);
+        _id = 0;
+    } else {
+        LOGI("Program linked succesfully\n");
+    }
+    return linkStatus;
+}
+
+GLuint Program::_create() {
+    GLuint _id = glCreateProgram();
+    if (_id) {
+        glAttachShader(_id, _vertex->getName());
+        checkGlError("glAttachShader");
+        glAttachShader(_id, _fragment->getName());
+        checkGlError("glAttachShader");
+        GLuint status = _link();
+        if (status != GL_TRUE)
+            _id = 0;
+    } else {
+        LOGE("Failed to create program\n");
+    }
+    return _id;
+}
 
 class Scene {
 
@@ -320,6 +322,7 @@ class Mesh {
     const char * names[3];
     unsigned char sizes[4];
     GLuint program;
+    GLuint numIndices;
 public:
     Mesh() {
         glGenBuffers(4, vboIds);
@@ -355,6 +358,7 @@ public:
     }
     ;
     void setIndexes(GLushort *buf, GLint num, GLuint stride) {
+        numIndices = num;
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * num, buf,
                 GL_STATIC_DRAW);
@@ -387,6 +391,7 @@ public:
                 names[TEXTURE_BUF]);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
+        glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
     }
 private:
     GLfloat *_vertices;
@@ -410,7 +415,7 @@ void renderFrame() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
 
-    glUseProgram(gProgram);
+    glUseProgram(program->getName());
     checkGlError("glUseProgram");
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -480,6 +485,6 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
 JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
         JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader) {
     _env = env;
-    gProgram = createProgram(vertexShader, pixelShader);
-    return gProgram;
+    
+    return program->getName();
 }
