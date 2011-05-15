@@ -13,15 +13,12 @@
 
 #include "gl_code.h"
 
-
+// Some hacks for eclipse parser
 #ifdef __CDT_PARSER__
 #define JNIEXPORT
 #define JNICALL
 #endif
 
-#define  LOG_TAG    "Brains"
-#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 char * load_asset(const char * source);
 jint throwJNI(const char *message);
@@ -30,115 +27,40 @@ JNIEnv * _env;
 
 static void printGLString(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
-    LOGI("GL %s = %s\n", name, v);
+    LOGI("GL %s = %s", name, v);
 }
 
 static void checkGlError(const char* op) {
     for (GLint error = glGetError(); error; error = glGetError()) {
-        LOGI("after %s() glError (0x%x)\n", op, error);
+        LOGI("after %s() glError (0x%x)", op, error);
     }
-}
-
-GLuint loadShader(GLenum shaderType, const char* pSource) {
-    GLuint shader = glCreateShader(shaderType);
-    if (shader) {
-        glShaderSource(shader, 1, &pSource, NULL);
-        glCompileShader(shader);
-        GLint compiled = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-        if (compiled != GL_TRUE) {
-            LOGE("Failed to compile shader: %s\n", pSource);
-            GLint infoLen = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-            LOGE("Log length %i\n", infoLen);
-            if (infoLen) {
-                char* buf = (char*) malloc(infoLen);
-                if (buf) {
-                    glGetShaderInfoLog(shader, infoLen, NULL, buf);
-                    LOGE("Could not compile shader %d:\n%s\n",
-                            shaderType, buf);
-                    free(buf);
-                } else
-                    LOGE("Failed to allocate memory for program log");
-                glDeleteShader(shader);
-                shader = 0;
-            }
-        } else {
-            LOGI("Shader compilled succesfully\n");
-        }
-    } else {
-        LOGE("Failed to create shader\n");
-    }
-    return shader;
-}
-
-GLuint linkProgram(GLuint program) {
-    glLinkProgram(program);
-    GLint linkStatus = GL_FALSE;
-    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-    if (linkStatus != GL_TRUE) {
-        GLint bufLength = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
-        LOGE("Log length %i\n", bufLength);
-        if (bufLength) {
-            char* buf = (char*) malloc(bufLength);
-            if (buf) {
-                glGetProgramInfoLog(program, bufLength, NULL, buf);
-                LOGE("Could not link program:\n%s\n", buf);
-                free(buf);
-            } else
-                LOGE("Failed to allocate memory for program log");
-        }
-        glDeleteProgram(program);
-    } else {
-        LOGI("Program linked succesfully\n");
-    }
-    return linkStatus;
-}
-
-GLuint createProgram(GLuint vertexShader, GLuint pixelShader) {
-    GLuint program = glCreateProgram();
-    if (program) {
-        glAttachShader(program, vertexShader);
-        checkGlError("glAttachShader");
-        glAttachShader(program, pixelShader);
-        checkGlError("glAttachShader");
-        GLuint status = linkProgram(program);
-        if (status != GL_TRUE)
-            program = 0;
-    } else {
-        LOGE("Failed to create program\n");
-    }
-    return program;
-}
-
-GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
-    LOGI("loading vertex shader");
-    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, pVertexSource);
-    if (!vertexShader) {
-        return 0;
-    }
-
-    LOGI("loading fragment shader");
-    GLuint pixelShader = loadShader(GL_FRAGMENT_SHADER, pFragmentSource);
-    if (!pixelShader) {
-        return 0;
-    }
-
-    GLuint program = createProgram(vertexShader, pixelShader);
-    return program;
 }
 
 //GLuint gProgram;
 GLuint gvPositionHandle;
-AutoPtr<Shader> vertexShader(new Shader());
-AutoPtr<Shader> fragmentShader(new Shader());
-AutoPtr<Program> program;
+AShader vertexShader(new Shader());
+AShader fragmentShader(new Shader());
+AProgram program(new Program());
 
-GLfloat vertexPos[3 * 3] = { 0.0f, 0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, -0.5f,
-        0.0f };
-GLfloat colors[4 * 3] = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 1.0f };
+GLfloat vertexPos[3 * 3] = { //
+        0.0f,  0.5f, 0.0f,   //
+       -0.5f, -0.5f, 0.0f,   //
+        0.5f, -0.5f, 0.0f    //
+    };
+GLfloat colors[4 * 4] = {       //
+        1.0f, 0.0f, 0.0f, 1.0f, //
+        0.0f, 1.0f, 0.0f, 1.0f, //
+        0.0f, 0.0f, 1.0f, 1.0f, //
+        1.0f, 1.0f, 1.0f, 1.0f  //
+    };
+GLfloat colorsRGB[3 * 3] = {       //
+        1.0f, 0.0f, 0.0f, //
+        0.0f, 1.0f, 0.0f, //
+        1.0f, 1.0f, 1.0f, //
+    };
+
+Scene scene;
+AMesh root;
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -146,28 +68,33 @@ bool setupGraphics(int w, int h) {
     printGLString("Renderer", GL_RENDERER);
     printGLString("Extensions", GL_EXTENSIONS);
 
-    LOGI("setupGraphics(%d, %d)", w, h);
+    
     char * gVertexShader = load_asset("shaders/vertex_attrib.gls");
     char * gFragmentShader = load_asset("shaders/fragment_attrib.gls");
     vertexShader->load(gVertexShader, GL_VERTEX_SHADER);
     fragmentShader->load(gFragmentShader, GL_FRAGMENT_SHADER);
     program->make(vertexShader, fragmentShader);
-    //gProgram = createProgram(gVertexShader, gFragmentShader);
     if (!program->isValid()) {
         LOGE("Could not create program.");
         return false;
     }
+    program->activateColor();
+    program->activatePosition();
 
+    LOGI("setupGraphics(%d, %d)", w, h);
     glViewport(0, 0, w, h);
     checkGlError("glViewport");
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, colors);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, vertexPos);
-    glBindAttribLocation(program->getName(), 0, "a_color");
-    glBindAttribLocation(program->getName(), 1, "a_position");
-
+    
+    unsigned char * texture = load_bitmap("images/images/background.pkm");
+    
+    Group * group = new Group();
+    Mesh * mesh = new Rectangle();
+    root = AMesh(group);
+    AMesh a_mesh = AMesh(mesh);
+    mesh->setProgram(program);
+    mesh->setColor(colors, 4);
+    group->addObject(a_mesh);
+    
     return true;
 }
 
@@ -196,7 +123,7 @@ char * Shader::getInfo() {
     _log = 0;
     GLint infoLen = 0;
     glGetShaderiv(_id, GL_INFO_LOG_LENGTH, &infoLen);
-    LOGE("Log length %i\n", infoLen);
+    LOGE("Log length %i", infoLen);
     if (infoLen) {
         _log = new char[infoLen];
         if (_log)
@@ -212,7 +139,7 @@ bool Shader::isValid() {
 }
 
 GLuint Shader::_compile() {
-    GLuint _id = glCreateShader(_type);
+    _id = glCreateShader(_type);
     if (_id) {
         const char * source = _source.c_str();
         glShaderSource(_id, 1, &source, NULL);
@@ -220,26 +147,26 @@ GLuint Shader::_compile() {
         GLint compiled = 0;
         glGetShaderiv(_id, GL_COMPILE_STATUS, &compiled);
         if (compiled != GL_TRUE) {
-            LOGE("Failed to compile shader: %s\n", _source.c_str());
+            LOGE("Failed to compile shader: %s", _source.c_str());
             char * info = getInfo();
             if (info)
-                LOGE("Could not compile shader %d:\n%s\n",
+                LOGE("Could not compile shader %d:\n%s",
                         _type, info);
             glDeleteShader(_id);
             _id = 0;
         } else {
-            LOGI("Shader compilled succesfully\n");
+            LOGI("Shader compilled succesfully %d", _id);
             valid = true;
         }
     } else {
-        LOGE("Failed to create shader\n");
+        LOGE("Failed to create shader");
     }
     return _id;
 }
-
 GLuint Shader::getName() {
     return _id;
 }
+
 
 Program::Program(AShader vertexShader, AShader fragmentShader) {
     _id = 0;
@@ -249,13 +176,62 @@ Program::Program(){
     _id = 0;
 }
 Program::~Program(){
-    if(_id)
-        glDeleteProgram(_id);
+    if(getName())
+        glDeleteProgram(getName());
+}
+void Program::activateColor(){
+    activateAttribute("a_color", LOC_COLOR);
+}
+void Program::activatePosition(){
+    activateAttribute("a_position", LOC_POSITION);
+}
+void Program::activateAttribute(const char *name, GLuint location){
+    attribs[location] = glGetAttribLocation(getName(), name);
+}
+void Program::activate(){
+    glUseProgram(getName());
+}
+void Program::bindColor(const void *data){
+    bindAttribute(COLOR_ATTRIB, 4, GL_FLOAT, 0, data);
+}
+void Program::bindColorRGB(const void *data){
+    bindAttribute(COLOR_ATTRIB, 3, GL_FLOAT, 0, data);
+}
+void Program::bindPosition(const void *data){
+    bindAttribute(POSITION_ATTRIB, 3, GL_FLOAT, 0, data);
+}
+void Program::bindPosition(GLuint buf_id){
+    bindBuffer(POSITION_ATTRIB, buf_id, 3, GL_FLOAT, 0, 0);
+}
+void Program::bindNormal(GLuint buf_id){
+    bindBuffer(NORMAL_ATTRIB, buf_id, 3, GL_FLOAT, 0, 0);
+}
+void Program::bindTexture(GLuint buf_id){
+    bindBuffer(TEXTURE_ATTRIB, buf_id, 2, GL_FLOAT, 0, 0);
+}
+void Program::bindColor(GLuint buf_id){
+    bindBuffer(COLOR_ATTRIB, buf_id, 4, GL_FLOAT, 0, 0);
+}
+void Program::bindAttribute(GLuint location, GLuint size, GLenum type, GLuint stride, const void *data){
+    glEnableVertexAttribArray(location);
+    glVertexAttribPointer(location, size, type, GL_FALSE, stride, data);
+}
+void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum type, GLuint stride, const void * offset){
+    LOGI("Bind buffer id %d at location %d", buf_id, location);
+    glBindBuffer(GL_ARRAY_BUFFER, buf_id);
+    checkGlError("glBindBuffer");
+    glEnableVertexAttribArray(location);
+    checkGlError("glEnableVertexAttribArray");
+    glVertexAttribPointer(location, size, type, GL_FALSE, stride, 0);
+    checkGlError("glVertexAttribPointer");
+    
 }
 void Program::make(AShader vertexShader, AShader fragmentShader){
+    LOGI("Making program with fragment and vertex shaders");
     _vertex = vertexShader;
     _fragment = fragmentShader;
     _log = 0;
+    LOGI("Start linking program");
     _create();
 }
 char * Program::getInfo() {
@@ -264,7 +240,7 @@ char * Program::getInfo() {
     GLint bufLength = 0;
     _log = 0;
     glGetProgramiv(_id, GL_INFO_LOG_LENGTH, &bufLength);
-    LOGE("Log length %i\n", bufLength);
+    LOGE("Log length %i", bufLength);
     if (bufLength) {
         _log = new char[bufLength];
         if (!_log)
@@ -280,146 +256,138 @@ GLuint Program::_link() {
     if (linkStatus != GL_TRUE) {
         char * info = getInfo();
         if (info)
-            LOGE("Could not link program:\n%s\n", info);
+            LOGE("Could not link program:\n%s", info);
         glDeleteProgram(_id);
         _id = 0;
     } else {
-        LOGI("Program linked succesfully\n");
+        LOGI("Program linked succesfully");
     }
     return linkStatus;
 }
 
 GLuint Program::_create() {
-    GLuint _id = glCreateProgram();
+    _id = glCreateProgram();
     if (_id) {
+        LOGI("Attaching shader %d", _vertex->getName());
         glAttachShader(_id, _vertex->getName());
         checkGlError("glAttachShader");
+        LOGI("Attaching shader %d", _fragment->getName());
         glAttachShader(_id, _fragment->getName());
         checkGlError("glAttachShader");
         GLuint status = _link();
         if (status != GL_TRUE)
             _id = 0;
     } else {
-        LOGE("Failed to create program\n");
+        LOGE("Failed to create program");
     }
     return _id;
 }
 
-class Scene {
+Mesh::Mesh() {
+    init();
+}
+Mesh::~Mesh(){
+    glDeleteBuffers(BUF_COUNT, vboIds);
+}
+void Mesh::init() {
+    glGenBuffers(BUF_COUNT, vboIds);
+    LOGI("Buffers:");
+    for(int i = 0; i < BUF_COUNT; i++)
+        LOGI(" %d = %d", i, vboIds[i]);
+    has_color = has_normal = has_texture = false;
+}
+void Mesh::setProgram(AProgram program) {
+    this->program = program;
+}
+void Mesh::setVertices(GLfloat *buf, GLint num) {
+    LOGI("Set position");
+    _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 3 * num, VERTEX_BUF);
+}
+void Mesh::setNormal(GLfloat *buf, GLint num) {
+    has_normal = true;
+    _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 3 * num, NORMAL_BUF);
+}
+void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
+    has_texture = true;
+    _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 2 * num, TEXTURE_BUF);
+}
+void Mesh::setColor(GLfloat *buf, GLint num) {
+    has_color = true;
+    _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 4 * num, COLOR_BUF);
+}
+void Mesh::setIndexes(GLushort *buf, GLint num) {
+    numIndices = num;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * num, buf,
+            GL_STATIC_DRAW);
+}
 
-};
+void Mesh::draw() {
+    assert(program->isValid(), "You need to set program for Mesh");
+    program->activate();
+    program->bindPosition(vboIds[VERTEX_BUF]);
+    if(has_normal)
+        program->bindNormal(vboIds[NORMAL_BUF]);
+    if(has_texture)
+        program->bindTexture(vboIds[TEXTURE_BUF]);
+    if(has_color)
+        program->bindColor(vboIds[COLOR_BUF]);
 
-#define assert(cond, mess) if(!cond){LOGE("Failed: %s at %d in file %s: %s", #cond, __LINE__, __FILE__, mess);exit(0);}
-#define VERTEX_BUF  0
-#define NORMAL_BUF  1
-#define TEXTURE_BUF 2
-#define INDEX_BUF   3
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
+    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+    checkGlError("glDrawElements");
+}
+void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
+    LOGI("SetBuffer %d, %d, %d, %d", target, size, sel, (sel >= 0) && (sel < BUF_COUNT));
+    assert((sel >= 0) && (sel < BUF_COUNT), "this buffer does not exist");
+    //strides[sel] = stride;
+    glBindBuffer(target, vboIds[sel]);
+    glBufferData(target, size, buf, GL_STATIC_DRAW);
+    checkGlError("glBufferData");
+}
 
-class Mesh {
-    GLuint vboIds[4];
-    GLuint strides[4];
-    GLuint attrib[3];
-    const char * names[3];
-    unsigned char sizes[4];
-    GLuint program;
-    GLuint numIndices;
-public:
-    Mesh() {
-        glGenBuffers(4, vboIds);
-        init();
-    }
-    ;
-    void init() {
-        attrib[VERTEX_BUF] = 0;
-        attrib[NORMAL_BUF] = 1;
-        attrib[TEXTURE_BUF] = 2;
-        names[VERTEX_BUF] = "v_position";
-        names[NORMAL_BUF] = "v_normal";
-        names[TEXTURE_BUF] = "v_texcoord";
+void Group::addObject(AMesh mesh){
+    list<Mesh> lista;
+    lista.push_front(Mesh());
+    _objects.push_back(mesh);
+}
+void Group::draw(){
+    list<AMesh>::iterator it;
+    for(it = _objects.begin(); it != _objects.end(); it++)
+        (*it)->draw();
+}
 
-        sizes[VERTEX_BUF] = 3;
-        sizes[NORMAL_BUF] = 3;
-        sizes[TEXTURE_BUF] = 2;
-        program = 0;
-    }
-    void setProgram(GLuint program) {
-        this->program = program;
-    }
-    void setVertices(GLfloat *buf, GLint num, GLuint stride) {
-        _setBuffer(buf, num, stride, VERTEX_BUF);
-    }
-    ;
-    void setNormal(GLfloat *buf, GLint num, GLuint stride) {
-        _setBuffer(buf, num, stride, NORMAL_BUF);
-    }
-    ;
-    void setTextureCoord(GLfloat *buf, GLint num, GLuint stride) {
-        _setBuffer(buf, num, stride, TEXTURE_BUF);
-    }
-    ;
-    void setIndexes(GLushort *buf, GLint num, GLuint stride) {
-        numIndices = num;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * num, buf,
-                GL_STATIC_DRAW);
-    }
-    ;
-    GLuint attribute(int indx) {
-        return attrib[indx];
-    }
-    ;
-    void draw() {
-        assert(program != 0, "You need to set program for Mesh");
-        glBindBuffer(GL_ARRAY_BUFFER, vboIds[VERTEX_BUF]);
-        glEnableVertexAttribArray(attribute(VERTEX_BUF));
-        glVertexAttribPointer(attribute(VERTEX_BUF), sizes[VERTEX_BUF],
-                GL_FLOAT, GL_FALSE, strides[VERTEX_BUF], 0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vboIds[NORMAL_BUF]);
-        glEnableVertexAttribArray(attribute(NORMAL_BUF));
-        glVertexAttribPointer(attribute(NORMAL_BUF), sizes[NORMAL_BUF],
-                GL_FLOAT, GL_FALSE, strides[NORMAL_BUF], 0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vboIds[TEXTURE_BUF]);
-        glEnableVertexAttribArray(attribute(TEXTURE_BUF));
-        glVertexAttribPointer(attribute(TEXTURE_BUF), sizes[TEXTURE_BUF],
-                GL_FLOAT, GL_FALSE, strides[TEXTURE_BUF], 0);
-
-        glBindAttribLocation(program, attribute(VERTEX_BUF), names[VERTEX_BUF]);
-        glBindAttribLocation(program, attribute(NORMAL_BUF), names[NORMAL_BUF]);
-        glBindAttribLocation(program, attribute(TEXTURE_BUF),
-                names[TEXTURE_BUF]);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
-        glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
-    }
-private:
-    GLfloat *_vertices;
-    GLfloat *_indexes;
-    void _setBuffer(GLfloat *buf, GLint num, GLuint stride, GLuint sel) {
-        assert(sel >= 0 & sel < 4, "this buffer does not exist");
-        strides[sel] = stride;
-        glBindBuffer(GL_ARRAY_BUFFER, vboIds[sel]);
-        glBufferData(GL_ARRAY_BUFFER, stride * num, buf, GL_STATIC_DRAW);
-    }
-};
+GLfloat rec_vertices[4*3] = { 0.0f, 1.0f, 0.0f, // 0, Top Left
+        0.0f, 0.0f, 0.0f, // 1, Bottom Left
+        1.0f, 0.0f, 0.0f, // 2, Bottom Right
+        1.0f, 1.0f, 0.0f, // 3, Top Right
+    };
+GLushort rec_indexes[2 * 3] = { 0, 1, 2, 0, 2, 3 };
+Rectangle::Rectangle():Mesh(){
+    setVertices(rec_vertices, 4);
+    setIndexes(rec_indexes, 6);
+}
 
 void renderFrame() {
     static float grey;
-    grey += 0.01f;
-    if (grey > 1.0f) {
-        grey = 0.0f;
-    }
+    grey = 0.5f;
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glClearColor(grey, grey, grey, 1.0f);
     checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
-
-    glUseProgram(program->getName());
+    
+    LOGI("Rendering frame");
+    program->activate();
+    program->bindColor(colors);
+    program->bindPosition(vertexPos);
+    
     checkGlError("glUseProgram");
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
     checkGlError("glDrawArrays");
+    root->draw();
 }
 
 char * load_asset(const char * source) {
@@ -437,6 +405,28 @@ char * load_asset(const char * source) {
     ret_str[len] = 0;
     _env->ReleaseStringUTFChars((jstring) result, str);
     return ret_str;
+}
+
+unsigned char * load_bitmap(const char * source) {
+    
+    /*
+     * Get java method id to load bitmap and call this method
+     */
+    jstring jstr = _env->NewStringUTF(source);
+    jclass jclass = _env->FindClass("info/qrees/android/brains/GL2JNILib");
+    jmethodID messageMe = _env->GetStaticMethodID(jclass, "loadBitmap", "(Ljava/lang/String;)[B");
+    jbyteArray result = (jbyteArray)_env->CallStaticObjectMethod(jclass, messageMe, jstr);
+    
+    /*
+     * Copy bitmap data from java array and release that array
+     */
+    jsize length = _env->GetArrayLength(result);
+    unsigned char * buf = new unsigned char[length];
+    signed char * copy = _env->GetByteArrayElements(result, 0);
+    for(int i =0; i < length; i++)
+        buf[i] = copy[i];
+    _env->ReleaseByteArrayElements(result, copy, 0);
+    return buf;
 }
 
 extern "C" {
@@ -475,11 +465,11 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
     _env = env;
     const char *nativeString = env->GetStringUTFChars(javaString, 0);
 
-    LOGI("Loading shader: %s\n", nativeString);
-    GLuint shader = loadShader(shaderType, nativeString);
+    LOGI("Loading shader: %s", nativeString);
+    //GLuint shader = loadShader(shaderType, nativeString);
 
     env->ReleaseStringUTFChars(javaString, nativeString);
-    return shader;
+    return 0;
 }
 
 JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(

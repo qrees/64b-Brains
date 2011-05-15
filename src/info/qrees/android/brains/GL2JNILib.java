@@ -2,8 +2,12 @@ package info.qrees.android.brains;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 // Wrapper for native library
 
@@ -15,6 +19,15 @@ public class GL2JNILib {
      static final int GL_FRAGMENT_SHADER = 0x8B30;
      static final int GL_VERTEX_SHADER   = 0x8B31;
      public static AssetManager assets;
+
+     public static byte[] loadBitmap(String source){
+         try {
+            return readBitmap(source);
+        } catch (IOException e) {
+            Log.e("Failed to load asset %s", e, source);
+            return null;
+        }
+     };
      
      public static String loadAsset(String source){
     	 try {
@@ -25,6 +38,15 @@ public class GL2JNILib {
 		}
      };
 
+     public static byte[] readBitmap(String name) throws IOException{
+        InputStream stream = assets.open(name);
+        Bitmap bitmap = BitmapFactory.decodeStream(stream);
+        ByteBuffer dst = ByteBuffer.allocate(bitmap.getWidth()*bitmap.getHeight()*4);
+        dst.order(ByteOrder.nativeOrder());
+        bitmap.copyPixelsToBuffer(dst);
+        return dst.array();
+     }
+     
      public static String readFile(String name) throws IOException{
      	StringBuffer sbuffer = new StringBuffer();
  		InputStream stream = assets.open(name);
