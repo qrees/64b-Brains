@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 import android.app.Activity;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;

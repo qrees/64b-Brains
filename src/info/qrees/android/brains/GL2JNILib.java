@@ -1,5 +1,6 @@
 package info.qrees.android.brains;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -13,52 +14,101 @@ import android.graphics.BitmapFactory;
 
 public class GL2JNILib {
 
-     static {
-         System.loadLibrary("gl2jni");
-     }
-     static final int GL_FRAGMENT_SHADER = 0x8B30;
-     static final int GL_VERTEX_SHADER   = 0x8B31;
-     public static AssetManager assets;
+    static {
+        System.loadLibrary("gl2jni");
+    }
+    static final int GL_FRAGMENT_SHADER = 0x8B30;
+    static final int GL_VERTEX_SHADER = 0x8B31;
+    public static AssetManager assets;
 
-     public static byte[] loadBitmap(String source){
-         try {
+    public static byte[] loadBitmap(String source) {
+        /*
+         * Loads png file. File is decoded into bitmap and array of pixels is returned.
+         */
+        try {
             return readBitmap(source);
         } catch (IOException e) {
             Log.e("Failed to load asset %s", e, source);
             return null;
         }
-     };
-     
-     public static String loadAsset(String source){
-    	 try {
-			return readFile(source);
-		} catch (IOException e) {
-			Log.e("Failed to load asset %s", e, source);
-			return "";
-		}
-     };
+    };
 
-     public static byte[] readBitmap(String name) throws IOException{
+    public static byte[] loadRaw(String source) {
+        InputStream stream;
+        try {
+            stream = assets.open(source);
+        } catch (IOException e) {
+            Log.e("Failed to load asset %s", e, source);
+            return null;
+        }
+        ByteArrayOutputStream arr = new ByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[1024];
+            int read;
+            while((read = stream.read(buffer, 0, 1024)) > 0){
+                arr.write(buffer, 0, read);
+            }
+        } catch (IOException e) {
+            Log.e("Failed to load asset %s", e, source);
+            return null;
+        }
+        Log.d("Loaded raw file %s",  source);
+        return arr.toByteArray();
+    };
+
+    public static String loadAsset(String source) {
+        try {
+            return readFile(source);
+        } catch (IOException e) {
+            Log.e("Failed to load asset %s", e, source);
+            return "";
+        }
+    };
+
+    public static byte[] readBitmap(String name) throws IOException {
         InputStream stream = assets.open(name);
         Bitmap bitmap = BitmapFactory.decodeStream(stream);
-        ByteBuffer dst = ByteBuffer.allocate(bitmap.getWidth()*bitmap.getHeight()*4);
+        Bitmap.Config config = bitmap.getConfig();
+        short mult;
+        switch (config) {
+        case ALPHA_8:
+            mult = 1;
+            break;
+        case ARGB_4444:
+            mult = 2;
+            break;
+        case ARGB_8888:
+            mult = 4;
+            break;
+        case RGB_565:
+            mult = 2;
+            break;
+        default:
+            return null;
+        }
+
+        ByteBuffer dst = ByteBuffer.allocate(bitmap.getWidth()
+                * bitmap.getHeight() * mult);
         dst.order(ByteOrder.nativeOrder());
         bitmap.copyPixelsToBuffer(dst);
         return dst.array();
-     }
-     
-     public static String readFile(String name) throws IOException{
-     	StringBuffer sbuffer = new StringBuffer();
- 		InputStream stream = assets.open(name);
- 		byte[] buffer = new byte[1024];
- 		int n;
- 		while ((n = stream.read(buffer, 0, 1024)) != -1)
- 			sbuffer.append(new String(buffer, 0, n));
- 		return sbuffer.toString();
-     }
-     
-     public static native void init(int width, int height);
-     public static native void step();
-     public static native int loadShader(String source, int type);
-     public static native int createProgram(int vertexShader, int fragmentShader);
+    }
+
+    public static String readFile(String name) throws IOException {
+        StringBuffer sbuffer = new StringBuffer();
+        InputStream stream = assets.open(name);
+        byte[] buffer = new byte[1024];
+        int n;
+        while ((n = stream.read(buffer, 0, 1024)) != -1)
+            sbuffer.append(new String(buffer, 0, n));
+        return sbuffer.toString();
+    }
+
+    public static native void init(int width, int height);
+
+    public static native void step();
+
+    public static native int loadShader(String source, int type);
+
+    public static native int createProgram(int vertexShader, int fragmentShader);
 }
