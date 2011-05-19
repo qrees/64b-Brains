@@ -45,6 +45,9 @@ void Mesh::setIndexes(GLushort *buf, GLint num) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * num, buf,
             GL_STATIC_DRAW);
 }
+void Mesh::setTexture(ATexture tex){
+    _texture = tex;
+}
 
 void Mesh::draw() {
     assert(program->isValid(), "You need to set program for Mesh");
@@ -52,7 +55,7 @@ void Mesh::draw() {
     program->bindPosition(vboIds[VERTEX_BUF]);
     if(has_normal)
         program->bindNormal(vboIds[NORMAL_BUF]);
-    if(has_texture)
+    if(has_texture && bool(_texture))
         program->bindTexture(vboIds[TEXTURE_BUF]);
     if(has_color)
         program->bindColor(vboIds[COLOR_BUF]);
@@ -86,8 +89,14 @@ GLfloat rec_vertices[4*3] = { 0.0f, 1.0f, 0.0f, // 0, Top Left
         1.0f, 0.0f, 0.0f, // 2, Bottom Right
         1.0f, 1.0f, 0.0f, // 3, Top Right
     };
+GLfloat rec_tex_coord[4*2] = { 0.0f, 1.0f, // 0, Top Left
+        0.0f, 0.0f,  // 1, Bottom Left
+        1.0f, 0.0f,  // 2, Bottom Right
+        1.0f, 1.0f,  // 3, Top Right
+    };
 GLushort rec_indexes[2 * 3] = { 0, 1, 2, 0, 2, 3 };
 Rectangle::Rectangle():Mesh(){
     setVertices(rec_vertices, 4);
+    setTextureCoord(rec_tex_coord, 4);
     setIndexes(rec_indexes, 6);
 }

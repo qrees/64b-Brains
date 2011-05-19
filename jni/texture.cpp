@@ -33,7 +33,7 @@ void Texture::load_pkm(const u_char * data){
     u_int height = 0;
     width = etc1_pkm_get_width(data);
     height = etc1_pkm_get_height(data);
-    LOGI("Loading PKM data %dx%d", width, height);
+    LOGI("Loading PKM image: %dx%d", width, height);
     load_compressed(width, height, data + ETC_PKM_HEADER_SIZE);
 }
 

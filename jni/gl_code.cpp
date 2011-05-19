@@ -91,6 +91,7 @@ bool setupGraphics(int w, int h) {
     
     ATexture tex(new Texture());
     tex->load_pkm(texture);
+    mesh->setTexture(tex);
     
     return true;
 }

@@ -35,7 +35,7 @@ typedef AutoPtr<BaseMesh> AMesh;
 class Mesh: public BaseMesh {
     GLuint vboIds[BUF_COUNT];
     AProgram program;
-    ATexture texture;
+    ATexture _texture;
     GLuint numIndices;
     bool has_color, has_normal, has_texture;
 public:

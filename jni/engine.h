@@ -9,5 +9,5 @@ using namespace std;
 #include "smart_ptr.h"
 #include "shader.h"
 #include "program.h"
-#include "mesh.h"
 #include "texture.h"
+#include "mesh.h"
