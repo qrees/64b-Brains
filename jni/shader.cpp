@@ -29,6 +29,7 @@ char * Shader::getInfo() {
     LOGE("Log length %i", infoLen);
     if (infoLen) {
         _log = new char[infoLen];
+        glGetShaderInfoLog(getName(), infoLen, 0, _log);
         if (_log)
             return _log;
         else
@@ -55,8 +56,6 @@ GLuint Shader::_compile() {
             if (info)
                 LOGE("Could not compile shader %d:\n%s",
                         _type, info);
-            glDeleteShader(_id);
-            _id = 0;
         } else {
             LOGI("Shader compilled succesfully %d", _id);
             valid = true;

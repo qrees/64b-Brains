@@ -8,6 +8,7 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
 
+#define LOC_TEXTURE_SAMPLER 0
 #define LOC_POSITION 0
 #define LOC_COLOR 1
 #define LOC_NORMAL 3
@@ -31,12 +32,16 @@ public:
     void bindColorRGB(const void *data);
     void bindPosition(const void *data);
     void activateAttribute(const char *name, GLuint location);
+    void activateUniform(const char *name, GLuint location);
     void bindPosition(GLuint buf_id);
     void bindNormal(GLuint buf_id);
-    void bindTexture(GLuint buf_id);
+    void bindTexture(GLuint buf_id, GLuint tex_id);
     void bindColor(GLuint buf_id);
+    void activateAttributes();
     void activateColor();
     void activatePosition();
+    void activateTexture();
+    void activateTextureSampler();
     void activate();
 private:
     GLuint _link();
@@ -46,6 +51,7 @@ private:
     AShader _fragment;
     GLuint _id;
     GLuint attribs[8];
+    GLuint uniforms[8];
     char * _log;
 };
 typedef AutoPtr<Program> AProgram;

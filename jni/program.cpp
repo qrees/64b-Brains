@@ -18,14 +18,31 @@ Program::~Program(){
     if(getName())
         glDeleteProgram(getName());
 }
+void Program::activateAttributes(){
+    activateColor();
+    activatePosition();
+    activateTexture();
+    activateTextureSampler();
+}
 void Program::activateColor(){
     activateAttribute("a_color", LOC_COLOR);
 }
 void Program::activatePosition(){
     activateAttribute("a_position", LOC_POSITION);
 }
+void Program::activateTexture(){
+    activateAttribute("a_texture", LOC_TEXTURE);
+}
+void Program::activateTextureSampler(){
+    activateUniform("s_texture", LOC_TEXTURE_SAMPLER);
+}
 void Program::activateAttribute(const char *name, GLuint location){
     attribs[location] = glGetAttribLocation(getName(), name);
+    LOGI("New attribute %d at location %d (%s)", attribs[location], location, name);
+}
+void Program::activateUniform(const char *name, GLuint location){
+    uniforms[location] = glGetUniformLocation(getName(), name);
+    LOGI("New uniform %d at location %d (%s)", uniforms[location], location, name);
 }
 void Program::activate(){
     glUseProgram(getName());
@@ -45,8 +62,14 @@ void Program::bindPosition(GLuint buf_id){
 void Program::bindNormal(GLuint buf_id){
     bindBuffer(NORMAL_ATTRIB, buf_id, 3, GL_FLOAT, 0, 0);
 }
-void Program::bindTexture(GLuint buf_id){
+void Program::bindTexture(GLuint buf_id, GLuint tex_id){
     bindBuffer(TEXTURE_ATTRIB, buf_id, 2, GL_FLOAT, 0, 0);
+    glActiveTexture(GL_TEXTURE0);
+    //checkGlError("glActiveTexture");
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+    //checkGlError("glBindTexture");
+    glUniform1i(uniforms[LOC_TEXTURE_SAMPLER], 0);
+    //checkGlError("glUniform1i");
 }
 void Program::bindColor(GLuint buf_id){
     bindBuffer(COLOR_ATTRIB, buf_id, 4, GL_FLOAT, 0, 0);
@@ -72,6 +95,7 @@ void Program::make(AShader vertexShader, AShader fragmentShader){
     _log = 0;
     LOGI("Start linking program");
     _create();
+    activateAttributes();
 }
 char * Program::getInfo() {
     if (_log)
@@ -82,6 +106,7 @@ char * Program::getInfo() {
     LOGE("Log length %i", bufLength);
     if (bufLength) {
         _log = new char[bufLength];
+        glGetProgramInfoLog(getName(), bufLength, 0, _log);
         if (!_log)
             LOGE("Failed to allocate memory for program log");
     }
@@ -89,15 +114,13 @@ char * Program::getInfo() {
 }
 
 GLuint Program::_link() {
-    glLinkProgram(_id);
+    glLinkProgram(getName());
     GLint linkStatus = GL_FALSE;
-    glGetProgramiv(_id, GL_LINK_STATUS, &linkStatus);
+    glGetProgramiv(getName(), GL_LINK_STATUS, &linkStatus);
     if (linkStatus != GL_TRUE) {
         char * info = getInfo();
         if (info)
             LOGE("Could not link program:\n%s", info);
-        glDeleteProgram(_id);
-        _id = 0;
     } else {
         LOGI("Program linked succesfully");
     }
@@ -107,6 +130,7 @@ GLuint Program::_link() {
 GLuint Program::_create() {
     _id = glCreateProgram();
     if (_id) {
+        LOGI("Created program %d", getName());
         LOGI("Attaching shader %d", _vertex->getName());
         glAttachShader(_id, _vertex->getName());
         checkGlError("glAttachShader");

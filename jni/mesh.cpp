@@ -56,7 +56,7 @@ void Mesh::draw() {
     if(has_normal)
         program->bindNormal(vboIds[NORMAL_BUF]);
     if(has_texture && bool(_texture))
-        program->bindTexture(vboIds[TEXTURE_BUF]);
+        program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
     if(has_color)
         program->bindColor(vboIds[COLOR_BUF]);
 
@@ -65,7 +65,7 @@ void Mesh::draw() {
     checkGlError("glDrawElements");
 }
 void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
-    LOGI("SetBuffer %d, %d, %d, %d", target, size, sel, (sel >= 0) && (sel < BUF_COUNT));
+    LOGI("SetBuffer %d, %d", size, vboIds[sel]);
     assert((sel >= 0) && (sel < BUF_COUNT), "this buffer does not exist");
     //strides[sel] = stride;
     glBindBuffer(target, vboIds[sel]);

@@ -33,7 +33,7 @@ void checkGlError(const char* op) {
 GLuint gvPositionHandle;
 AShader vertexShader(new Shader());
 AShader fragmentShader(new Shader());
-AProgram program(new Program());
+AProgram program;
 
 GLfloat vertexPos[3 * 3] = { //
         0.0f,  0.5f, 0.0f,   //
@@ -67,13 +67,12 @@ bool setupGraphics(int w, int h) {
     char * gFragmentShader = load_asset("shaders/fragment_attrib.gls");
     vertexShader->load(gVertexShader, GL_VERTEX_SHADER);
     fragmentShader->load(gFragmentShader, GL_FRAGMENT_SHADER);
+    program = new Program();
     program->make(vertexShader, fragmentShader);
     if (!program->isValid()) {
         LOGE("Could not create program.");
         return false;
     }
-    program->activateColor();
-    program->activatePosition();
 
     LOGI("setupGraphics(%d, %d)", w, h);
     glViewport(0, 0, w, h);
@@ -109,13 +108,6 @@ void renderFrame() {
     
     LOGI("Rendering frame");
     program->activate();
-    program->bindColor(colors);
-    program->bindPosition(vertexPos);
-    
-    checkGlError("glUseProgram");
-
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    checkGlError("glDrawArrays");
     root->draw();
 }
 

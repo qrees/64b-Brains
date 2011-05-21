@@ -23,6 +23,10 @@ Texture::~Texture(){
     delete[] _data;
 }
 
+GLuint Texture::getName(){
+    return _id;
+}
+
 void Texture::load(GLuint width, GLuint height, u_char * data){
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     checkGlError("glTexImage2D");
@@ -45,7 +49,7 @@ void Texture::load_compressed(GLuint width, GLuint height, const u_char * data){
     encodedSize = etc1_get_encoded_data_size(width, height);
     _data = new u_char[encodedSize];
     memcpy(_data, data, encodedSize);
-    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES, width, height, 0, encodedSize, data);
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES, width, height, 0, encodedSize, _data);
     checkGlError("glCompressedTexImage2D");
 }
 
