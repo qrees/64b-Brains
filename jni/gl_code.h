@@ -13,13 +13,5 @@
 
 #include "engine.h"
 
-jint throwJNI(const char *message);
-char * load_asset(const char * source);
-unsigned char * load_raw(const char * source);
-
-class Scene: public RefCntObject {
-    AMesh root;
-    AProgram program;
-};
 
 #endif /* GL_CODE_H_ */

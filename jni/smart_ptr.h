@@ -24,7 +24,6 @@ public:
     bool subRef() {
         return (--m_refcnt <= 0);
     }
-
 private:
     int m_refcnt;
 };
@@ -92,8 +91,9 @@ public:
 */
 private:
     void addRef() {
-        if (m_ptr)
+        if (m_ptr){
             m_ptr->addRef();
+        }
     }
 
     void subRef() {

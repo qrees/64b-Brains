@@ -11,6 +11,9 @@ Mesh::Mesh() {
     init();
 }
 Mesh::~Mesh(){
+    LOGI("Deleting buffers:");
+    for(int i = 0; i < BUF_COUNT; i++)
+        LOGI(" %d = %d", i, vboIds[i]);
     glDeleteBuffers(BUF_COUNT, vboIds);
 }
 void Mesh::init() {
@@ -74,8 +77,6 @@ void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
 }
 
 void Group::addObject(AMesh mesh){
-    list<Mesh> lista;
-    lista.push_front(Mesh());
     _objects.push_back(mesh);
 }
 void Group::draw(){

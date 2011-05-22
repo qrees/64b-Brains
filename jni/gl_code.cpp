@@ -31,8 +31,8 @@ void checkGlError(const char* op) {
 
 //GLuint gProgram;
 GLuint gvPositionHandle;
-AShader vertexShader(new Shader());
-AShader fragmentShader(new Shader());
+AShader vertexShader;
+AShader fragmentShader;
 AProgram program;
 
 GLfloat vertexPos[3 * 3] = { //
@@ -52,9 +52,7 @@ GLfloat colorsRGB[3 * 3] = {       //
         1.0f, 1.0f, 1.0f, //
     };
 
-Scene scene;
-AMesh root;
-const unsigned char * texture;
+AScene scene;
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -62,53 +60,17 @@ bool setupGraphics(int w, int h) {
     printGLString("Renderer", GL_RENDERER);
     printGLString("Extensions", GL_EXTENSIONS);
 
-    texture = load_raw("images/background.pkm");
-    char * gVertexShader = load_asset("shaders/vertex_attrib.gls");
-    char * gFragmentShader = load_asset("shaders/fragment_attrib.gls");
-    vertexShader->load(gVertexShader, GL_VERTEX_SHADER);
-    fragmentShader->load(gFragmentShader, GL_FRAGMENT_SHADER);
-    program = new Program();
-    program->make(vertexShader, fragmentShader);
-    if (!program->isValid()) {
-        LOGE("Could not create program.");
-        return false;
-    }
-
     LOGI("setupGraphics(%d, %d)", w, h);
     glViewport(0, 0, w, h);
     checkGlError("glViewport");
-    
-    //unsigned char * texture = load_bitmap("images/images/background.pkm");
-    
-    Group * group = new Group();
-    Mesh * mesh = new Rectangle();
-    root = AMesh(group);
-    AMesh a_mesh = AMesh(mesh);
-    mesh->setProgram(program);
-    mesh->setColor(colors, 4);
-    group->addObject(a_mesh);
-    
-    ATexture tex(new Texture());
-    tex->load_pkm(texture);
-    mesh->setTexture(tex);
-    
+    scene = 0;
+    scene = new MainScene();
     return true;
 }
 
 
 void renderFrame() {
-    static float grey;
-    grey = 0.5f;
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glClearColor(grey, grey, grey, 1.0f);
-    checkGlError("glClearColor");
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    checkGlError("glClear");
-    
-    LOGI("Rendering frame");
-    program->activate();
-    root->draw();
+    scene->renderFrame();
 }
 
 char * load_asset(const char * source) {

@@ -18,7 +18,7 @@ public:
     virtual ~BaseMesh(){};
     virtual void draw(){};
 };
-typedef AutoPtr<BaseMesh> AMesh;
+typedef AutoPtr<BaseMesh> ABaseMesh;
 
 /*
  * Mesh
@@ -53,6 +53,7 @@ public:
 private:
     void _setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel);
 };
+typedef AutoPtr<Mesh> AMesh;
 
 class Group: public BaseMesh {
 private:

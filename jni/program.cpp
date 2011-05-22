@@ -15,6 +15,7 @@ Program::Program(){
     _id = 0;
 }
 Program::~Program(){
+    LOGI("Deleting program %d", getName());
     if(getName())
         glDeleteProgram(getName());
 }
@@ -65,11 +66,11 @@ void Program::bindNormal(GLuint buf_id){
 void Program::bindTexture(GLuint buf_id, GLuint tex_id){
     bindBuffer(TEXTURE_ATTRIB, buf_id, 2, GL_FLOAT, 0, 0);
     glActiveTexture(GL_TEXTURE0);
-    //checkGlError("glActiveTexture");
+    checkGlError("glActiveTexture");
     glBindTexture(GL_TEXTURE_2D, tex_id);
-    //checkGlError("glBindTexture");
+    checkGlError("glBindTexture");
     glUniform1i(uniforms[LOC_TEXTURE_SAMPLER], 0);
-    //checkGlError("glUniform1i");
+    checkGlError("glUniform1i");
 }
 void Program::bindColor(GLuint buf_id){
     bindBuffer(COLOR_ATTRIB, buf_id, 4, GL_FLOAT, 0, 0);

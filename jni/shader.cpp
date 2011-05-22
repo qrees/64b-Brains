@@ -7,15 +7,21 @@ Shader::Shader() {
     _source = string("");
 }
 Shader::~Shader(){
+    LOGI("Deleting shader %d", _id);
     if(_id)
         glDeleteShader(_id);
 }
 Shader::Shader(const char * source, GLenum shaderType) {
+    _source = string(source);
+    _type = shaderType;
+    _id = 0;
     load(source, shaderType);
 }
 void Shader::load(const char*source, GLenum shaderType){
     _source = string(source);
     _type = shaderType;
+    if(_id)
+        glDeleteShader(_id);
     _id = 0;
     _log = 0;
     _compile();
