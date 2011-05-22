@@ -19,21 +19,21 @@ private:
     T *_matrix;
 public:
     Matrix(){
-        LOGI("Matrix: new()");
         _matrix = new T[16];
     }
     ~Matrix(){
-        LOGI("Matrix: delete");
         delete[] _matrix;
     }
     Matrix(const Matrix<T> & other){
-        LOGI("Matrix: copy");
         _matrix = new T[16];
-        mamcpy(_matrix, other._matrix, 16 * sizeof(T));
+        memcpy(_matrix, other._matrix, 16 * sizeof(T));
     }
-
+    
+    T* data(){
+        return _matrix;
+    }
+    
     Matrix<T>& operator= (const Matrix<T> &other) {
-        LOGI("Matrix: operator= ");
         for (int i = 0; i < 16; i++) {
             _matrix[i] = other._matrix[i];
         }
@@ -188,7 +188,7 @@ public:
 
         if ((deltaX == 0.0f) || (deltaY == 0.0f) || (deltaZ == 0.0f)){
             LOGI("Matrix: Invalid ortho arguments");
-            return;
+            return *this;
         }
 
         _matrix[0 * 4 + 0] = 2.0f / deltaX;
@@ -307,5 +307,6 @@ public:
 
 };
 
+typedef Matrix<GLfloat> GLMatrix;
 
 #endif /* MATRIX_H_ */

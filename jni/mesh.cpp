@@ -85,15 +85,15 @@ void Group::draw(){
         (*it)->draw();
 }
 
-GLfloat rec_vertices[4*3] = { 0.0f, 1.0f, 0.0f, // 0, Top Left
-        0.0f, 0.0f, 0.0f, // 1, Bottom Left
-        1.0f, 0.0f, 0.0f, // 2, Bottom Right
-        1.0f, 1.0f, 0.0f, // 3, Top Right
+GLfloat rec_vertices[4*3] = { 0.0f, 1.0f, 1.0f, // 0, Top Left
+        0.0f, 0.0f, 1.0f, // 1, Bottom Left
+        1.0f, 0.0f, 1.0f, // 2, Bottom Right
+        1.0f, 1.0f, 1.0f, // 3, Top Right
     };
-GLfloat rec_tex_coord[4*2] = { 0.0f, 1.0f, // 0, Top Left
-        0.0f, 0.0f,  // 1, Bottom Left
-        1.0f, 0.0f,  // 2, Bottom Right
-        1.0f, 1.0f,  // 3, Top Right
+GLfloat rec_tex_coord[4*2] = { 0.0f, 0.0f, // 0, Top Left
+        0.0f, 1.0f,  // 1, Bottom Left
+        1.0f, 1.0f,  // 2, Bottom Right
+        1.0f, 0.0f,  // 3, Top Right
     };
 GLushort rec_indexes[2 * 3] = { 0, 1, 2, 0, 2, 3 };
 Rectangle::Rectangle():Mesh(){

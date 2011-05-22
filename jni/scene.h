@@ -12,6 +12,7 @@ class Scene: public RefCntObject {
 protected:
     ABaseMesh _root;
     AProgram _program;
+    GLMatrix _view_matrix;
 public:
     Scene();
     virtual ~Scene();
@@ -19,7 +20,7 @@ public:
     void setProgram(AProgram program);
     ATexture loadTexture(const char * source);
     AShader loadShader(const char * source, GLuint type);
-    void renderFrame();
+    virtual void renderFrame();
 };
 typedef AutoPtr<Scene> AScene;
 
@@ -29,6 +30,7 @@ private:
     AShader _fragment_shader;
 public:
     MainScene();
+    void renderFrame();
 };
 
 

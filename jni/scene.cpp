@@ -35,6 +35,28 @@ AShader Scene::loadShader(const char * source, GLuint type){
 }
 
 void Scene::renderFrame(){
+    LOGI("Scene: called stub renderFrame method.");
+}
+
+MainScene::MainScene():Scene(){
+    _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
+    _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
+    _program = new Program();
+    _program->make(_vertex_shader, _fragment_shader);
+    
+    Group * group = new Group();
+    _root = group;
+    AMesh a_mesh = new Rectangle();
+    a_mesh->setProgram(_program);
+    group->addObject(a_mesh);
+    
+    ATexture tex = loadTexture("images/background.pkm");
+    a_mesh->setTexture(tex);
+    
+    _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f);
+}
+
+void MainScene::renderFrame(){
     static float grey;
     grey = 0.5f;
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -44,25 +66,9 @@ void Scene::renderFrame(){
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
     
+    //_view_matrix.rotate(1, 0, 0, 1);
     LOGI("Rendering frame");
     _program->activate();
+    _program->bindViewMatrix(_view_matrix);
     _root->draw();
-}
-
-MainScene::MainScene():Scene(){
-    _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
-    _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
-    _program = new Program();
-    _program->make(_vertex_shader, _fragment_shader);
-    
-
-    Group * group = new Group();
-    _root = group;
-    AMesh a_mesh = new Rectangle();
-    a_mesh->setProgram(_program);
-    //a_mesh->setColor(colors, 4);
-    group->addObject(a_mesh);
-    
-    ATexture tex = loadTexture("images/background.pkm");
-    a_mesh->setTexture(tex);
 }

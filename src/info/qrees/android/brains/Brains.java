@@ -30,7 +30,8 @@ public class Brains extends Activity {
         createStorageDirectory();
         //mGLSurfaceView = new TouchView(this, new ViewRenderer(getAssets()));
         mGLSurfaceView = new GL2JNIView(getApplication(), assets);
-        mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_WHEN_DIRTY);
+        //mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_WHEN_DIRTY);
+        mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_CONTINUOUSLY);
         setContentView(mGLSurfaceView);
     }
     

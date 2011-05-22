@@ -24,6 +24,7 @@ void Program::activateAttributes(){
     activatePosition();
     activateTexture();
     activateTextureSampler();
+    _view_matrix = glGetUniformLocation(getName(), "u_view_matrix");
 }
 void Program::activateColor(){
     activateAttribute("a_color", LOC_COLOR);
@@ -47,6 +48,11 @@ void Program::activateUniform(const char *name, GLuint location){
 }
 void Program::activate(){
     glUseProgram(getName());
+}
+
+void Program::bindViewMatrix(GLMatrix &matrix){
+    glUniformMatrix4fv(_view_matrix, 1, GL_FALSE, matrix.data());
+    checkGlError("glUniformMatrix4fv");
 }
 void Program::bindColor(const void *data){
     bindAttribute(COLOR_ATTRIB, 4, GL_FLOAT, 0, data);
@@ -87,8 +93,9 @@ void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum typ
     checkGlError("glEnableVertexAttribArray");
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, 0);
     checkGlError("glVertexAttribPointer");
-    
 }
+
+
 void Program::make(AShader vertexShader, AShader fragmentShader){
     LOGI("Making program with fragment and vertex shaders");
     _vertex = vertexShader;

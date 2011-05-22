@@ -26,17 +26,24 @@ public:
     char * getInfo();
     bool isValid(){return _id != 0;};
     GLuint getName(){return _id;};
+    /*
+     * Bind OpenGL atribute with actual data
+     */
     void bindAttribute(GLuint location, GLuint size, GLenum type, GLuint stride, const void *data);
     void bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum type, GLuint stride, const void * offset);
     void bindColor(const void *data);
     void bindColorRGB(const void *data);
     void bindPosition(const void *data);
-    void activateAttribute(const char *name, GLuint location);
-    void activateUniform(const char *name, GLuint location);
     void bindPosition(GLuint buf_id);
     void bindNormal(GLuint buf_id);
     void bindTexture(GLuint buf_id, GLuint tex_id);
     void bindColor(GLuint buf_id);
+    void bindViewMatrix(GLMatrix &matrix);
+    /*
+     * Atributes activation, link string attributes names with OpenGL names (GLuint).
+     */
+    void activateAttribute(const char *name, GLuint location);
+    void activateUniform(const char *name, GLuint location);
     void activateAttributes();
     void activateColor();
     void activatePosition();
@@ -52,6 +59,7 @@ private:
     GLuint _id;
     GLuint attribs[8];
     GLuint uniforms[8];
+    GLuint _view_matrix;
     char * _log;
 };
 typedef AutoPtr<Program> AProgram;

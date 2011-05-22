@@ -29,12 +29,6 @@ void checkGlError(const char* op) {
     }
 }
 
-//GLuint gProgram;
-GLuint gvPositionHandle;
-AShader vertexShader;
-AShader fragmentShader;
-AProgram program;
-
 GLfloat vertexPos[3 * 3] = { //
         0.0f,  0.5f, 0.0f,   //
        -0.5f, -0.5f, 0.0f,   //
@@ -159,6 +153,5 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
 JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
         JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader) {
     _env = env;
-    
-    return program->getName();
+    return 0;
 }
