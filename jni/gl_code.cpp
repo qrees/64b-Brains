@@ -29,23 +29,6 @@ void checkGlError(const char* op) {
     }
 }
 
-GLfloat vertexPos[3 * 3] = { //
-        0.0f,  0.5f, 0.0f,   //
-       -0.5f, -0.5f, 0.0f,   //
-        0.5f, -0.5f, 0.0f    //
-    };
-GLfloat colors[4 * 4] = {       //
-        1.0f, 0.0f, 0.0f, 1.0f, //
-        0.0f, 1.0f, 0.0f, 1.0f, //
-        0.0f, 0.0f, 1.0f, 1.0f, //
-        1.0f, 1.0f, 1.0f, 1.0f  //
-    };
-GLfloat colorsRGB[3 * 3] = {       //
-        1.0f, 0.0f, 0.0f, //
-        0.0f, 1.0f, 0.0f, //
-        1.0f, 1.0f, 1.0f, //
-    };
-
 AScene scene;
 
 bool setupGraphics(int w, int h) {
@@ -53,18 +36,22 @@ bool setupGraphics(int w, int h) {
     printGLString("Vendor", GL_VENDOR);
     printGLString("Renderer", GL_RENDERER);
     printGLString("Extensions", GL_EXTENSIONS);
-
+    
     LOGI("setupGraphics(%d, %d)", w, h);
     glViewport(0, 0, w, h);
     checkGlError("glViewport");
-    scene = 0;
+    scene = 0; // Reset old scene in case it was already created
     scene = new MainScene();
     return true;
 }
 
-
 void renderFrame() {
-    scene->renderFrame();
+    //scene->renderFrame();
+    scene->_hit_check();
+}
+
+void touchEvent(int x, int y){
+    LOGI("Touch event at %d %d", x, y);
 }
 
 char * load_asset(const char * source) {
@@ -107,6 +94,29 @@ unsigned char * load_raw(const char * source) {
     return buf;
 }
 
+u_char * load_bitmap(const char * source) {
+    
+    /*
+     * Get java method id to load bitmap and call this method
+     */
+    jstring jstr = _env->NewStringUTF(source);
+    jclass jclass = _env->FindClass("info/qrees/android/brains/GL2JNILib");
+    jmethodID messageMe = _env->GetStaticMethodID(jclass, "loadBitmap", "(Ljava/lang/String;)[B");
+    jbyteArray result = (jbyteArray)_env->CallStaticObjectMethod(jclass, messageMe, jstr);
+    if(result == NULL)
+        return 0;
+    /*
+     * Copy bitmap data from java array and release that array
+     */
+    jsize length = _env->GetArrayLength(result);
+    unsigned char * buf = new unsigned char[length];
+    signed char * copy = _env->GetByteArrayElements(result, 0);
+    for(int i =0; i < length; i++)
+        buf[i] = copy[i];
+    _env->ReleaseByteArrayElements(result, copy, 0);
+    return buf;
+}
+
 extern "C" {
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_init(
         JNIEnv * env, jobject obj, jint width, jint height);
@@ -116,8 +126,9 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
         JNIEnv * env, jobject obj, jstring javaString, jint type);
 JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
         JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
+        JNIEnv * env, jobject obj, jint width, jint height);
 }
-;
 
 jint throwJNI(const char *message) {
     jclass exClass;
@@ -154,4 +165,10 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
         JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader) {
     _env = env;
     return 0;
+}
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
+        JNIEnv * env, jobject obj, jint width, jint height) {
+    _env = env;
+    touchEvent(width, height);
 }

@@ -72,25 +72,32 @@ public class GL2JNILib {
         short mult;
         switch (config) {
         case ALPHA_8:
+            Log.d("Loaded 8 bit image ALPHA_8");
             mult = 1;
             break;
         case ARGB_4444:
+            Log.d("Loaded 16 bit image ARGB_4444");
             mult = 2;
             break;
         case ARGB_8888:
+            Log.d("Loaded 32 bit image ARGB_8888");
             mult = 4;
             break;
         case RGB_565:
+            Log.d("Loaded 16 bit image RGB_565");
             mult = 2;
             break;
         default:
+            Log.d("Error: unknown file format");
             return null;
         }
-
+        Log.d("img %dx%d", bitmap.getWidth(), bitmap.getHeight());
+        
         ByteBuffer dst = ByteBuffer.allocate(bitmap.getWidth()
                 * bitmap.getHeight() * mult);
         dst.order(ByteOrder.nativeOrder());
         bitmap.copyPixelsToBuffer(dst);
+        Log.d("img data size %d", dst.capacity());
         return dst.array();
     }
 
@@ -111,4 +118,6 @@ public class GL2JNILib {
     public static native int loadShader(String source, int type);
 
     public static native int createProgram(int vertexShader, int fragmentShader);
+
+    public static native void touch(int x, int y);
 }

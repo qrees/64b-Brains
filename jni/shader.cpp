@@ -45,7 +45,7 @@ char * Shader::getInfo() {
 }
 
 bool Shader::isValid() {
-    return _id != 0 & valid;
+    return (_id != 0) & valid;
 }
 
 GLuint Shader::_compile() {

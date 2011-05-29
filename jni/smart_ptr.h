@@ -38,7 +38,6 @@ public:
 
     template<class OTHER>
     AutoPtr(const AutoPtr<OTHER>& other) {
-        T* foo = other;
         m_ptr = (T*)(other.m_ptr);
         addRef();
     }
@@ -89,6 +88,7 @@ public:
         return &m_ptr;
     }
 */
+    T* m_ptr;
 private:
     void addRef() {
         if (m_ptr){
@@ -105,7 +105,6 @@ private:
         }
     }
 
-    T* m_ptr;
 };
 
 #endif /* SMART_PTR_H_ */

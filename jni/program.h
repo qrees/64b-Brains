@@ -32,6 +32,8 @@ public:
     void bindAttribute(GLuint location, GLuint size, GLenum type, GLuint stride, const void *data);
     void bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum type, GLuint stride, const void * offset);
     void bindColor(const void *data);
+    void bindSolidColor(GLint*color);
+    void bindSolidColor(GLfloat*color);
     void bindColorRGB(const void *data);
     void bindPosition(const void *data);
     void bindPosition(GLuint buf_id);
@@ -45,6 +47,7 @@ public:
     void activateAttribute(const char *name, GLuint location);
     void activateUniform(const char *name, GLuint location);
     void activateAttributes();
+    void activateSolidColor();
     void activateColor();
     void activatePosition();
     void activateTexture();
@@ -59,7 +62,8 @@ private:
     GLuint _id;
     GLuint attribs[8];
     GLuint uniforms[8];
-    GLuint _view_matrix;
+    GLint _view_matrix;
+    GLint _u_solid_color;
     char * _log;
 };
 typedef AutoPtr<Program> AProgram;

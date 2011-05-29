@@ -12,6 +12,7 @@
 
 jint throwJNI(const char *message);
 char * load_asset(const char * source);
-unsigned char * load_raw(const char * source);
+u_char * load_raw(const char * source);
+u_char * load_bitmap(const char * source);
 
 #endif /* MY_JNI_H_ */

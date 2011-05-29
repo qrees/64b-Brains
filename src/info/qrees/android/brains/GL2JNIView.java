@@ -45,19 +45,14 @@ class GL2JNIView extends GLSurfaceView {
                              new ConfigChooser(8, 8, 8, 8, depth, stencil) :
                              new ConfigChooser(5, 6, 5, 0, depth, stencil) );
         
-        Renderer renderer = new Renderer();
+        _renderer = new Renderer();
 
-	    setRenderer(renderer);
+	    setRenderer(_renderer);
     }
-
-    private String readFile(String name) throws IOException{
-    	StringBuffer sbuffer = new StringBuffer();
-		InputStream stream = _assets.open(name);
-		byte[] buffer = new byte[1024];
-		int n;
-		while ((n = stream.read(buffer, 0, 1024)) != -1)
-			sbuffer.append(new String(buffer, 0, n));
-		return sbuffer.toString();
+    
+    public boolean onTouchEvent (MotionEvent event){
+        _renderer.onTouch(Math.round(event.getX()), Math.round(event.getY()));
+        return true;
     }
     
     private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
@@ -182,23 +177,6 @@ class GL2JNIView extends GLSurfaceView {
     }
 
     private static class Renderer implements GLSurfaceView.Renderer {
-    	String fragmentShader;
-    	String vertexShader;
-    	
-        public void setShader(String shader, int type) {
-			switch (type) {
-			case GL2JNILib.GL_FRAGMENT_SHADER:
-				fragmentShader = shader;
-				break;
-			case GL2JNILib.GL_VERTEX_SHADER:
-				vertexShader = shader;
-				break;
-
-			default:
-				break;
-			}
-		}
-
 		public void onDrawFrame(GL10 gl) {
             GL2JNILib.step();
         }
@@ -210,11 +188,11 @@ class GL2JNIView extends GLSurfaceView {
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             //loadShaders();
         }
-
-        private void loadShaders() {
-			int vshaderID = GL2JNILib.loadShader(vertexShader, GL2JNILib.GL_VERTEX_SHADER);
-			int fshaderID = GL2JNILib.loadShader(fragmentShader, GL2JNILib.GL_FRAGMENT_SHADER);
-			GL2JNILib.createProgram(vshaderID, fshaderID);
-    	}
+        
+        public void onTouch(int x, int y){
+            GL2JNILib.touch(x, y);
+        }
     }
+    
+    private Renderer _renderer;
 }

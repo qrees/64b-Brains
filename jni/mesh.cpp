@@ -11,20 +11,23 @@ Mesh::Mesh() {
     init();
 }
 Mesh::~Mesh(){
-    LOGI("Deleting buffers:");
-    for(int i = 0; i < BUF_COUNT; i++)
-        LOGI(" %d = %d", i, vboIds[i]);
+//    LOGI("Deleting buffers:");
+//    for(int i = 0; i < BUF_COUNT; i++)
+//        LOGI(" %d = %d", i, vboIds[i]);
     glDeleteBuffers(BUF_COUNT, vboIds);
 }
 void Mesh::init() {
     glGenBuffers(BUF_COUNT, vboIds);
-    LOGI("Buffers:");
-    for(int i = 0; i < BUF_COUNT; i++)
-        LOGI(" %d = %d", i, vboIds[i]);
+//    LOGI("Buffers:");
+//    for(int i = 0; i < BUF_COUNT; i++)
+//        LOGI(" %d = %d", i, vboIds[i]);
     has_color = has_normal = has_texture = false;
+    _solid_color = 0;
+    _hit_color = 0;
+    _hitable = false;
 }
 void Mesh::setProgram(AProgram program) {
-    this->program = program;
+    this->_program = program;
 }
 void Mesh::setVertices(GLfloat *buf, GLint num) {
     LOGI("Set position");
@@ -52,21 +55,56 @@ void Mesh::setTexture(ATexture tex){
     _texture = tex;
 }
 
+GLint Mesh::_hit_color_seq = 200; // 0 is color for empty space
+void Mesh::setHitable(bool hitable){
+    _hitable = hitable;
+    if(_hitable){
+        if(_hit_color == 0){
+            _hit_color = new GLfloat[4];
+            _hit_color[0] = (float)(_hit_color_seq & ALPHA_BYTE) / 255.0f;
+            _hit_color[1] = (float)((_hit_color_seq & BLUE_BYTE) >> 8) / 255.0f;
+            _hit_color[2] = (float)((_hit_color_seq & GREEN_BYTE) >> 16) / 255.0f;
+            _hit_color[3] = 1.0f;
+            LOGI("_hit_color = %f %f %f %f", _hit_color[0], _hit_color[1], _hit_color[2], _hit_color[3]);
+            _hit_color_seq++;
+        }
+    }
+}
+
 void Mesh::draw() {
-    assert(program->isValid(), "You need to set program for Mesh");
-    program->activate();
-    program->bindPosition(vboIds[VERTEX_BUF]);
+    assert(_program->isValid(), "You need to set program for Mesh");
+    _program->activate();
+    _program->bindPosition(vboIds[VERTEX_BUF]);
     if(has_normal)
-        program->bindNormal(vboIds[NORMAL_BUF]);
+        _program->bindNormal(vboIds[NORMAL_BUF]);
     if(has_texture && bool(_texture))
-        program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
+        _program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
     if(has_color)
-        program->bindColor(vboIds[COLOR_BUF]);
+        _program->bindColor(vboIds[COLOR_BUF]);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
     checkGlError("glDrawElements");
 }
+
+void Mesh::_draw_hit_check(ARenderVisitor visitor){
+    AHitVisitor hit_visitor = static_cast<HitVisitor*>(visitor.m_ptr);
+    AProgram program = hit_visitor->getHitProgram();
+    program->bindPosition(vboIds[VERTEX_BUF]);
+    GLfloat* hit_color = new GLfloat[4];
+    hit_color[0] = 1.0f;
+    hit_color[1] = 1.0f;
+    hit_color[2] = 0.0f;
+    hit_color[3] = 0.0f;
+    program->bindSolidColor(_hit_color);
+    //program->bindSolidColor(hit_color);
+    delete hit_color;
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
+    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+    checkGlError("glDrawElements");    
+}
+
 void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
     LOGI("SetBuffer %d, %d", size, vboIds[sel]);
     assert((sel >= 0) && (sel < BUF_COUNT), "this buffer does not exist");
@@ -79,10 +117,17 @@ void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
 void Group::addObject(AMesh mesh){
     _objects.push_back(mesh);
 }
+
 void Group::draw(){
     list<AMesh>::iterator it;
     for(it = _objects.begin(); it != _objects.end(); it++)
         (*it)->draw();
+}
+
+void Group::_draw_hit_check(ARenderVisitor visitor){
+    list<AMesh>::iterator it;
+    for(it = _objects.begin(); it != _objects.end(); it++)
+        (*it)->_draw_hit_check(visitor);
 }
 
 GLfloat rec_vertices[4*3] = { 0.0f, 1.0f, 1.0f, // 0, Top Left

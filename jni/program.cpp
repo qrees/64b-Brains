@@ -26,6 +26,10 @@ void Program::activateAttributes(){
     activateTextureSampler();
     _view_matrix = glGetUniformLocation(getName(), "u_view_matrix");
 }
+void Program::activateSolidColor(){
+    _u_solid_color = glGetUniformLocation(getName(), "u_solid_color");
+    LOGI("%p: SolidColor uniform set to %d", this, _u_solid_color);
+}
 void Program::activateColor(){
     activateAttribute("a_color", LOC_COLOR);
 }
@@ -40,11 +44,11 @@ void Program::activateTextureSampler(){
 }
 void Program::activateAttribute(const char *name, GLuint location){
     attribs[location] = glGetAttribLocation(getName(), name);
-    LOGI("New attribute %d at location %d (%s)", attribs[location], location, name);
+    //LOGI("New attribute %d at location %d (%s)", attribs[location], location, name);
 }
 void Program::activateUniform(const char *name, GLuint location){
     uniforms[location] = glGetUniformLocation(getName(), name);
-    LOGI("New uniform %d at location %d (%s)", uniforms[location], location, name);
+    //LOGI("New uniform %d at location %d (%s)", uniforms[location], location, name);
 }
 void Program::activate(){
     glUseProgram(getName());
@@ -81,12 +85,21 @@ void Program::bindTexture(GLuint buf_id, GLuint tex_id){
 void Program::bindColor(GLuint buf_id){
     bindBuffer(COLOR_ATTRIB, buf_id, 4, GL_FLOAT, 0, 0);
 }
+void Program::bindSolidColor(GLfloat*color){
+    assert(_u_solid_color != -1, "bindSolidColor called with _u_solid_color not set");
+    glUniform4fv(_u_solid_color, 1, color);
+}
+void Program::bindSolidColor(GLint*color){
+    LOGI("%p: bindSolidColor %d", this, _u_solid_color);
+    //assert(_u_solid_color != -1, "bindSolidColor called with _u_solid_color not set");
+    glUniform4iv(_u_solid_color, 1, color);
+}
 void Program::bindAttribute(GLuint location, GLuint size, GLenum type, GLuint stride, const void *data){
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, data);
 }
 void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum type, GLuint stride, const void * offset){
-    LOGI("Bind buffer id %d at location %d", buf_id, location);
+    LOGI("binding buffer %d", buf_id);
     glBindBuffer(GL_ARRAY_BUFFER, buf_id);
     checkGlError("glBindBuffer");
     glEnableVertexAttribArray(location);

@@ -14,3 +14,4 @@ using namespace std;
 #include "texture.h"
 #include "mesh.h"
 #include "scene.h"
+#include "render_visitor.h"
