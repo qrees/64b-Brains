@@ -12,14 +12,16 @@
 #include "render_visitor.h"
 
 class Scene: public RefCntObject {
-private:
-    AProgram _hit_program;
 protected:
+    AProgram _hit_program;
+    AFramebuffer _frabuffer;
+    GLuint _w;
+    GLuint _h;
     AEntity _root;
     AProgram _program;
     GLMatrix _view_matrix;
 public:
-    Scene();
+    Scene(GLuint w=0, GLuint h=0);
     virtual ~Scene();
     void setRoot(AEntity root);
     void setProgram(AProgram program);
@@ -39,7 +41,7 @@ private:
     hash_map<string, AEntity> _object_map;
     
 public:
-    MainScene();
+    MainScene(GLuint w=0, GLuint h=0);
     void renderFrame();
 };
 

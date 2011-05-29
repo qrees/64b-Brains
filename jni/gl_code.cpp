@@ -41,7 +41,7 @@ bool setupGraphics(int w, int h) {
     glViewport(0, 0, w, h);
     checkGlError("glViewport");
     scene = 0; // Reset old scene in case it was already created
-    scene = new MainScene();
+    scene = new MainScene(w, h);
     return true;
 }
 

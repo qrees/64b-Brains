@@ -9,6 +9,7 @@ using namespace std;
 #include "log.h"
 #include "smart_ptr.h"
 #include "matrix.h"
+#include "framebuffer.h"
 #include "shader.h"
 #include "program.h"
 #include "texture.h"

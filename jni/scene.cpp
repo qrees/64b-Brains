@@ -7,8 +7,9 @@
 
 #include "engine.h"
 
-Scene::Scene(){
-    
+Scene::Scene(GLuint w, GLuint h){
+    _w = w;
+    _h = h;
 }
 
 Scene::~Scene(){
@@ -46,7 +47,7 @@ void Scene::renderFrame(){
     LOGI("Scene: called stub renderFrame method.");
 }
 
-MainScene::MainScene():Scene(){
+MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
     _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
     _program = new Program();
@@ -67,6 +68,9 @@ MainScene::MainScene():Scene(){
     _texture_map["buttons"] = tex_buttons;
     b_mesh->setTexture(tex_buttons);
     b_mesh->setHitable(true);
+    
+    _frabuffer = new Framebuffer();
+    _frabuffer->setFormat(_w, _h);
     
     _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f);
 }
