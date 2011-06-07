@@ -41,6 +41,7 @@ public:
     void bindTexture(GLuint buf_id, GLuint tex_id);
     void bindColor(GLuint buf_id);
     void bindViewMatrix(GLMatrix &matrix);
+    void bindModelMatrix(GLMatrix &matrix);
     /*
      * Atributes activation, link string attributes names with OpenGL names (GLuint).
      */
@@ -63,6 +64,7 @@ private:
     GLuint attribs[8];
     GLuint uniforms[8];
     GLint _view_matrix;
+    GLint _model_matrix;
     GLint _u_solid_color;
     char * _log;
 };

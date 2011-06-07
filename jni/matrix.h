@@ -11,8 +11,6 @@
 #include <math.h>
 #include <vector>
 
-#define PI 3.1415926535897932384626433832795f
-
 template<typename T> class Matrix:public RefCntObject {
     typedef AutoPtr< Matrix<T> > AMatrix;
 private:
@@ -56,11 +54,13 @@ public:
         return true;
     }
     
+    T& operator[] (const int i){
+        return _matrix[i];
+    }
+    
     const Matrix<T> operator* (const Matrix<T> &other){
-        LOGI("Matrix: operator* ");
         Matrix<T> dest = *this;
-        dest._multiply(&other);
-        LOGI("Matrix: end operator* ");
+        dest._multiply(other);
         return dest;
     }
 
@@ -88,6 +88,15 @@ public:
         return *this;
     }
 
+    Matrix<T>& position(T tx, T ty, T tz) {
+        identity();
+        _matrix[3 * 4 + 0] = (tx);
+        _matrix[3 * 4 + 1] = (ty);
+        _matrix[3 * 4 + 2] = (tz);
+        _matrix[3 * 4 + 3] = 1;
+        return *this;
+    }
+    
     Matrix<T>& translate(T tx, T ty, T tz) {
         _matrix[3 * 4 + 0] += (_matrix[0 * 4 + 0] * tx + _matrix[1 * 4 + 0] * ty + _matrix[2 * 4 + 0] * tz);
         _matrix[3 * 4 + 1] += (_matrix[0 * 4 + 1] * tx + _matrix[1 * 4 + 1] * ty + _matrix[2 * 4 + 1] * tz);
@@ -97,8 +106,8 @@ public:
     }
 
     Matrix<T>& rotation(T angle, T x, T y, T z){
-        T sinAngle = sinf(angle * PI / 180.0f);
-        T cosAngle = cosf(angle * PI / 180.0f);
+        T sinAngle = sinf(toRadians(angle));
+        T cosAngle = cosf(toRadians(angle));
         T oneMinusCos = 1.0f - cosAngle;
         T mag = sqrtf(x * x + y * y + z * z);
         
@@ -145,7 +154,15 @@ public:
         _multiply(rot_mat);
         return *this;
     }
-
+    /*
+    Matrix<T>& rotate(Quaternion<T>&  quat) {
+        Matrix<T> rot_mat;
+        quat.toMatrix(rot_mat);
+        //Matrix<T> rot_mat = Matrix<T>().rotation(angle, x, y,z);
+        _multiply(rot_mat);
+        return *this;
+    }
+    */
     Matrix<T>& frustum(T left, T right, T bottom, T top, T nearZ, T farZ) {
         T deltaX = right - left;
         T deltaY = top - bottom;
@@ -173,7 +190,7 @@ public:
     Matrix<T>& perspective(T fovy, T aspect, T nearZ, T farZ) {
         T frustumW, frustumH;
 
-        frustumH = (T) tanf(fovy / 360.0 * PI) * nearZ;
+        frustumH = (T) tanf(toRadians(fovy)/2.0f) * nearZ;
         frustumW = frustumH * aspect;
 
         frustum(-frustumW, frustumW, -frustumH, frustumH, nearZ, farZ);
@@ -199,11 +216,10 @@ public:
         _matrix[3 * 4 + 2] = -(nearZ + farZ) / deltaZ;
         return *this;
     }
-
-    void _multiply(Matrix<T> &matB) {
+    
+    void _multiply(const Matrix<T> &matB) {
         int i;
         T*tmp = new T[16];
-        
         for (i = 0; i < 4; i++) {
             tmp[i * 4 + 0] = (_matrix[i * 4 + 0] * matB._matrix[0 * 4 + 0])
                             + (_matrix[i * 4 + 1] * matB._matrix[1 * 4 + 0])

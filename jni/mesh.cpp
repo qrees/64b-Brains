@@ -7,50 +7,140 @@
 
 #include "engine.h"
 
+/*
+ * Node class implementation
+ */
+Node::Node(){
+    _name = "";
+    init();
+}
+
+Node::Node(string name){
+    _name = name;
+    init();
+}
+
+void Node::init(){
+    _matrix.identity();
+    _local_matrix.identity();
+    _parent = 0;
+    _valid = true;
+    _rotation = GLQuaternion::idt();
+}
+
+void Node::setParent(AutoPtr<Node> parent){
+    _parent = parent;
+    _valid = false;
+}
+
+void Node::setOrientation(GLMatrix matrix){
+    _local_matrix = matrix;
+    _valid = false;
+}
+
+GLMatrix& Node::getLocalMatrix(){
+    return _local_matrix;
+}
+
+
+void Node::update(){
+    _rotation.toMatrix(_local_matrix);
+    //GLMatrix rot_matrix;
+    //_rotation.toMatrix(rot_matrix);
+    //_local_matrix.position(_x, _y, _z);
+    //_local_matrix._multiply(rot_matrix);
+    _local_matrix.translate(_x, _y, _z);
+    
+    if(_parent){
+        GLMatrix parent_matrix = _parent->getMatrix();
+        _matrix = parent_matrix * _local_matrix;
+    }else{
+        _matrix = _local_matrix;
+    }
+    _valid = true;
+}
+
+GLMatrix& Node::getMatrix(){
+    //if(not _valid)
+        update();
+    return _matrix;
+}
+
+void Node::setLocation(GLfloat x, GLfloat y, GLfloat z){
+    _x = x;
+    _y = y;
+    _z = z;
+    _valid = false;
+}
+
+void Node::setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle){
+    _rotation.setFromAxis(x, y, z, angle);
+    _valid = false;
+}
+
+
+/*
+ * Entity class implementation
+ */
+Entity::Entity(){
+    _location = new Node();
+}
+
+void Entity::setLocation(ANode location){
+    _location = location;
+}
+
+
+/*
+ * Mesh class implementation
+ */
 Mesh::Mesh() {
     init();
 }
+
 Mesh::~Mesh(){
-//    LOGI("Deleting buffers:");
-//    for(int i = 0; i < BUF_COUNT; i++)
-//        LOGI(" %d = %d", i, vboIds[i]);
     glDeleteBuffers(BUF_COUNT, vboIds);
 }
+
 void Mesh::init() {
     glGenBuffers(BUF_COUNT, vboIds);
-//    LOGI("Buffers:");
-//    for(int i = 0; i < BUF_COUNT; i++)
-//        LOGI(" %d = %d", i, vboIds[i]);
     has_color = has_normal = has_texture = false;
     _solid_color = 0;
     _hit_color = 0;
     _hitable = false;
 }
+
 void Mesh::setProgram(AProgram program) {
     this->_program = program;
 }
+
 void Mesh::setVertices(GLfloat *buf, GLint num) {
     LOGI("Set position");
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 3 * num, VERTEX_BUF);
 }
+
 void Mesh::setNormal(GLfloat *buf, GLint num) {
     has_normal = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 3 * num, NORMAL_BUF);
 }
+
 void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
     has_texture = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 2 * num, TEXTURE_BUF);
 }
+
 void Mesh::setColor(GLfloat *buf, GLint num) {
     has_color = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 4 * num, COLOR_BUF);
 }
+
 void Mesh::setIndexes(GLushort *buf, GLint num) {
     numIndices = num;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * num, buf,
             GL_STATIC_DRAW);
 }
+
 void Mesh::setTexture(ATexture tex){
     _texture = tex;
 }
@@ -81,7 +171,8 @@ void Mesh::draw() {
         _program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
     if(has_color)
         _program->bindColor(vboIds[COLOR_BUF]);
-
+    
+    _program->bindModelMatrix(_location->getMatrix());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
     checkGlError("glDrawElements");
@@ -91,14 +182,8 @@ void Mesh::_draw_hit_check(ARenderVisitor visitor){
     AHitVisitor hit_visitor = static_cast<HitVisitor*>(visitor.m_ptr);
     AProgram program = hit_visitor->getHitProgram();
     program->bindPosition(vboIds[VERTEX_BUF]);
-    GLfloat* hit_color = new GLfloat[4];
-    hit_color[0] = 1.0f;
-    hit_color[1] = 1.0f;
-    hit_color[2] = 0.0f;
-    hit_color[3] = 0.0f;
     program->bindSolidColor(_hit_color);
-    //program->bindSolidColor(hit_color);
-    delete hit_color;
+    program->bindModelMatrix(_location->getMatrix());
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
@@ -114,6 +199,9 @@ void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
     checkGlError("glBufferData");
 }
 
+/*
+ * Group class implementation
+ */
 void Group::addObject(AMesh mesh){
     _objects.push_back(mesh);
 }
@@ -130,6 +218,10 @@ void Group::_draw_hit_check(ARenderVisitor visitor){
         (*it)->_draw_hit_check(visitor);
 }
 
+
+/*
+ * Rectangle class implementation
+ */
 GLfloat rec_vertices[4*3] = { 0.0f, 1.0f, 1.0f, // 0, Top Left
         0.0f, 0.0f, 1.0f, // 1, Bottom Left
         1.0f, 0.0f, 1.0f, // 2, Bottom Right

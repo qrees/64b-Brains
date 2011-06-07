@@ -25,6 +25,7 @@ void Program::activateAttributes(){
     activateTexture();
     activateTextureSampler();
     _view_matrix = glGetUniformLocation(getName(), "u_view_matrix");
+    _model_matrix = glGetUniformLocation(getName(), "u_model_matrix");
 }
 void Program::activateSolidColor(){
     _u_solid_color = glGetUniformLocation(getName(), "u_solid_color");
@@ -56,6 +57,10 @@ void Program::activate(){
 
 void Program::bindViewMatrix(GLMatrix &matrix){
     glUniformMatrix4fv(_view_matrix, 1, GL_FALSE, matrix.data());
+    checkGlError("glUniformMatrix4fv");
+}
+void Program::bindModelMatrix(GLMatrix &matrix){
+    glUniformMatrix4fv(_model_matrix, 1, GL_FALSE, matrix.data());
     checkGlError("glUniformMatrix4fv");
 }
 void Program::bindColor(const void *data){
@@ -99,7 +104,7 @@ void Program::bindAttribute(GLuint location, GLuint size, GLenum type, GLuint st
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, data);
 }
 void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum type, GLuint stride, const void * offset){
-    LOGI("binding buffer %d", buf_id);
+    //LOGI("binding buffer %d", buf_id);
     glBindBuffer(GL_ARRAY_BUFFER, buf_id);
     checkGlError("glBindBuffer");
     glEnableVertexAttribArray(location);

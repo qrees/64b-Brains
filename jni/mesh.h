@@ -8,18 +8,20 @@
 #ifndef MESH_H_
 #define MESH_H_
 
-
-class Node;
-typedef AutoPtr<Node> ANode;
 class RenderVisitor;
 typedef AutoPtr<RenderVisitor> ARenderVisitor;
 
 class Node:public RefCntObject {
 private:
-    ANode _parent;
+    AutoPtr<Node> _parent;
     GLMatrix _matrix;
     string _name;
     GLMatrix _local_matrix;
+    GLfloat _x, _y, _z; // Relative transposition
+    GLQuaternion _rotation;
+    GLQuaternion _derived_rotation;
+    GLfloat _angle, _rx, _ry, _rz;
+    bool _valid;
 public:
     enum TransformSpace {
         /// Transform is relative to the space of the parent node
@@ -28,12 +30,20 @@ public:
         TS_WORLD
     };
     Node();
-    ~Node();
-    void addChild(ANode node);
+    Node(string name);
+    void init();
+    ~Node(){};
+    void addChild(AutoPtr<Node> node);
     void setOrientation(GLMatrix matrix);
-    void setParent(ANode);
-    void getMatrix();
+    void setParent(AutoPtr<Node>);
+    void update();
+    void setLocation(GLfloat x, GLfloat y, GLfloat z);
+    void setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle);
+    GLMatrix& getMatrix();
+    GLMatrix& getLocalMatrix();
 };
+
+typedef AutoPtr<Node> ANode;
 
 /*!
  * Entity
@@ -41,10 +51,14 @@ public:
  * Base class for all objects in the scene. 
  */
 class Entity:public RefCntObject {
+protected:
+    ANode _location;
 public:
+    Entity();
     virtual ~Entity(){};
     virtual void draw(){};
     virtual void _draw_hit_check(ARenderVisitor){};
+    virtual void setLocation(ANode location);
 };
 typedef AutoPtr<Entity> AEntity;
 
@@ -85,6 +99,10 @@ public:
     Mesh();
     ~Mesh();
     void init();
+    
+    /*
+     * Shader program to be used by Mesh in "draw" method.
+     */
     void setProgram(AProgram program);
     void setVertices(GLfloat *buf, GLint num);
     void setNormal(GLfloat *buf, GLint num);
@@ -92,7 +110,16 @@ public:
     void setTexture(ATexture tex);
     void setColor(GLfloat *buf, GLint num);
     void setIndexes(GLushort *buf, GLint num);
+    
+    /*
+     * setHitable(true) will allow the mesh to receive touch events.
+     */
     void setHitable(bool );
+    
+    /*
+     * Draw the mesh on current framebuffer.
+     * Requires setting at least vertices with setVertices earlier.
+     */
     void draw();
     void _draw_hit_check(ARenderVisitor);
 private:

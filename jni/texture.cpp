@@ -37,6 +37,15 @@ void Texture::load(GLuint width, GLuint height, u_char * data){
     checkGlError("glTexImage2D");
 }
 
+void Texture::empty(GLuint width, GLuint height){
+    if(_data)
+        delete[] _data;
+    _data = new u_char[width*height*4];
+    memset(_data, 0, width*height*4);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _data);
+    checkGlError("glTexImage2D");
+}
+
 void Texture::load_pkm(const u_char * data){
     u_int width = 0;
     u_int height = 0;

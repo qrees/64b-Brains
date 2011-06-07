@@ -13,8 +13,9 @@
 
 class Scene: public RefCntObject {
 protected:
+    ATexture _pixels;
     AProgram _hit_program;
-    AFramebuffer _frabuffer;
+    AFramebuffer _framebuffer;
     GLuint _w;
     GLuint _h;
     AEntity _root;
@@ -29,6 +30,7 @@ public:
     ATexture loadTexture(const char * source);
     AShader loadShader(const char * source, GLuint type);
     virtual void renderFrame();
+    void prepareForHit();
     AEntity _hit_check();
 };
 typedef AutoPtr<Scene> AScene;
@@ -39,7 +41,8 @@ private:
     AShader _fragment_shader;
     hash_map<string, ATexture> _texture_map;
     hash_map<string, AEntity> _object_map;
-    
+    ANode b_location;
+    ANode root_location;
 public:
     MainScene(GLuint w=0, GLuint h=0);
     void renderFrame();

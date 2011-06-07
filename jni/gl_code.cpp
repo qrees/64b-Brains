@@ -46,8 +46,8 @@ bool setupGraphics(int w, int h) {
 }
 
 void renderFrame() {
-    //scene->renderFrame();
-    scene->_hit_check();
+    scene->renderFrame();
+    //scene->_hit_check();
 }
 
 void touchEvent(int x, int y){

@@ -2,6 +2,7 @@ attribute vec4 a_position;
 attribute vec4 a_color;
 attribute vec2 a_texture;
 uniform mat4 u_view_matrix;
+uniform mat4 u_model_matrix;
 
 varying vec4 v_color;
 varying vec2 v_texture;
@@ -9,5 +10,5 @@ varying vec2 v_texture;
 void main() {
     v_color = a_color;
     v_texture = a_texture;
-    gl_Position = u_view_matrix * a_position;
+    gl_Position = u_view_matrix * u_model_matrix * a_position;
 }
