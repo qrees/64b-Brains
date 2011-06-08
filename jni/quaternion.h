@@ -13,7 +13,7 @@
 #define NORMALIZATION_TOLERANCE 0.00001f
 
 template <typename T> class Quaternion {
-private:
+protected:
     T x;
     T y;
     T z;
@@ -420,6 +420,7 @@ public:
         w *= scalar;
         return *this;
     }
+    friend class Node;
 };
 
 typedef Quaternion<GLfloat> GLQuaternion;

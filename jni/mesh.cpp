@@ -45,11 +45,9 @@ GLMatrix& Node::getLocalMatrix(){
 
 void Node::update(){
     _rotation.toMatrix(_local_matrix);
-    //GLMatrix rot_matrix;
-    //_rotation.toMatrix(rot_matrix);
-    //_local_matrix.position(_x, _y, _z);
-    //_local_matrix._multiply(rot_matrix);
-    _local_matrix.translate(_x, _y, _z);
+    GLMatrix loc_matrix;
+    loc_matrix.position(_x, _y, _z);
+    _local_matrix = loc_matrix * _local_matrix;
     
     if(_parent){
         GLMatrix parent_matrix = _parent->getMatrix();
@@ -61,7 +59,7 @@ void Node::update(){
 }
 
 GLMatrix& Node::getMatrix(){
-    //if(not _valid)
+    //if(not _valid) # TODO : changing location of parent should mark descendants as invalid
         update();
     return _matrix;
 }

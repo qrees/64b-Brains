@@ -221,25 +221,25 @@ public:
         int i;
         T*tmp = new T[16];
         for (i = 0; i < 4; i++) {
-            tmp[i * 4 + 0] = (_matrix[i * 4 + 0] * matB._matrix[0 * 4 + 0])
-                            + (_matrix[i * 4 + 1] * matB._matrix[1 * 4 + 0])
-                            + (_matrix[i * 4 + 2] * matB._matrix[2 * 4 + 0])
-                            + (_matrix[i * 4 + 3] * matB._matrix[3 * 4 + 0]);
+            tmp[i * 4 + 0] = (matB._matrix[i * 4 + 0] * this->_matrix[0 * 4 + 0])
+                            + (matB._matrix[i * 4 + 1] * this->_matrix[1 * 4 + 0])
+                            + (matB._matrix[i * 4 + 2] * this->_matrix[2 * 4 + 0])
+                            + (matB._matrix[i * 4 + 3] * this->_matrix[3 * 4 + 0]);
 
-            tmp[i * 4 + 1] = (_matrix[i * 4 + 0] * matB._matrix[0 * 4 + 1])
-                            + (_matrix[i * 4 + 1] * matB._matrix[1 * 4 + 1])
-                            + (_matrix[i * 4 + 2] * matB._matrix[2 * 4 + 1])
-                            + (_matrix[i * 4 + 3] * matB._matrix[3 * 4 + 1]);
+            tmp[i * 4 + 1] = (matB._matrix[i * 4 + 0] * this->_matrix[0 * 4 + 1])
+                            + (matB._matrix[i * 4 + 1] * this->_matrix[1 * 4 + 1])
+                            + (matB._matrix[i * 4 + 2] * this->_matrix[2 * 4 + 1])
+                            + (matB._matrix[i * 4 + 3] * this->_matrix[3 * 4 + 1]);
 
-            tmp[i * 4 + 2] = (_matrix[i * 4 + 0] * matB._matrix[0 * 4 + 2])
-                            + (_matrix[i * 4 + 1] * matB._matrix[1 * 4 + 2])
-                            + (_matrix[i * 4 + 2] * matB._matrix[2 * 4 + 2])
-                            + (_matrix[i * 4 + 3] * matB._matrix[3 * 4 + 2]);
+            tmp[i * 4 + 2] = (matB._matrix[i * 4 + 0] * this->_matrix[0 * 4 + 2])
+                            + (matB._matrix[i * 4 + 1] * this->_matrix[1 * 4 + 2])
+                            + (matB._matrix[i * 4 + 2] * this->_matrix[2 * 4 + 2])
+                            + (matB._matrix[i * 4 + 3] * this->_matrix[3 * 4 + 2]);
 
-            tmp[i * 4 + 3] = (_matrix[i * 4 + 0] * matB._matrix[0 * 4 + 3])
-                            + (_matrix[i * 4 + 1] * matB._matrix[1 * 4 + 3])
-                            + (_matrix[i * 4 + 2] * matB._matrix[2 * 4 + 3])
-                            + (_matrix[i * 4 + 3] * matB._matrix[3 * 4 + 3]);
+            tmp[i * 4 + 3] = (matB._matrix[i * 4 + 0] * this->_matrix[0 * 4 + 3])
+                            + (matB._matrix[i * 4 + 1] * this->_matrix[1 * 4 + 3])
+                            + (matB._matrix[i * 4 + 2] * this->_matrix[2 * 4 + 3])
+                            + (matB._matrix[i * 4 + 3] * this->_matrix[3 * 4 + 3]);
         }
         delete[] _matrix;
         _matrix = tmp;

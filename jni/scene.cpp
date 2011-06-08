@@ -80,7 +80,7 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     //a_mesh->setTexture(tex);
     
     
-    _view_matrix = GLMatrix().ortho(-2.0f, 2.0f, -2.0f, 2.0f, 1.0f, -1.0f);
+    _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f);
 }
 
 GLfloat timer = 0.0f; 
