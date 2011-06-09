@@ -1,4 +1,4 @@
-/*
+/**
  * mesh.h
  *
  *  Created on: 2011-05-16
@@ -14,11 +14,11 @@ typedef AutoPtr<RenderVisitor> ARenderVisitor;
 class Node:public RefCntObject {
 private:
     AutoPtr<Node> _parent;
-    GLMatrix _matrix;
+    GLMatrix _matrix;           // Absolute transform matrix, valid if 
     string _name;
-    GLMatrix _local_matrix;
-    GLfloat _x, _y, _z; // Relative transposition
-    GLQuaternion _rotation;
+    GLMatrix _local_matrix;     // Relative transform matrix
+    GLfloat _x, _y, _z;         // Relative transposition
+    GLQuaternion _rotation;     // Relative rotation
     GLQuaternion _derived_rotation;
     GLfloat _angle, _rx, _ry, _rz;
     bool _valid;

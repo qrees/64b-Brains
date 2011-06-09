@@ -44,10 +44,16 @@ GLMatrix& Node::getLocalMatrix(){
 
 
 void Node::update(){
+    /*
     _rotation.toMatrix(_local_matrix);
     GLMatrix loc_matrix;
     loc_matrix.position(_x, _y, _z);
     _local_matrix = loc_matrix * _local_matrix;
+    */
+    GLMatrix loc_matrix;
+    _rotation.toMatrix(loc_matrix);
+    _local_matrix.position(_x, _y, _z);
+    _local_matrix._multiply(loc_matrix);
     
     if(_parent){
         GLMatrix parent_matrix = _parent->getMatrix();

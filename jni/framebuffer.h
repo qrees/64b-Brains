@@ -18,7 +18,7 @@ public:
     void setDepthStencilBuffer(GLuint with, GLuint height);
     void setColorTextureBuffer(ATexture texture);
     virtual void activate();
-    bool isValid();
+    virtual bool isValid();
 private:
     GLuint _color_id;
     GLuint _depth_id;
@@ -28,8 +28,10 @@ private:
 
 class ScreenBuffer : public Framebuffer{
 public:
-    void activate(){glBindFramebuffer(GL_FRAMEBUFFER, 0);};
-    
+    void activate(){
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    };
+    bool isValid(){return true;}; ///< Screen buffer is always vliad.
 };
 
 typedef AutoPtr<Framebuffer> AFramebuffer;

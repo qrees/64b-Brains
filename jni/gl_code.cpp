@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <sys/time.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,7 @@
 
 
 JNIEnv * _env;
+timeval touch_time;
 
 void printGLString(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
@@ -32,6 +34,8 @@ void checkGlError(const char* op) {
 AScene scene;
 
 bool setupGraphics(int w, int h) {
+    gettimeofday(&touch_time, NULL);
+    
     printGLString("Version", GL_VERSION);
     printGLString("Vendor", GL_VENDOR);
     printGLString("Renderer", GL_RENDERER);
@@ -47,11 +51,23 @@ bool setupGraphics(int w, int h) {
 
 void renderFrame() {
     scene->renderFrame();
-    //scene->_hit_check();
+    //scene->hit_check();
 }
 
+
 void touchEvent(int x, int y){
-    LOGI("Touch event at %d %d", x, y);
+    timeval curr_time;
+    double diff;
+    double t1, t2;
+    gettimeofday(&curr_time, NULL);
+    t1 = (double)(curr_time.tv_sec) + (double)(curr_time.tv_usec)/1000000.0f;
+    t2 = (double)(touch_time.tv_sec) + (double)(touch_time.tv_usec)/1000000.0f;
+    diff = t1 - t2;
+    if(diff < 0.1f)
+        return;
+    LOGI("Touch delta %f - %f = %f", t1, t2, diff);
+    touch_time = curr_time;
+    scene->hit_check(x, y);
 }
 
 char * load_asset(const char * source) {

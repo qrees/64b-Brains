@@ -10,6 +10,8 @@
 Scene::Scene(GLuint w, GLuint h){
     _w = w;
     _h = h;
+    _screen_buffer = new ScreenBuffer;
+    _prepareForHit();
 }
 
 Scene::~Scene(){
@@ -62,13 +64,14 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     
     root_location = new Node();
     b_location = new Node();
-    AMesh b_mesh = new Rectangle();
+    b_mesh = new Rectangle();
     b_mesh->setProgram(_program);
     b_mesh->setLocation(b_location);
     group->addObject(b_mesh);
     ATexture tex_buttons = loadBitmap(1024, 666, "images/buttons.png");
     _texture_map["buttons"] = tex_buttons;
-    b_mesh->setTexture(tex_buttons);
+    //b_mesh->setTexture(tex_buttons);
+    b_mesh->setTexture(_pixels);
     b_mesh->setHitable(true);
 
     root_location->setLocation(0.5f, 0.5f, 0.0f);
@@ -78,17 +81,36 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     //group->addObject(a_mesh);
     //ATexture tex = loadTexture("images/background.pkm");
     //a_mesh->setTexture(tex);
-    
-    
-    _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f);
+    float ratio = (float)h/(float)w;
+    _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
 }
 
 GLfloat timer = 0.0f; 
+static float grey = 0.5f;
+
+void MainScene::prepareScene(){
+    timer += 1.0f;
+    root_location->setRotation(0, 0, 1, timer);
+}
 
 void MainScene::renderFrame(){
-    static float grey;
-    timer += 1.0f;
-    grey = 0.5f;
+    _framebuffer->activate();
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    checkGlError("glClearColor");
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    checkGlError("glClear");
+
+    prepareScene();
+    prepareViewMatrix();
+    
+    AHitVisitor visitor = new HitVisitor();
+    visitor->setHitProgram(_hit_program);
+    _hit_program->activate();
+    _hit_program->bindViewMatrix(_view_matrix);
+    _root->_draw_hit_check(visitor);
+    glFinish();
+    
+    _screen_buffer->activate();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glClearColor(grey, grey, grey, 1.0f);
@@ -96,13 +118,14 @@ void MainScene::renderFrame(){
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
     
-    root_location->setRotation(0, 0, 1, timer);
+    prepareScene();
+    prepareViewMatrix();
     _program->activate();
     _program->bindViewMatrix(_view_matrix);
     _root->draw();
 }
 
-void Scene::prepareForHit(){
+void Scene::_prepareForHit(){
     if(_hit_program)
         return;
     AShader _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
@@ -113,24 +136,41 @@ void Scene::prepareForHit(){
     
     _pixels = new Texture();
     _pixels->empty(_w, _h);
+    
     _framebuffer = new Framebuffer();
+    //_framebuffer->setColorBuffer(_w, _h);
     _framebuffer->setColorTextureBuffer(_pixels);
     _framebuffer->setDepthStencilBuffer(_w, _h);
     assert(_framebuffer->isValid(), "Framebuffer is not valid");
 }
 
-AEntity Scene::_hit_check(){
-    prepareForHit();
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+void Scene::_draw_hit_check(){
+    _framebuffer->activate();
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
     checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
+
+    prepareScene();
+    prepareViewMatrix();
     
     AHitVisitor visitor = new HitVisitor();
     visitor->setHitProgram(_hit_program);
     _hit_program->activate();
     _hit_program->bindViewMatrix(_view_matrix);
     _root->_draw_hit_check(visitor);
+}
+
+AEntity Scene::hit_check(int x, int y){
+    GLubyte data[4];
+    
+    _prepareForHit();
+
+    assert(_framebuffer->isValid(), "Framebuffer is not valid");
+    _draw_hit_check();
+    glFinish();
+    glReadPixels(x, y, 1, 1,  GL_RGBA, GL_UNSIGNED_BYTE, data);
+    checkGlError("glReadPixels");
+    LOGI("touch result %i %i %i %i", data[0], data[1], data[2], data[3]);
     return _root;
 }

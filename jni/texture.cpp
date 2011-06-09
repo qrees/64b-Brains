@@ -33,6 +33,7 @@ void Texture::load(GLuint width, GLuint height, u_char * data){
         delete[] _data;
     _data = new u_char[width*height*4];
     memcpy(_data, data, width*height*4);
+    glBindTexture(GL_TEXTURE_2D, _id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _data);
     checkGlError("glTexImage2D");
 }
@@ -42,7 +43,8 @@ void Texture::empty(GLuint width, GLuint height){
         delete[] _data;
     _data = new u_char[width*height*4];
     memset(_data, 0, width*height*4);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _data);
+    glBindTexture(GL_TEXTURE_2D, _id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     checkGlError("glTexImage2D");
 }
 

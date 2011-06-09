@@ -21,6 +21,9 @@ protected:
     AEntity _root;
     AProgram _program;
     GLMatrix _view_matrix;
+    AFramebuffer _screen_buffer;
+    void _prepareForHit();
+    void _draw_hit_check();
 public:
     Scene(GLuint w=0, GLuint h=0);
     virtual ~Scene();
@@ -30,8 +33,9 @@ public:
     ATexture loadTexture(const char * source);
     AShader loadShader(const char * source, GLuint type);
     virtual void renderFrame();
-    void prepareForHit();
-    AEntity _hit_check();
+    virtual void prepareViewMatrix(){};
+    virtual void prepareScene(){};
+    AEntity hit_check(int x, int y);
 };
 typedef AutoPtr<Scene> AScene;
 
@@ -43,9 +47,11 @@ private:
     hash_map<string, AEntity> _object_map;
     ANode b_location;
     ANode root_location;
+    AMesh b_mesh;
 public:
     MainScene(GLuint w=0, GLuint h=0);
     void renderFrame();
+    void prepareScene();
 };
 
 
