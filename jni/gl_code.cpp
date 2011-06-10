@@ -65,9 +65,9 @@ void touchEvent(int x, int y){
     diff = t1 - t2;
     if(diff < 0.1f)
         return;
-    LOGI("Touch delta %f - %f = %f", t1, t2, diff);
     touch_time = curr_time;
-    scene->hit_check(x, y);
+    AEvent event = new ClickEvent(x, y);
+    scene->addEvent(event);
 }
 
 char * load_asset(const char * source) {

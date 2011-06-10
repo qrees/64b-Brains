@@ -9,8 +9,20 @@
 #define SCENE_H_
 
 #include <hash_map>
+#include <queue>
 #include "render_visitor.h"
 
+class Event;
+typedef AutoPtr<Event> AEvent;
+
+
+/** Scene class
+ * 
+ * Class that hold information about current scene state, consisting of:
+ * renderable objects (#_root), shader programs (#_program), camera position (#_view_matrix).
+ * 
+ * This class also handles processing of various events (like clicks), and redering.
+ */
 class Scene: public RefCntObject {
 protected:
     ATexture _pixels;
@@ -22,8 +34,10 @@ protected:
     AProgram _program;
     GLMatrix _view_matrix;
     AFramebuffer _screen_buffer;
+    queue<AEvent> _events;
     void _prepareForHit();
     void _draw_hit_check();
+    void _process_events();
 public:
     Scene(GLuint w=0, GLuint h=0);
     virtual ~Scene();
@@ -35,9 +49,21 @@ public:
     virtual void renderFrame();
     virtual void prepareViewMatrix(){};
     virtual void prepareScene(){};
-    AEntity hit_check(int x, int y);
+    AEntity hitCheck(int x, int y);
+    
+    /**
+     * Add #event to an event queue to be processed when time comes.
+     */
+    void addEvent(AEvent event);
+    /**
+     * Click event on the scene at screen coordinates #x and #y.
+     */
+    void click(int x, int y);
 };
+
 typedef AutoPtr<Scene> AScene;
+
+
 
 class MainScene: public Scene{
 private:

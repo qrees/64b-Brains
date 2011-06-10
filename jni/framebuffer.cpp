@@ -73,7 +73,7 @@ bool Framebuffer::isValid(){
     checkGlError("glCheckFramebufferStatus");
     switch (status) {
         case GL_FRAMEBUFFER_COMPLETE:
-            LOGI("Framebuffer status is ready");
+            //LOGI("Framebuffer status is ready");
             return true;
             break;
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:

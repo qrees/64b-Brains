@@ -17,4 +17,5 @@ using namespace std;
 #include "framebuffer.h"
 #include "mesh.h"
 #include "scene.h"
+#include "event.h"
 #include "render_visitor.h"
