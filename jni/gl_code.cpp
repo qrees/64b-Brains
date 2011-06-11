@@ -55,7 +55,7 @@ void renderFrame() {
 }
 
 
-void touchEvent(int x, int y){
+void downEvent(int x, int y){
     timeval curr_time;
     double diff;
     double t1, t2;
@@ -68,6 +68,23 @@ void touchEvent(int x, int y){
     touch_time = curr_time;
     AEvent event = new ClickEvent(x, y);
     scene->addEvent(event);
+}
+
+void touchEvent(int x, int y, int action){
+    switch (action) {
+        case ACTION_DOWN:
+            downEvent(x, y);
+            break;
+        case ACTION_MOVE:
+            //moveEvent(x, y);
+            break;
+        case ACTION_UP:
+            //upEvent(x, y);
+            break;
+        default:
+            LOGE("Unknown even type %i", action);
+            break;
+    }
 }
 
 char * load_asset(const char * source) {
@@ -143,7 +160,9 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
 JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
         JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader);
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
-        JNIEnv * env, jobject obj, jint width, jint height);
+        JNIEnv * env, jobject obj, jint x, jint y);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
+        JNIEnv * env, jobject obj, jint x, jint y, jint action);
 }
 
 jint throwJNI(const char *message) {
@@ -171,8 +190,6 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
     const char *nativeString = env->GetStringUTFChars(javaString, 0);
 
     LOGI("Loading shader: %s", nativeString);
-    //GLuint shader = loadShader(shaderType, nativeString);
-
     env->ReleaseStringUTFChars(javaString, nativeString);
     return 0;
 }
@@ -184,7 +201,14 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
 }
 
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
-        JNIEnv * env, jobject obj, jint width, jint height) {
+        JNIEnv * env, jobject obj, jint x, jint y) {
     _env = env;
-    touchEvent(width, height);
+    downEvent(x, y);
 }
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
+        JNIEnv * env, jobject obj, jint x, jint y, jint action) {
+    _env = env;
+    touchEvent(x, y, action);
+}
+

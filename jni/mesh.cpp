@@ -26,6 +26,7 @@ void Node::init(){
     _parent = 0;
     _valid = true;
     _rotation = GLQuaternion::idt();
+    _sx = _sy = _sz = 1.0f;
 }
 
 void Node::setParent(AutoPtr<Node> parent){
@@ -44,15 +45,10 @@ GLMatrix& Node::getLocalMatrix(){
 
 
 void Node::update(){
-    /*
-    _rotation.toMatrix(_local_matrix);
-    GLMatrix loc_matrix;
-    loc_matrix.position(_x, _y, _z);
-    _local_matrix = loc_matrix * _local_matrix;
-    */
     GLMatrix loc_matrix;
     _rotation.toMatrix(loc_matrix);
     _local_matrix.position(_x, _y, _z);
+    _local_matrix.scale(_sx, _sy, _sz);
     _local_matrix._multiply(loc_matrix);
     
     if(_parent){
@@ -82,6 +78,11 @@ void Node::setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle){
     _valid = false;
 }
 
+void Node::setScale(GLfloat x, GLfloat y, GLfloat z){
+    _sx = x;
+    _sy = y;
+    _sz = z;
+}
 
 /*
  * Entity class implementation
@@ -94,6 +95,9 @@ void Entity::setLocation(ANode location){
     _location = location;
 }
 
+Entity* Entity::getEntityForColor(GLubyte*){
+    return this;
+}
 
 /*
  * Mesh class implementation
@@ -159,6 +163,7 @@ void Mesh::setHitable(bool hitable){
             _hit_color[1] = (float)((_hit_color_seq & BLUE_BYTE) >> 8) / 255.0f;
             _hit_color[2] = (float)((_hit_color_seq & GREEN_BYTE) >> 16) / 255.0f;
             _hit_color[3] = 1.0f;
+            _hit_color_int = _hit_color_seq;
             LOGI("_hit_color = %f %f %f %f", _hit_color[0], _hit_color[1], _hit_color[2], _hit_color[3]);
             _hit_color_seq++;
         }
@@ -184,6 +189,8 @@ void Mesh::draw() {
 
 void Mesh::_draw_hit_check(ARenderVisitor visitor){
     AHitVisitor hit_visitor = static_cast<HitVisitor*>(visitor.m_ptr);
+    if(not _hitable)
+        return;
     AProgram program = hit_visitor->getHitProgram();
     program->bindPosition(vboIds[VERTEX_BUF]);
     program->bindSolidColor(_hit_color);
@@ -191,7 +198,7 @@ void Mesh::_draw_hit_check(ARenderVisitor visitor){
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
-    checkGlError("glDrawElements");    
+    checkGlError("glDrawElements");
 }
 
 void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
@@ -203,6 +210,16 @@ void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
     checkGlError("glBufferData");
 }
 
+Entity* Mesh::getEntityForColor(GLubyte* color){
+    if(not _hitable)
+        return NULL;
+    if (_hit_color_int == ((color[0]) |(color[1] << 8) |(color[2] << 16)) ){
+        LOGI("Found mesh hit");
+        return this;
+    }else{
+        return NULL;
+    }
+}
 /*
  * Group class implementation
  */
@@ -220,6 +237,17 @@ void Group::_draw_hit_check(ARenderVisitor visitor){
     list<AMesh>::iterator it;
     for(it = _objects.begin(); it != _objects.end(); it++)
         (*it)->_draw_hit_check(visitor);
+}
+
+Entity* Group::getEntityForColor(GLubyte* color){
+    list<AMesh>::iterator it;
+    Entity* entity;
+    for(it = _objects.begin(); it != _objects.end(); it++){
+        entity = (*it)->getEntityForColor(color);
+        if(entity)
+            return entity;
+    }
+    return NULL;
 }
 
 

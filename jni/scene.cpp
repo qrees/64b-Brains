@@ -15,6 +15,8 @@ Scene::Scene(GLuint w, GLuint h){
     _h = h;
     _screen_buffer = new ScreenBuffer;
     _prepareForHit();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 Scene::~Scene(){
@@ -65,8 +67,7 @@ void Scene::_prepareForHit(){
     _pixels->empty(_w, _h);
     
     _framebuffer = new Framebuffer();
-    //_framebuffer->setColorBuffer(_w, _h);
-    _framebuffer->setColorTextureBuffer(_pixels);
+    _framebuffer->setColorBuffer(_w, _h);
     _framebuffer->setDepthStencilBuffer(_w, _h);
     assert(_framebuffer->isValid(), "Framebuffer is not valid");
 }
@@ -93,13 +94,13 @@ AEntity Scene::hitCheck(int x, int y){
     
     _prepareForHit();
 
-    assert(_framebuffer->isValid(), "Framebuffer is not valid");
+    //assert(_framebuffer->isValid(), "Framebuffer is not valid");
     _draw_hit_check();
-    glFinish();
+    //glFinish();
     glReadPixels(x, _h-y, 1, 1,  GL_RGBA, GL_UNSIGNED_BYTE, data);
     checkGlError("glReadPixels");
-    LOGI("touch result %i %i %i %i", data[0], data[1], data[2], data[3]);
-    return _root;
+    Entity* entity = _root->getEntityForColor(data);
+    return entity;
 }
 
 void Scene::addEvent(AEvent event){
@@ -107,7 +108,9 @@ void Scene::addEvent(AEvent event){
 }
 
 void Scene::click(int x, int y){
-    hitCheck(x, y);
+    AEntity clicked = hitCheck(x, y);
+    if(clicked)
+        clicked->click();
 }
 
 void Scene::_process_events(){
@@ -126,47 +129,52 @@ void Scene::_process_events(){
  */
 
 MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
+    float ratio = (float)h/(float)w;
     _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
     _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
     _program = new Program();
     _program->make(_vertex_shader, _fragment_shader);
-    
 
-    ANode root_node = new Node();
-    
     Group * group = new Group();
     _root = group;
-    //AMesh a_mesh = new Rectangle();
-    
+        
     root_location = new Node();
+    root_location->setLocation(0.5f, 0.5f, 0.0f);
+    ANode a_location = new Node();
+    a_location->setParent(root_location);
+    a_location->setLocation(-0.5f, 0.5f-ratio, 0.0f);
+    a_location->setScale(1, ratio, 1);
     b_location = new Node();
+    b_location->setParent(root_location);
+    b_location->setLocation(-0.5f, -0.5f, 0.0f);
+
+    AMesh a_mesh = new Rectangle();
+    a_mesh->setProgram(_program);
+    group->addObject(a_mesh);
+    ATexture tex = loadTexture("images/background.pkm");
+    a_mesh->setTexture(tex);
+    a_mesh->setLocation(a_location);
+    
     b_mesh = new Rectangle();
     b_mesh->setProgram(_program);
     b_mesh->setLocation(b_location);
     group->addObject(b_mesh);
     ATexture tex_buttons = loadBitmap(1024, 666, "images/buttons.png");
     _texture_map["buttons"] = tex_buttons;
-    //b_mesh->setTexture(tex_buttons);
-    b_mesh->setTexture(_pixels);
+    b_mesh->setTexture(tex_buttons);
     b_mesh->setHitable(true);
 
-    root_location->setLocation(0.5f, 0.5f, 0.0f);
-    b_location->setParent(root_location);
-    b_location->setLocation(-0.5f, -0.5f, 0.0f);
-    //a_mesh->setProgram(_program);
-    //group->addObject(a_mesh);
-    //ATexture tex = loadTexture("images/background.pkm");
-    //a_mesh->setTexture(tex);
-    float ratio = (float)h/(float)w;
     _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
 }
 
-GLfloat timer = 0.0f; 
 static float grey = 0.5f;
 
 void MainScene::prepareScene(){
-    timer += 1.0f;
-    root_location->setRotation(0, 0, 1, timer);
+    timeval curr_time;
+    gettimeofday(&curr_time, NULL);
+    double t = (double)(curr_time.tv_sec % 360) + (double)(curr_time.tv_usec)/1000000.0f;
+    
+    //root_location->setRotation(0, 0, 1, t * 100.0f);
 }
 
 void MainScene::renderFrame(){

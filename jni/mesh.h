@@ -19,7 +19,7 @@ private:
     GLMatrix _local_matrix;     // Relative transform matrix
     GLfloat _x, _y, _z;         // Relative transposition
     GLQuaternion _rotation;     // Relative rotation
-    GLQuaternion _derived_rotation;
+    GLfloat _sx, _sy, _sz;      // Relative scale.
     GLfloat _angle, _rx, _ry, _rz;
     bool _valid;
 public:
@@ -34,11 +34,21 @@ public:
     void init();
     ~Node(){};
     void addChild(AutoPtr<Node> node);
-    void setOrientation(GLMatrix matrix);
     void setParent(AutoPtr<Node>);
+    
+    /**
+     * Updates absolute orientation from relative orienation
+     * and parent nodes. If there is no parent node,
+     * absolute and relative orientation are the same.
+     */
     void update();
+    /**
+     * Sets relative orientation to given matrix.
+     */
+    void setOrientation(GLMatrix matrix);
     void setLocation(GLfloat x, GLfloat y, GLfloat z);
     void setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle);
+    void setScale(GLfloat x, GLfloat y, GLfloat z);
     GLMatrix& getMatrix();
     GLMatrix& getLocalMatrix();
 };
@@ -59,6 +69,13 @@ public:
     virtual void draw(){};
     virtual void _draw_hit_check(ARenderVisitor){};
     virtual void setLocation(ANode location);
+    virtual Entity* getEntityForColor(GLubyte*);
+    
+    /**
+     * Click event method. Called when Entity was clicked.
+     */
+    virtual void click(){};
+    
 };
 typedef AutoPtr<Entity> AEntity;
 
@@ -93,6 +110,7 @@ class Mesh: public Entity {
     GLuint numIndices;
     GLfloat * _solid_color;
     GLfloat * _hit_color;
+    GLint _hit_color_int;
     static GLint _hit_color_seq;
     bool has_color, has_normal, has_texture, _hitable;
 public:
@@ -122,6 +140,7 @@ public:
      */
     void draw();
     void _draw_hit_check(ARenderVisitor);
+    Entity* getEntityForColor(GLubyte*);
 private:
     void _setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel);
 };
@@ -141,6 +160,7 @@ public:
     void addObject(AMesh);
     void draw();
     void _draw_hit_check(ARenderVisitor);
+    Entity* getEntityForColor(GLubyte*);
 };
 
 /*!

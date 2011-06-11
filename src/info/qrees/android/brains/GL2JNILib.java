@@ -120,4 +120,5 @@ public class GL2JNILib {
     public static native int createProgram(int vertexShader, int fragmentShader);
 
     public static native void touch(int x, int y);
+    public static native void motionevent(int x, int y, int action);
 }

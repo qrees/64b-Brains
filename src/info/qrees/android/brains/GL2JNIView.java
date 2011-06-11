@@ -41,9 +41,10 @@ class GL2JNIView extends GLSurfaceView {
 
         setEGLContextFactory(new ContextFactory());
 
-        setEGLConfigChooser( translucent ?
-                             new ConfigChooser(8, 8, 8, 8, depth, stencil) :
-                             new ConfigChooser(5, 6, 5, 0, depth, stencil) );
+        setEGLConfigChooser( new ConfigChooser(8, 8, 8, 8, depth, stencil));
+        //setEGLConfigChooser( translucent ?
+        //                     new ConfigChooser(8, 8, 8, 8, depth, stencil) :
+        //                     new ConfigChooser(5, 6, 5, 0, depth, stencil) );
         
         _renderer = new Renderer();
 
@@ -51,7 +52,8 @@ class GL2JNIView extends GLSurfaceView {
     }
     
     public boolean onTouchEvent (MotionEvent event){
-        _renderer.onTouch(Math.round(event.getX()), Math.round(event.getY()));
+        //_renderer.onTouch(Math.round(event.getX()), Math.round(event.getY()));
+        _renderer.onTouchEvent(event);
         return true;
     }
     
@@ -188,10 +190,15 @@ class GL2JNIView extends GLSurfaceView {
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             //loadShaders();
         }
-        
+
+        public boolean onTouchEvent (MotionEvent event){
+            GL2JNILib.motionevent((int)event.getX(), (int)event.getY(), event.getAction());
+            return true;
+        }/*
         public void onTouch(int x, int y){
+            event.getAction();
             GL2JNILib.touch(x, y);
-        }
+        }*/
     }
     
     private Renderer _renderer;
