@@ -55,7 +55,7 @@ void renderFrame() {
 }
 
 
-void downEvent(int x, int y){
+void moveEvent(int x, int y){
     timeval curr_time;
     double diff;
     double t1, t2;
@@ -66,8 +66,17 @@ void downEvent(int x, int y){
     if(diff < 0.1f)
         return;
     touch_time = curr_time;
+    scene->move(x, y);
+}
+
+void downEvent(int x, int y){
+    gettimeofday(&touch_time, NULL);
     AEvent event = new ClickEvent(x, y);
     scene->addEvent(event);
+}
+
+void upEvent(int x, int y){
+    scene->up();
 }
 
 void touchEvent(int x, int y, int action){
@@ -79,7 +88,7 @@ void touchEvent(int x, int y, int action){
             //moveEvent(x, y);
             break;
         case ACTION_UP:
-            //upEvent(x, y);
+            upEvent(x, y);
             break;
         default:
             LOGE("Unknown even type %i", action);

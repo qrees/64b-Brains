@@ -11,15 +11,18 @@ Program::Program(AShader vertexShader, AShader fragmentShader) {
     _id = 0;
     make(vertexShader, fragmentShader);
 }
-Program::Program(){
+
+Program::Program() {
     _id = 0;
 }
-Program::~Program(){
+
+Program::~Program() {
     LOGI("Deleting program %d", getName());
-    if(getName())
+    if (getName())
         glDeleteProgram(getName());
 }
-void Program::activateAttributes(){
+
+void Program::activateAttributes() {
     activateColor();
     activatePosition();
     activateTexture();
@@ -27,58 +30,71 @@ void Program::activateAttributes(){
     _view_matrix = glGetUniformLocation(getName(), "u_view_matrix");
     _model_matrix = glGetUniformLocation(getName(), "u_model_matrix");
 }
-void Program::activateSolidColor(){
+
+void Program::activateSolidColor() {
     _u_solid_color = glGetUniformLocation(getName(), "u_solid_color");
-    LOGI("%p: SolidColor uniform set to %d", this, _u_solid_color);
 }
-void Program::activateColor(){
+
+void Program::activateColor() {
     activateAttribute("a_color", LOC_COLOR);
 }
-void Program::activatePosition(){
+
+void Program::activatePosition() {
     activateAttribute("a_position", LOC_POSITION);
 }
-void Program::activateTexture(){
+
+void Program::activateTexture() {
     activateAttribute("a_texture", LOC_TEXTURE);
 }
-void Program::activateTextureSampler(){
+
+void Program::activateTextureSampler() {
     activateUniform("s_texture", LOC_TEXTURE_SAMPLER);
 }
-void Program::activateAttribute(const char *name, GLuint location){
+
+void Program::activateAttribute(const char *name, GLuint location) {
     attribs[location] = glGetAttribLocation(getName(), name);
     //LOGI("New attribute %d at location %d (%s)", attribs[location], location, name);
 }
-void Program::activateUniform(const char *name, GLuint location){
+
+void Program::activateUniform(const char *name, GLuint location) {
     uniforms[location] = glGetUniformLocation(getName(), name);
     //LOGI("New uniform %d at location %d (%s)", uniforms[location], location, name);
 }
-void Program::activate(){
+
+void Program::activate() {
     glUseProgram(getName());
 }
 
-void Program::bindViewMatrix(GLMatrix &matrix){
+void Program::bindViewMatrix(GLMatrix &matrix) {
     glUniformMatrix4fv(_view_matrix, 1, GL_FALSE, matrix.data());
     checkGlError("glUniformMatrix4fv");
 }
-void Program::bindModelMatrix(GLMatrix &matrix){
+
+void Program::bindModelMatrix(GLMatrix &matrix) {
     glUniformMatrix4fv(_model_matrix, 1, GL_FALSE, matrix.data());
     checkGlError("glUniformMatrix4fv");
 }
-void Program::bindColor(const void *data){
+
+void Program::bindColor(const void *data) {
     bindAttribute(COLOR_ATTRIB, 4, GL_FLOAT, 0, data);
 }
-void Program::bindColorRGB(const void *data){
+void Program::bindColorRGB(const void *data) {
     bindAttribute(COLOR_ATTRIB, 3, GL_FLOAT, 0, data);
 }
-void Program::bindPosition(const void *data){
+
+void Program::bindPosition(const void *data) {
     bindAttribute(POSITION_ATTRIB, 3, GL_FLOAT, 0, data);
 }
-void Program::bindPosition(GLuint buf_id){
+
+void Program::bindPosition(GLuint buf_id) {
     bindBuffer(POSITION_ATTRIB, buf_id, 3, GL_FLOAT, 0, 0);
 }
-void Program::bindNormal(GLuint buf_id){
+
+void Program::bindNormal(GLuint buf_id) {
     bindBuffer(NORMAL_ATTRIB, buf_id, 3, GL_FLOAT, 0, 0);
 }
-void Program::bindTexture(GLuint buf_id, GLuint tex_id){
+
+void Program::bindTexture(GLuint buf_id, GLuint tex_id) {
     bindBuffer(TEXTURE_ATTRIB, buf_id, 2, GL_FLOAT, 0, 0);
     glActiveTexture(GL_TEXTURE0);
     checkGlError("glActiveTexture");
@@ -87,24 +103,24 @@ void Program::bindTexture(GLuint buf_id, GLuint tex_id){
     glUniform1i(uniforms[LOC_TEXTURE_SAMPLER], 0);
     checkGlError("glUniform1i");
 }
-void Program::bindColor(GLuint buf_id){
+
+void Program::bindColor(GLuint buf_id) {
     bindBuffer(COLOR_ATTRIB, buf_id, 4, GL_FLOAT, 0, 0);
 }
-void Program::bindSolidColor(GLfloat*color){
+
+void Program::bindSolidColor(GLfloat*color) {
     assert(_u_solid_color != -1, "bindSolidColor called with _u_solid_color not set");
     glUniform4fv(_u_solid_color, 1, color);
 }
-void Program::bindSolidColor(GLint*color){
-    LOGI("%p: bindSolidColor %d", this, _u_solid_color);
-    //assert(_u_solid_color != -1, "bindSolidColor called with _u_solid_color not set");
-    glUniform4iv(_u_solid_color, 1, color);
-}
-void Program::bindAttribute(GLuint location, GLuint size, GLenum type, GLuint stride, const void *data){
+
+void Program::bindAttribute(GLuint location, GLuint size, GLenum type,
+        GLuint stride, const void *data) {
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, data);
 }
-void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum type, GLuint stride, const void * offset){
-    //LOGI("binding buffer %d", buf_id);
+
+void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size,
+        GLenum type, GLuint stride, const void * offset) {
     glBindBuffer(GL_ARRAY_BUFFER, buf_id);
     checkGlError("glBindBuffer");
     glEnableVertexAttribArray(location);
@@ -113,8 +129,7 @@ void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size, GLenum typ
     checkGlError("glVertexAttribPointer");
 }
 
-
-void Program::make(AShader vertexShader, AShader fragmentShader){
+void Program::make(AShader vertexShader, AShader fragmentShader) {
     LOGI("Making program with fragment and vertex shaders");
     _vertex = vertexShader;
     _fragment = fragmentShader;
@@ -123,6 +138,7 @@ void Program::make(AShader vertexShader, AShader fragmentShader){
     _create();
     activateAttributes();
 }
+
 char * Program::getInfo() {
     if (_log)
         delete[] _log;

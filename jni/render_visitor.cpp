@@ -15,6 +15,14 @@ void RenderVisitor::visit(AMesh){
     
 };
 
+void RenderVisitor::setProgram(AProgram program){
+    _program = program;
+};
+
+AProgram RenderVisitor::getProgram(){
+    return _program;
+}
+
 AProgram HitVisitor::getHitProgram(){
     return _hit_program;
 }

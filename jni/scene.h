@@ -31,6 +31,7 @@ protected:
     GLuint _w;
     GLuint _h;
     AEntity _root;
+    AEntity _clicked;
     AProgram _program;
     GLMatrix _view_matrix;
     AFramebuffer _screen_buffer;
@@ -48,7 +49,8 @@ public:
     AShader loadShader(const char * source, GLuint type);
     virtual void renderFrame();
     virtual void prepareViewMatrix(){};
-    virtual void prepareScene(){};
+    virtual void clearScene();
+    virtual void prepareScene();
     AEntity hitCheck(int x, int y);
     
     /**
@@ -58,7 +60,9 @@ public:
     /**
      * Click event on the scene at screen coordinates #x and #y.
      */
-    void click(int x, int y);
+    virtual void down(int x, int y);
+    virtual void move(int x, int y);
+    virtual void up();
 };
 
 typedef AutoPtr<Scene> AScene;

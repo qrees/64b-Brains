@@ -36,6 +36,7 @@ void Texture::load(GLuint width, GLuint height, u_char * data){
     glBindTexture(GL_TEXTURE_2D, _id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _data);
     checkGlError("glTexImage2D");
+    loaded();
 }
 
 void Texture::empty(GLuint width, GLuint height){
@@ -69,6 +70,11 @@ void Texture::load_compressed(GLuint width, GLuint height, const u_char * data){
     memcpy(_data, data, encodedSize);
     glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES, width, height, 0, encodedSize, _data);
     checkGlError("glCompressedTexImage2D");
+}
+
+void Texture::loaded(){
+    //glGenerateMipmap(GL_TEXTURE_2D);
+    checkGlError("glGenerateMipmap");
 }
 
 static u_int readBEUint16(const u_char* pIn) {

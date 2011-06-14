@@ -26,5 +26,5 @@ ClickEvent::ClickEvent(int x, int y){
 }
 
 void ClickEvent::process(Scene &scene){
-    scene.click(_x, _y);
+    scene.down(_x, _y);
 }

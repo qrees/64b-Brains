@@ -48,6 +48,7 @@ public:
     void setOrientation(GLMatrix matrix);
     void setLocation(GLfloat x, GLfloat y, GLfloat z);
     void setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle);
+    void setEulerRotation(GLfloat yaw, GLfloat pitch, GLfloat roll);
     void setScale(GLfloat x, GLfloat y, GLfloat z);
     GLMatrix& getMatrix();
     GLMatrix& getLocalMatrix();
@@ -55,7 +56,7 @@ public:
 
 typedef AutoPtr<Node> ANode;
 
-/*!
+/**
  * Entity
  * 
  * Base class for all objects in the scene. 
@@ -66,16 +67,10 @@ protected:
 public:
     Entity();
     virtual ~Entity(){};
-    virtual void draw(){};
+    virtual void draw(ARenderVisitor){};
     virtual void _draw_hit_check(ARenderVisitor){};
     virtual void setLocation(ANode location);
     virtual Entity* getEntityForColor(GLubyte*);
-    
-    /**
-     * Click event method. Called when Entity was clicked.
-     */
-    virtual void click(){};
-    
 };
 typedef AutoPtr<Entity> AEntity;
 
@@ -97,7 +92,7 @@ typedef AutoPtr<Entity> AEntity;
 #define ALPHA_BYTE 0x000000FF
 
 
-/*!
+/**
  * Mesh
  * 
  * Entity that has vertices, may have colors, texture etc.
@@ -111,6 +106,7 @@ class Mesh: public Entity {
     GLfloat * _solid_color;
     GLfloat * _hit_color;
     GLint _hit_color_int;
+    GLenum _type;
     static GLint _hit_color_seq;
     bool has_color, has_normal, has_texture, _hitable;
 public:
@@ -129,6 +125,12 @@ public:
     void setColor(GLfloat *buf, GLint num);
     void setIndexes(GLushort *buf, GLint num);
     
+    /**
+     * Set Mesh type to one of GL_POINTS, GL_LINES, GL_LINE_LOOP, GL_LINE_STRIP,
+     * GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN.
+     */
+    void setType(GLenum);
+    GLenum getType();
     /*
      * setHitable(true) will allow the mesh to receive touch events.
      */
@@ -138,16 +140,31 @@ public:
      * Draw the mesh on current framebuffer.
      * Requires setting at least vertices with setVertices earlier.
      */
-    void draw();
+    void draw(ARenderVisitor);
     void _draw_hit_check(ARenderVisitor);
     Entity* getEntityForColor(GLubyte*);
+    
+    /**
+     * Down event method. Called when entity is pressed down
+     * on touchscreen.
+     */
+    virtual void down(int x, int y){};
+    /**
+     * Move event method. Called when finger is moved on 
+     * touchscreen with this mesh pressed.
+     */
+    virtual void move(int x, int y){};
+    /**
+     * Up event method. Called when finger is lifted.
+     */
+    virtual void up(){};
 private:
     void _setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel);
 };
 typedef AutoPtr<Mesh> AMesh;
 
 
-/*!
+/**
  * Group
  * 
  * Groups multiple Entities into one object. Can be used
@@ -158,12 +175,12 @@ private:
     list<AMesh> _objects;
 public:
     void addObject(AMesh);
-    void draw();
+    void draw(ARenderVisitor);
     void _draw_hit_check(ARenderVisitor);
     Entity* getEntityForColor(GLubyte*);
 };
 
-/*!
+/**
  * Rectangle:
  * Simple 3D Quad
  */
@@ -171,7 +188,9 @@ class Rectangle:public Mesh {
 private:
     
 public:
-    Rectangle();
+    //Rectangle();
+    Rectangle(float aspect = 1.f);
+    void setTextureRect(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2);
 };
 typedef AutoPtr<Rectangle> ARectangle;
 

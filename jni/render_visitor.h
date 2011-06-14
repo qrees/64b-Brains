@@ -8,11 +8,14 @@
 #ifndef RENDER_VISITOR_H_
 #define RENDER_VISITOR_H_
 
-
 class RenderVisitor : public RefCntObject{
 public:
     void visit(AEntity);
     void visit(AMesh);
+    AProgram getProgram();
+    void setProgram(AProgram);
+private:
+    AProgram _program;
 };
 typedef AutoPtr<RenderVisitor> ARenderVisitor;
 
@@ -23,6 +26,7 @@ public:
 private:
     AProgram _hit_program;
 };
+
 typedef AutoPtr<HitVisitor> AHitVisitor;
 
 #endif /* RENDER_VISITOR_H_ */

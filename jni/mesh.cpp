@@ -78,6 +78,10 @@ void Node::setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle){
     _valid = false;
 }
 
+void Node::setEulerRotation(GLfloat yaw, GLfloat pitch, GLfloat roll){
+    _rotation.setEulerAngles(yaw, pitch, roll);
+}
+
 void Node::setScale(GLfloat x, GLfloat y, GLfloat z){
     _sx = x;
     _sy = y;
@@ -112,10 +116,12 @@ Mesh::~Mesh(){
 
 void Mesh::init() {
     glGenBuffers(BUF_COUNT, vboIds);
+    checkGlError("glGenBuffers");
     has_color = has_normal = has_texture = false;
     _solid_color = 0;
     _hit_color = 0;
     _hitable = false;
+    _type = GL_TRIANGLES;
 }
 
 void Mesh::setProgram(AProgram program) {
@@ -170,20 +176,28 @@ void Mesh::setHitable(bool hitable){
     }
 }
 
-void Mesh::draw() {
-    assert(_program->isValid(), "You need to set program for Mesh");
-    _program->activate();
-    _program->bindPosition(vboIds[VERTEX_BUF]);
-    if(has_normal)
-        _program->bindNormal(vboIds[NORMAL_BUF]);
-    if(has_texture && bool(_texture))
-        _program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
-    if(has_color)
-        _program->bindColor(vboIds[COLOR_BUF]);
+void Mesh::draw(ARenderVisitor visitor) {
+    AProgram program;
+    if(_program){
+        program = _program;
+    }else{
+        program = visitor->getProgram();
+    }
+    assert(program, "You need to set program for Mesh");
+    assert(program->isValid(), "Mesh program is not valid");
+    program->activate();
     
-    _program->bindModelMatrix(_location->getMatrix());
+    program->bindPosition(vboIds[VERTEX_BUF]);
+    if(has_normal)
+        program->bindNormal(vboIds[NORMAL_BUF]);
+    if(has_texture && bool(_texture))
+        program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
+    if(has_color)
+        program->bindColor(vboIds[COLOR_BUF]);
+    
+    program->bindModelMatrix(_location->getMatrix());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
-    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(getType(), numIndices, GL_UNSIGNED_SHORT, 0);
     checkGlError("glDrawElements");
 }
 
@@ -197,7 +211,7 @@ void Mesh::_draw_hit_check(ARenderVisitor visitor){
     program->bindModelMatrix(_location->getMatrix());
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
-    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(getType(), numIndices, GL_UNSIGNED_SHORT, 0);
     checkGlError("glDrawElements");
 }
 
@@ -220,6 +234,27 @@ Entity* Mesh::getEntityForColor(GLubyte* color){
         return NULL;
     }
 }
+
+void Mesh::setType(GLenum type){
+    switch (type) {
+        case GL_POINTS:
+        case GL_LINES:
+        case GL_LINE_LOOP:
+        case GL_LINE_STRIP:
+        case GL_TRIANGLES:
+        case GL_TRIANGLE_STRIP:
+        case GL_TRIANGLE_FAN:
+            _type = type;
+            break;
+        default:
+            LOGE("Incorrect type for mesh given.");
+            break;
+    }
+}
+
+GLenum Mesh::getType(){
+    return _type;
+}
 /*
  * Group class implementation
  */
@@ -227,10 +262,10 @@ void Group::addObject(AMesh mesh){
     _objects.push_back(mesh);
 }
 
-void Group::draw(){
+void Group::draw(ARenderVisitor visitor){
     list<AMesh>::iterator it;
     for(it = _objects.begin(); it != _objects.end(); it++)
-        (*it)->draw();
+        (*it)->draw(visitor);
 }
 
 void Group::_draw_hit_check(ARenderVisitor visitor){
@@ -254,19 +289,36 @@ Entity* Group::getEntityForColor(GLubyte* color){
 /*
  * Rectangle class implementation
  */
-GLfloat rec_vertices[4*3] = { 0.0f, 1.0f, 1.0f, // 0, Top Left
-        0.0f, 0.0f, 1.0f, // 1, Bottom Left
-        1.0f, 0.0f, 1.0f, // 2, Bottom Right
-        1.0f, 1.0f, 1.0f, // 3, Top Right
-    };
-GLfloat rec_tex_coord[4*2] = { 0.0f, 0.0f, // 0, Top Left
-        0.0f, 1.0f,  // 1, Bottom Left
-        1.0f, 1.0f,  // 2, Bottom Right
-        1.0f, 0.0f,  // 3, Top Right
-    };
-GLushort rec_indexes[2 * 3] = { 0, 1, 2, 0, 2, 3 };
-Rectangle::Rectangle():Mesh(){
-    setVertices(rec_vertices, 4);
-    setTextureCoord(rec_tex_coord, 4);
+
+GLushort rec_indexes[2 * 3] = { 0, 1, 2, 3 };
+
+Rectangle::Rectangle(float aspect):Mesh(){
+    GLfloat vert[3 * 4];
+    vert[2] = vert[5] = vert[8] = vert[11] = 0.f;
+    vert[0 * 3 + 0] = 0.f;    // bottom left
+    vert[0 * 3 + 1] = 0.f;
+    vert[1 * 3 + 0] = 0.f;    // top left
+    vert[1 * 3 + 1] = aspect; 
+    vert[2 * 3 + 0] = 1.f;    // top right
+    vert[2 * 3 + 1] = aspect;
+    vert[3 * 3 + 0] = 1.f;    // bottom right
+    vert[3 * 3 + 1] = 0.f;
+    setVertices(vert, 4);
+    setTextureRect(0.f, 1.f, 1.f, 0.f);
     setIndexes(rec_indexes, 6);
+    setType(GL_TRIANGLE_STRIP);
+}
+
+
+void Rectangle::setTextureRect(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2){
+    GLfloat coords[8];
+    coords[0] = x1;
+    coords[1] = y1;
+    coords[2] = x1;
+    coords[3] = y2;
+    coords[4] = x2;
+    coords[5] = y2;
+    coords[6] = x2;
+    coords[7] = y1;
+    setTextureCoord(coords, 4);
 }

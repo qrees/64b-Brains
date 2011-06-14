@@ -17,6 +17,11 @@ Scene::Scene(GLuint w, GLuint h){
     _prepareForHit();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    AShader _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
+    AShader _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
+    _program = new Program();
+    _program->make(_vertex_shader, _fragment_shader);
 }
 
 Scene::~Scene(){
@@ -72,15 +77,22 @@ void Scene::_prepareForHit(){
     assert(_framebuffer->isValid(), "Framebuffer is not valid");
 }
 
-void Scene::_draw_hit_check(){
-    _framebuffer->activate();
+void Scene::clearScene(){
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
+}
 
-    prepareScene();
+void Scene::prepareScene(){
+    clearScene();
     prepareViewMatrix();
+}
+
+void Scene::_draw_hit_check(){
+    _framebuffer->activate();
+    
+    prepareScene();
     
     AHitVisitor visitor = new HitVisitor();
     visitor->setHitProgram(_hit_program);
@@ -107,10 +119,20 @@ void Scene::addEvent(AEvent event){
     _events.push(event);
 }
 
-void Scene::click(int x, int y){
-    AEntity clicked = hitCheck(x, y);
-    if(clicked)
-        clicked->click();
+void Scene::down(int x, int y){
+    _clicked = hitCheck(x, y);
+    if(_clicked)
+        ((Mesh*)(_clicked.m_ptr))->down(x, y);
+}
+
+void Scene::move(int x, int y){
+    if(_clicked)
+        ((Mesh*)(_clicked.m_ptr))->move(x, y);
+}
+
+void Scene::up(){
+    if(_clicked)
+        ((Mesh*)(_clicked.m_ptr))->up();
 }
 
 void Scene::_process_events(){
@@ -130,10 +152,6 @@ void Scene::_process_events(){
 
 MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     float ratio = (float)h/(float)w;
-    _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
-    _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
-    _program = new Program();
-    _program->make(_vertex_shader, _fragment_shader);
 
     Group * group = new Group();
     _root = group;
@@ -146,50 +164,48 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     a_location->setScale(1, ratio, 1);
     b_location = new Node();
     b_location->setParent(root_location);
-    b_location->setLocation(-0.5f, -0.5f, 0.0f);
+    b_location->setLocation(-0.5f, -0.f, 0.0f);
+    b_location->setEulerRotation(180, 0, 180);
 
     AMesh a_mesh = new Rectangle();
-    a_mesh->setProgram(_program);
     group->addObject(a_mesh);
     ATexture tex = loadTexture("images/background.pkm");
     a_mesh->setTexture(tex);
     a_mesh->setLocation(a_location);
     
-    b_mesh = new Rectangle();
-    b_mesh->setProgram(_program);
-    b_mesh->setLocation(b_location);
+    Rectangle * rec = new Rectangle(0.3f);
+    b_mesh = rec;
+    rec->setLocation(b_location);
     group->addObject(b_mesh);
     ATexture tex_buttons = loadBitmap(1024, 666, "images/buttons.png");
     _texture_map["buttons"] = tex_buttons;
-    b_mesh->setTexture(tex_buttons);
-    b_mesh->setHitable(true);
+    rec->setTexture(tex_buttons);
+    rec->setTextureRect(0.f, 100.f/666.f, 320.f/1024.f, 200.f/666.f);
+    //rec->setTextureCoord(b_texture_coord, 4);
+    rec->setHitable(true);
 
     _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
+    //_view_matrix = GLMatrix().ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
 }
 
-static float grey = 0.5f;
-
 void MainScene::prepareScene(){
+    Scene::prepareScene();
     timeval curr_time;
     gettimeofday(&curr_time, NULL);
-    double t = (double)(curr_time.tv_sec % 360) + (double)(curr_time.tv_usec)/1000000.0f;
-    
-    //root_location->setRotation(0, 0, 1, t * 100.0f);
+    //double t = (double)(curr_time.tv_sec % 360) + (double)(curr_time.tv_usec)/1000000.0f;    
 }
 
 void MainScene::renderFrame(){
     _process_events();
     
     _screen_buffer->activate();
-    glClearColor(grey, grey, grey, 1.0f);
-    checkGlError("glClearColor");
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    checkGlError("glClear");
     
     prepareScene();
-    prepareViewMatrix();
+
+    ARenderVisitor visitor = new RenderVisitor();
+    visitor->setProgram(_program);
     _program->activate();
     _program->bindViewMatrix(_view_matrix);
-    _root->draw();
+    _root->draw(visitor);
 }
 
