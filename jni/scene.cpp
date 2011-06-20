@@ -91,7 +91,6 @@ void Scene::prepareScene(){
 
 void Scene::_draw_hit_check(){
     _framebuffer->activate();
-    
     prepareScene();
     
     AHitVisitor visitor = new HitVisitor();
@@ -106,11 +105,12 @@ AEntity Scene::hitCheck(int x, int y){
     
     _prepareForHit();
 
-    //assert(_framebuffer->isValid(), "Framebuffer is not valid");
+    assert(_framebuffer->isValid(), "Framebuffer is not valid");
     _draw_hit_check();
-    //glFinish();
+    glFinish();
     glReadPixels(x, _h-y, 1, 1,  GL_RGBA, GL_UNSIGNED_BYTE, data);
     checkGlError("glReadPixels");
+    LOGI("Read pixels %i %i %i %i", data[0], data[1], data[2], data[3]);
     Entity* entity = _root->getEntityForColor(data);
     return entity;
 }
@@ -120,9 +120,12 @@ void Scene::addEvent(AEvent event){
 }
 
 void Scene::down(int x, int y){
+    LOGI("Scene 'down' event");
     _clicked = hitCheck(x, y);
-    if(_clicked)
+    if(_clicked){
+        LOGI("Mesh was touched");
         ((Mesh*)(_clicked.m_ptr))->down(x, y);
+    }
 }
 
 void Scene::move(int x, int y){
@@ -130,9 +133,9 @@ void Scene::move(int x, int y){
         ((Mesh*)(_clicked.m_ptr))->move(x, y);
 }
 
-void Scene::up(){
+void Scene::up(int x, int y){
     if(_clicked)
-        ((Mesh*)(_clicked.m_ptr))->up();
+        ((Mesh*)(_clicked.m_ptr))->up(x, y);
 }
 
 void Scene::_process_events(){
@@ -153,46 +156,63 @@ void Scene::_process_events(){
 MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     float ratio = (float)h/(float)w;
 
+    // Textures
+    ATexture tex_buttons = loadBitmap(1024, 666, "images/buttons.png");
+    ATexture tex = loadTexture("images/background.pkm");
+    
     Group * group = new Group();
     _root = group;
         
+    // Location nodes, entities are attached to these nodes.
     root_location = new Node();
     root_location->setLocation(0.5f, 0.5f, 0.0f);
-    ANode a_location = new Node();
+    a_location = new Node();
     a_location->setParent(root_location);
     a_location->setLocation(-0.5f, 0.5f-ratio, 0.0f);
     a_location->setScale(1, ratio, 1);
     b_location = new Node();
     b_location->setParent(root_location);
     b_location->setLocation(-0.5f, -0.f, 0.0f);
-    b_location->setEulerRotation(180, 0, 180);
+    b_location->setEulerRotation(0, 180, 0);
 
     AMesh a_mesh = new Rectangle();
     group->addObject(a_mesh);
-    ATexture tex = loadTexture("images/background.pkm");
     a_mesh->setTexture(tex);
     a_mesh->setLocation(a_location);
-    
-    Rectangle * rec = new Rectangle(0.3f);
+    /*
+    Rectangle * rec = new Rectangle(59.f/287.f);
     b_mesh = rec;
     rec->setLocation(b_location);
     group->addObject(b_mesh);
-    ATexture tex_buttons = loadBitmap(1024, 666, "images/buttons.png");
-    _texture_map["buttons"] = tex_buttons;
     rec->setTexture(tex_buttons);
-    rec->setTextureRect(0.f, 100.f/666.f, 320.f/1024.f, 200.f/666.f);
-    //rec->setTextureCoord(b_texture_coord, 4);
+    rec->setTextureRect(12.f/1024.f, 125.f/666.f, 299.f/1024.f, 184.f/666.f);
     rec->setHitable(true);
-
+    */
+    AMesh button_mesh;
+    Button*butt = new Button(287, 59);
+    button_mesh = butt;
+    group->addObject(button_mesh);
+    butt->setLocation(b_location);
+    butt->setTexture(tex_buttons);
+    butt->setStateTexture(0, 12, 125);
+    butt->setStateTexture(1, 12, 203);
+    butt->setStateTexture(2, 12, 281);
+    butt->setStateTexture(3, 12, 359);
+    
+    
     _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
     //_view_matrix = GLMatrix().ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
+    //_view_matrix = GLMatrix().perspective(10.f, (float)w/(float)h, 1.f, 1000.f);
+    //_view_matrix.translate(-0.5f, 0.5f, -10.f);
 }
 
 void MainScene::prepareScene(){
     Scene::prepareScene();
     timeval curr_time;
     gettimeofday(&curr_time, NULL);
-    //double t = (double)(curr_time.tv_sec % 360) + (double)(curr_time.tv_usec)/1000000.0f;    
+    double t = (double)(curr_time.tv_sec % 360) + (double)(curr_time.tv_usec)/1000000.0f;    
+
+    a_location->setEulerRotation(0, t*20, 0);
 }
 
 void MainScene::renderFrame(){

@@ -35,6 +35,8 @@ void Texture::load(GLuint width, GLuint height, u_char * data){
     memcpy(_data, data, width*height*4);
     glBindTexture(GL_TEXTURE_2D, _id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _data);
+    _width = width;
+    _height = height;
     checkGlError("glTexImage2D");
     loaded();
 }
@@ -46,6 +48,8 @@ void Texture::empty(GLuint width, GLuint height){
     memset(_data, 0, width*height*4);
     glBindTexture(GL_TEXTURE_2D, _id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    _width = width;
+    _height = height;
     checkGlError("glTexImage2D");
 }
 
@@ -69,14 +73,27 @@ void Texture::load_compressed(GLuint width, GLuint height, const u_char * data){
     _data = new u_char[encodedSize];
     memcpy(_data, data, encodedSize);
     glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES, width, height, 0, encodedSize, _data);
+    _width = width;
+    _height = height;
     checkGlError("glCompressedTexImage2D");
 }
 
 void Texture::loaded(){
-    //glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(GL_TEXTURE_2D);
     checkGlError("glGenerateMipmap");
 }
 
+GLuint Texture::getWidth(){
+    return _width;
+}
+
+GLuint Texture::getHeight(){
+    return _height;
+}
+
+/**
+ * pkm texture file helper function
+ */
 static u_int readBEUint16(const u_char* pIn) {
     return (pIn[0] << 8) | pIn[1];
 }

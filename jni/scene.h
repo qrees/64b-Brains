@@ -62,7 +62,7 @@ public:
      */
     virtual void down(int x, int y);
     virtual void move(int x, int y);
-    virtual void up();
+    virtual void up(int x, int y);
 };
 
 typedef AutoPtr<Scene> AScene;
@@ -76,6 +76,7 @@ private:
     hash_map<string, ATexture> _texture_map;
     hash_map<string, AEntity> _object_map;
     ANode b_location;
+    ANode a_location;
     ANode root_location;
     AMesh b_mesh;
 public:

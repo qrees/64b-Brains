@@ -168,8 +168,10 @@ public:
         T deltaY = top - bottom;
         T deltaZ = farZ - nearZ;
 
-        if ((nearZ <= 0.0f) || (farZ <= 0.0f) || (deltaX <= 0.0f) || (deltaY <= 0.0f) || (deltaZ <= 0.0f))
-            return;
+        if ((nearZ <= 0.0f) || (farZ <= 0.0f) || (deltaX <= 0.0f) || (deltaY <= 0.0f) || (deltaZ <= 0.0f)){
+            LOGE("Incorrect perspective matrix");
+            return *this;
+        }
 
         _matrix[0 * 4 + 0] = 2.0f * nearZ / deltaX;
         _matrix[0 * 4 + 1] = _matrix[0 * 4 + 2] = _matrix[0 * 4 + 3] = 0.0f;

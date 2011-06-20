@@ -176,7 +176,13 @@ void Mesh::setHitable(bool hitable){
     }
 }
 
+void Mesh::drawPrepare(ARenderVisitor visitor){
+    
+}
+
 void Mesh::draw(ARenderVisitor visitor) {
+    drawPrepare(visitor);
+    
     AProgram program;
     if(_program){
         program = _program;
@@ -309,7 +315,6 @@ Rectangle::Rectangle(float aspect):Mesh(){
     setType(GL_TRIANGLE_STRIP);
 }
 
-
 void Rectangle::setTextureRect(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2){
     GLfloat coords[8];
     coords[0] = x1;
@@ -322,3 +327,70 @@ void Rectangle::setTextureRect(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2){
     coords[7] = y1;
     setTextureCoord(coords, 4);
 }
+
+/*
+ * Button methods implementation
+ */
+Button::Button(GLfloat sx, GLfloat sy):Rectangle((float)sy/(float)sx){
+    _state_textures = 0;
+    _state = NORMAL;
+    _dirty = true;
+    setTextureSize(sx, sy);
+    setStateCount(4); // button has 4 states: normal, pressed, active, disabled
+    setHitable(true); // Button can be pressed by default
+}
+
+Button::~Button(){
+    delete[] _state_textures;
+}
+
+void Button::setStateCount(int count){
+    assert(count > 0, "Button need more than 0 states");
+    delete[] _state_textures;
+    _state_textures = new GLfloat[count*2];
+    _state_count = count;
+}
+
+void Button::setState(ButtonState state){
+    assert((state < _state_count) && (state >= 0), "Button: Invalid state");
+    if (state != _state){
+        _state = state;
+        _dirty = true;
+    }
+}
+
+void Button::setTextureSize(GLfloat sx, GLfloat sy){
+    _sx = sx;
+    _sy = sy;
+}
+
+void Button::setStateTexture(int state, GLfloat x, GLfloat y){
+    assert(_state_textures, "Button: No states available.");
+    _state_textures[state*2 + 0] = x;
+    _state_textures[state*2 + 1] = y;
+}
+
+void Button::down(int x, int y){
+    setState(PRESSED);
+}
+
+void Button::up(int x, int y){
+    setState(NORMAL);
+}
+
+void Button::drawPrepare(ARenderVisitor visitor){
+    assert(_state_textures, "Button: No states available.");
+    if(_dirty){
+        GLfloat tw = (float)(_texture->getWidth());
+        GLfloat th = (float)(_texture->getHeight());
+        GLfloat x1 = (float)(_state_textures[_state*2+0])/tw;
+        GLfloat y1 = (float)(_state_textures[_state*2+1])/th;
+        GLfloat x2 = x1 + ((float)_sx/tw);
+        GLfloat y2 = y1 + ((float)_sy/th);
+        LOGI("Button is dirty, updating texture: %f, %f, %f, %f", x1, y1, x2, y2);
+        
+        setTextureRect(x1, y1, x2, y2);
+        _dirty = false;
+    }
+}
+

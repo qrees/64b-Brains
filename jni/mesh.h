@@ -99,6 +99,7 @@ typedef AutoPtr<Entity> AEntity;
  * Requires attaching shader program. 
  */
 class Mesh: public Entity {
+protected:
     GLuint vboIds[BUF_COUNT];
     AProgram _program;
     ATexture _texture;
@@ -131,16 +132,21 @@ public:
      */
     void setType(GLenum);
     GLenum getType();
-    /*
+    /**
      * setHitable(true) will allow the mesh to receive touch events.
      */
     void setHitable(bool );
     
-    /*
+    /**
      * Draw the mesh on current framebuffer.
      * Requires setting at least vertices with setVertices earlier.
      */
     void draw(ARenderVisitor);
+    
+    /**
+     * Called before actual mesh draw.
+     */
+    virtual void drawPrepare(ARenderVisitor);
     void _draw_hit_check(ARenderVisitor);
     Entity* getEntityForColor(GLubyte*);
     
@@ -148,7 +154,7 @@ public:
      * Down event method. Called when entity is pressed down
      * on touchscreen.
      */
-    virtual void down(int x, int y){};
+    virtual void down(int x, int y){LOGE("Called generic down method");};
     /**
      * Move event method. Called when finger is moved on 
      * touchscreen with this mesh pressed.
@@ -157,7 +163,7 @@ public:
     /**
      * Up event method. Called when finger is lifted.
      */
-    virtual void up(){};
+    virtual void up(int x, int y){LOGE("Called generic up method");};
 private:
     void _setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel);
 };
@@ -171,7 +177,7 @@ typedef AutoPtr<Mesh> AMesh;
  * for example as a root object in the Scene.
  */
 class Group: public Entity {
-private:
+protected:
     list<AMesh> _objects;
 public:
     void addObject(AMesh);
@@ -194,5 +200,32 @@ public:
 };
 typedef AutoPtr<Rectangle> ARectangle;
 
+
+class Button:public Rectangle {
+protected:
+    enum ButtonState {
+        NORMAL=0,
+        PRESSED=1,
+        ACTIVE=2,
+        DISABLED=3
+    };
+    int _state_count;
+    bool _dirty;
+    ButtonState _state;
+    GLfloat _sx, _sy;
+    GLfloat*_state_textures;
+public:
+    Button(GLfloat sx, GLfloat sy);
+    Button();
+    ~Button();
+    void drawPrepare(ARenderVisitor);
+    void setState(ButtonState);
+    void setStateCount(int);
+    void setStateTexture(int state, GLfloat x, GLfloat y);
+    void setTextureSize(GLfloat sx, GLfloat xy);
+    
+    void down(int x, int y);
+    void up(int x, int y);
+};
 
 #endif /* MESH_H_ */

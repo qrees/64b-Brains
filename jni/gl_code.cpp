@@ -76,7 +76,7 @@ void downEvent(int x, int y){
 }
 
 void upEvent(int x, int y){
-    scene->up();
+    scene->up(x, y);
 }
 
 void touchEvent(int x, int y, int action){

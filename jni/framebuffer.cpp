@@ -46,7 +46,8 @@ void Framebuffer::setColorBuffer(GLuint width, GLuint height){
     
     glGenRenderbuffers(1, &_color_id);
     glBindRenderbuffer(GL_RENDERBUFFER, _color_id);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB565, width, height);
+    
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8_OES, width, height);
     checkGlError("glRenderbufferStorage color");
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
