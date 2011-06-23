@@ -44,8 +44,34 @@ public:
     virtual ~Scene();
     void setRoot(AEntity root);
     void setProgram(AProgram program);
-    ATexture loadBitmap(GLuint width, GLuint height, const char * source);
+    
+    /**
+     * XXX: load* methods should probably be moved to separate loader class
+     * 
+     * loadBitmap loads image from *source file in assets directory.
+     * It actually makes call to static Java method that returns parsed image data
+     * with additional header. Data is in form:
+     *     
+     *     4 bytes  width
+     *     4 bytes  height
+     *     4 bytes  format (565, 4444, 8888 etc.)
+     *     width*height*bpp  pixels, bpp depends on format
+     * This is done to overcome need to create separe class in Java and link it with
+     * C++ code.
+     */
+    ATexture loadBitmap(const char * source);
+    
+    /**
+     * loads compressed texture in pkm format. Data from this texture can be directly
+     * feed to OpenGL if GL_ETC1_RGB8_OES extension is supported.
+     */
     ATexture loadTexture(const char * source);
+    
+    /**
+     * Loads OpenGL shader in text format from assets directory. Two shaders
+     * (vertex and fragment) are required to create OpenGL Program. Program is
+     * required to draw anything on screen.
+     */
     AShader loadShader(const char * source, GLuint type);
     virtual void renderFrame();
     virtual void prepareViewMatrix(){};

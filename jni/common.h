@@ -15,4 +15,11 @@
 #define ACTION_MOVE 2
 #define ACTION_UP   1
 
+#define ALPHA_8   0
+#define RGB_565   1 
+#define ARGB_4444 2
+#define ARGB_8888 3
+
+#define TEXTURE_HEADER 12
+
 #endif /* COMMON_H_ */

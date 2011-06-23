@@ -32,10 +32,13 @@ void Scene::setProgram(AProgram program){
     
 }
 
-ATexture Scene::loadBitmap(GLuint width, GLuint height, const char * source){
+ATexture Scene::loadBitmap(const char * source){
     u_char * texture = load_bitmap(source);
+    GLuint *w = (GLuint*)texture;
+    GLuint *h = (GLuint*)texture+1;
+    GLuint *c = (GLuint*)texture+2;
     ATexture tex(new Texture());
-    tex->load(width, height, texture);
+    tex->load(*w, *h, *c, texture+TEXTURE_HEADER);
     delete[] texture;
     return tex;
 }
@@ -157,8 +160,9 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     float ratio = (float)h/(float)w;
 
     // Textures
-    ATexture tex_buttons = loadBitmap(1024, 666, "images/buttons.png");
-    ATexture tex = loadTexture("images/background.pkm");
+    ATexture tex_buttons = loadBitmap("images/buttons.png");
+    ATexture tex = loadBitmap("images/background.png");
+    //ATexture tex = loadTexture("images/background.pkm");
     
     Group * group = new Group();
     _root = group;
@@ -202,6 +206,8 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     
     _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
     //_view_matrix = GLMatrix().ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
+    
+    // perspective view:
     //_view_matrix = GLMatrix().perspective(10.f, (float)w/(float)h, 1.f, 1000.f);
     //_view_matrix.translate(-0.5f, 0.5f, -10.f);
 }
@@ -210,9 +216,10 @@ void MainScene::prepareScene(){
     Scene::prepareScene();
     timeval curr_time;
     gettimeofday(&curr_time, NULL);
-    double t = (double)(curr_time.tv_sec % 360) + (double)(curr_time.tv_usec)/1000000.0f;    
-
-    a_location->setEulerRotation(0, t*20, 0);
+    double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;    
+    t = t*20;
+    t = abs((fmod(t, 360))-180) - 90;
+    a_location->setEulerRotation(0, t, 0);
 }
 
 void MainScene::renderFrame(){

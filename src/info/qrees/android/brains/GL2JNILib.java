@@ -30,6 +30,9 @@ public class GL2JNILib {
         } catch (IOException e) {
             Log.e("Failed to load asset %s", e, source);
             return null;
+        } catch (Exception e) {
+            Log.e("Failed to load asset %s", e, source);
+            return null;
         }
     };
 
@@ -64,7 +67,9 @@ public class GL2JNILib {
             return "";
         }
     };
-
+    
+    public static final int HEADER_SIZE = 4*2+4;
+    
     public static byte[] readBitmap(String name) throws IOException {
         InputStream stream = assets.open(name);
         Bitmap bitmap = BitmapFactory.decodeStream(stream);
@@ -95,10 +100,19 @@ public class GL2JNILib {
         
         ByteBuffer dst = ByteBuffer.allocate(bitmap.getWidth()
                 * bitmap.getHeight() * mult);
+        ByteBuffer dst2 = ByteBuffer.allocate(bitmap.getWidth()
+                * bitmap.getHeight() * mult + HEADER_SIZE);
         dst.order(ByteOrder.nativeOrder());
+        dst2.order(ByteOrder.nativeOrder());
+        dst2.putInt(bitmap.getWidth());
+        dst2.putInt(bitmap.getHeight());
+        dst2.putInt(config.ordinal());
         bitmap.copyPixelsToBuffer(dst);
+        dst.position(0);
+        dst2.put(dst);
         Log.d("img data size %d", dst.capacity());
-        return dst.array();
+        stream.close();
+        return dst2.array();
     }
 
     public static String readFile(String name) throws IOException {

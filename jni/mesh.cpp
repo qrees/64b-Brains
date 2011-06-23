@@ -222,9 +222,7 @@ void Mesh::_draw_hit_check(ARenderVisitor visitor){
 }
 
 void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
-    LOGI("SetBuffer %d, %d", size, vboIds[sel]);
     assert((sel >= 0) && (sel < BUF_COUNT), "this buffer does not exist");
-    //strides[sel] = stride;
     glBindBuffer(target, vboIds[sel]);
     glBufferData(target, size, buf, GL_STATIC_DRAW);
     checkGlError("glBufferData");

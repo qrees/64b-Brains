@@ -132,7 +132,7 @@ unsigned char * load_raw(const char * source) {
     signed char * copy = _env->GetByteArrayElements(result, 0);
     for(int i =0; i < length; i++)
         buf[i] = copy[i];
-    _env->ReleaseByteArrayElements(result, copy, 0);
+    _env->ReleaseByteArrayElements(result, copy, JNI_ABORT);
     return buf;
 }
 
@@ -152,6 +152,7 @@ u_char * load_bitmap(const char * source) {
      */
     jsize length = _env->GetArrayLength(result);
     unsigned char * buf = new unsigned char[length];
+    LOGI("Loaded texture of size %i", length);
     signed char * copy = _env->GetByteArrayElements(result, 0);
     for(int i =0; i < length; i++)
         buf[i] = copy[i];

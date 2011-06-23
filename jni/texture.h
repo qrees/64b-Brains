@@ -25,7 +25,7 @@ public:
     ~Texture();
     GLuint getName();
     void empty(GLuint width, GLuint height);
-    void load(GLuint width, GLuint height, u_char * data);
+    void load(GLuint width, GLuint height, int format, u_char * data);
     void load_pkm(const u_char * data);
     void load_compressed(GLuint width, GLuint height, const u_char * data);
     GLuint getWidth();
