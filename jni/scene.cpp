@@ -32,32 +32,6 @@ void Scene::setProgram(AProgram program){
     
 }
 
-ATexture Scene::loadBitmap(const char * source){
-    u_char * texture = load_bitmap(source);
-    GLuint *w = (GLuint*)texture;
-    GLuint *h = (GLuint*)texture+1;
-    GLuint *c = (GLuint*)texture+2;
-    ATexture tex(new Texture());
-    tex->load(*w, *h, *c, texture+TEXTURE_HEADER);
-    delete[] texture;
-    return tex;
-}
-ATexture Scene::loadTexture(const char * source){
-    const u_char * texture = load_raw(source);
-    ATexture tex(new Texture());
-    tex->load_pkm(texture);
-    delete[] texture;
-    return tex;
-}
-
-AShader Scene::loadShader(const char * source, GLuint type){
-    const char * shader_text = load_asset(source);
-    AShader  shader = AShader(new Shader());
-    shader->load(shader_text, type);
-    delete shader_text;
-    return shader;
-}
-
 void Scene::renderFrame(){
     LOGI("Scene: called stub renderFrame method.");
 }
@@ -158,7 +132,9 @@ void Scene::_process_events(){
 
 MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     float ratio = (float)h/(float)w;
-
+    // Fonts
+    AFont font = new Font("fonts/small-outline-8.fnt");
+    
     // Textures
     ATexture tex_buttons = loadBitmap("images/buttons.png");
     ATexture tex = loadBitmap("images/background.png");

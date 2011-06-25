@@ -18,7 +18,7 @@
 #define  LOGI(msg, ...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,msg"\n", ##__VA_ARGS__)
 #define  LOGE(msg, ...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,msg"\n", ##__VA_ARGS__)
 
-extern void printGLString(const char *name, GLenum s);
+//extern void printGLString(const char *name, GLenum s);
 extern void checkGlError(const char* op);
 
 #endif /* LOG_H_ */

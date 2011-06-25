@@ -29,5 +29,6 @@ private:
 };
 typedef AutoPtr<Shader> AShader;
 
+AShader loadShader(const char * source, GLuint type);
 
 #endif /* SHADER_H_ */

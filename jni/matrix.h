@@ -11,6 +11,8 @@
 #include <math.h>
 #include <vector>
 
+using namespace std;
+
 template<typename T> class Matrix:public RefCntObject {
     typedef AutoPtr< Matrix<T> > AMatrix;
 private:

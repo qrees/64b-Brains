@@ -113,7 +113,7 @@ char * load_asset(const char * source) {
     return ret_str;
 }
 
-unsigned char * load_raw(const char * source) {
+unsigned char * load_raw(const char * source, size_t * file_size) {
     
     /*
      * Get java method id to load bitmap and call this method
@@ -130,9 +130,14 @@ unsigned char * load_raw(const char * source) {
     jsize length = _env->GetArrayLength(result);
     unsigned char * buf = new unsigned char[length];
     signed char * copy = _env->GetByteArrayElements(result, 0);
-    for(int i =0; i < length; i++)
-        buf[i] = copy[i];
+    memcpy(buf, copy, length);
     _env->ReleaseByteArrayElements(result, copy, JNI_ABORT);
+    
+    /*
+     * Return size of returned data if file_size pointer is given.
+     */
+    if(file_size)
+        *file_size = length;
     return buf;
 }
 
@@ -152,12 +157,60 @@ u_char * load_bitmap(const char * source) {
      */
     jsize length = _env->GetArrayLength(result);
     unsigned char * buf = new unsigned char[length];
-    LOGI("Loaded texture of size %i", length);
     signed char * copy = _env->GetByteArrayElements(result, 0);
-    for(int i =0; i < length; i++)
-        buf[i] = copy[i];
+    memcpy(buf, copy, length);
     _env->ReleaseByteArrayElements(result, copy, 0);
     return buf;
+}
+
+/**
+ * XXX: load* methods should probably be moved to separate loader class
+ * 
+ * loadBitmap loads image from *source file in assets directory.
+ * It actually makes call to static Java method that returns parsed image data
+ * with additional header. Data is in form:
+ *     
+ *     4 bytes  width
+ *     4 bytes  height
+ *     4 bytes  format (565, 4444, 8888 etc.)
+ *     width*height*bpp  pixels, bpp depends on format
+ * This is done to overcome need to create separe class in Java and link it with
+ * C++ code.
+ */
+ATexture loadBitmap(const char * source){
+    u_char * texture = load_bitmap(source);
+    GLuint *w = (GLuint*)texture;
+    GLuint *h = (GLuint*)texture+1;
+    GLuint *c = (GLuint*)texture+2;
+    ATexture tex(new Texture());
+    tex->load(*w, *h, *c, texture+TEXTURE_HEADER);
+    delete[] texture;
+    return tex;
+}
+
+/**
+ * loads compressed texture in pkm format. Data from this texture can be directly
+ * feed to OpenGL if GL_ETC1_RGB8_OES extension is supported.
+ */
+ATexture loadTexture(const char * source){
+    const u_char * texture = load_raw(source);
+    ATexture tex(new Texture());
+    tex->load_pkm(texture);
+    delete[] texture;
+    return tex;
+}
+
+/**
+ * Loads OpenGL shader in text format from assets directory. Two shaders
+ * (vertex and fragment) are required to create OpenGL Program. Program is
+ * required to draw anything on screen.
+ */
+AShader loadShader(const char * source, GLuint type){
+    const char * shader_text = load_asset(source);
+    AShader  shader = AShader(new Shader());
+    shader->load(shader_text, type);
+    delete shader_text;
+    return shader;
 }
 
 extern "C" {

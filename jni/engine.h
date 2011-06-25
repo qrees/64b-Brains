@@ -19,3 +19,4 @@ using namespace std;
 #include "scene.h"
 #include "event.h"
 #include "render_visitor.h"
+#include "font.h"

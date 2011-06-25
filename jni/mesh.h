@@ -8,6 +8,17 @@
 #ifndef MESH_H_
 #define MESH_H_
 
+#include <string>
+#include <list>
+#include <GLES2/gl2.h>
+
+#include "log.h"
+#include "smart_ptr.h"
+#include "matrix.h"
+#include "quaternion.h"
+#include "program.h"
+#include "texture.h"
+
 class RenderVisitor;
 typedef AutoPtr<RenderVisitor> ARenderVisitor;
 
@@ -119,6 +130,11 @@ public:
      * Shader program to be used by Mesh in "draw" method.
      */
     void setProgram(AProgram program);
+    
+    /**
+     * Sets Mesh Vertices from C array. Data in organized in triples:
+     *    (x, y, z)...
+     */
     void setVertices(GLfloat *buf, GLint num);
     void setNormal(GLfloat *buf, GLint num);
     void setTextureCoord(GLfloat *buf, GLint num);

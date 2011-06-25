@@ -8,6 +8,8 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
 
+#include "shader.h"
+
 #define LOC_TEXTURE_SAMPLER 0
 #define LOC_POSITION 0
 #define LOC_COLOR 1
