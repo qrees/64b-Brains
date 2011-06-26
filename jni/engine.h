@@ -20,3 +20,4 @@ using namespace std;
 #include "event.h"
 #include "render_visitor.h"
 #include "font.h"
+#include "textarea.h"

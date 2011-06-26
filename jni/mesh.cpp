@@ -139,6 +139,7 @@ void Mesh::setNormal(GLfloat *buf, GLint num) {
 }
 
 void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
+    LOGI("Set texture");
     has_texture = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 2 * num, TEXTURE_BUF);
 }
@@ -191,13 +192,14 @@ void Mesh::draw(ARenderVisitor visitor) {
     }
     assert(program, "You need to set program for Mesh");
     assert(program->isValid(), "Mesh program is not valid");
-    program->activate();
     
+    program->activate();
     program->bindPosition(vboIds[VERTEX_BUF]);
     if(has_normal)
         program->bindNormal(vboIds[NORMAL_BUF]);
-    if(has_texture && bool(_texture))
+    if(has_texture && bool(_texture)){
         program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
+    }
     if(has_color)
         program->bindColor(vboIds[COLOR_BUF]);
     
@@ -294,31 +296,31 @@ Entity* Group::getEntityForColor(GLubyte* color){
  * Rectangle class implementation
  */
 
-GLushort rec_indexes[2 * 3] = { 0, 1, 2, 3 };
+GLushort rec_indexes[4] = { 0, 1, 2, 3 };
 
 Rectangle::Rectangle(float aspect):Mesh(){
     GLfloat vert[3 * 4];
     vert[2] = vert[5] = vert[8] = vert[11] = 0.f;
-    vert[0 * 3 + 0] = 0.f;    // bottom left
-    vert[0 * 3 + 1] = 0.f;
-    vert[1 * 3 + 0] = 0.f;    // top left
-    vert[1 * 3 + 1] = aspect; 
+    vert[0 * 3 + 0] = 0.f;    // top left
+    vert[0 * 3 + 1] = aspect;
+    vert[1 * 3 + 0] = 0.f;    // bottom left
+    vert[1 * 3 + 1] = 0.f; 
     vert[2 * 3 + 0] = 1.f;    // top right
     vert[2 * 3 + 1] = aspect;
     vert[3 * 3 + 0] = 1.f;    // bottom right
     vert[3 * 3 + 1] = 0.f;
     setVertices(vert, 4);
     setTextureRect(0.f, 1.f, 1.f, 0.f);
-    setIndexes(rec_indexes, 6);
+    setIndexes(rec_indexes, 4);
     setType(GL_TRIANGLE_STRIP);
 }
 
 void Rectangle::setTextureRect(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2){
     GLfloat coords[8];
     coords[0] = x1;
-    coords[1] = y1;
+    coords[1] = y2;
     coords[2] = x1;
-    coords[3] = y2;
+    coords[3] = y1;
     coords[4] = x2;
     coords[5] = y2;
     coords[6] = x2;

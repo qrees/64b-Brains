@@ -109,7 +109,6 @@ void Font::load(const char * source){
                 for(size_t i=0; i<char_count; i++){
                     fcharacter = (FFontChar*)char_start;
                     char_start += sizeof(FFontChar);
-                    LOGI("Font character: %c", fcharacter->id);
                     character = _char_from_fchar(fcharacter);
                     _characters[character->id] = character;
                 }
@@ -144,9 +143,14 @@ uint16_t Font::getPageHeight(){
     return _scale_h;
 }
 
+uint16_t Font::getLineHeight(){
+    return _line_height;
+}
+
 AFontChar Font::_char_from_fchar(FFontChar* fcharacter){
     FontChar *character = new FontChar;
     AFontChar a_character = character;
+    
     character->channel = fcharacter->channel;
     character->height = fcharacter->height;
     character->id = fcharacter->id;
@@ -157,5 +161,6 @@ AFontChar Font::_char_from_fchar(FFontChar* fcharacter){
     character->xoffset = fcharacter->xoffset;
     character->y = fcharacter->y;
     character->yoffset = fcharacter->yoffset;
+    LOGI("Drawing character %c %i offset:%i %i pos:%i %i size:%i %i", character->id, character->id, character->xoffset, character->yoffset, character->x, character->y, character->width, character->height);
     return a_character;
 }

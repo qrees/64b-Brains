@@ -133,7 +133,7 @@ void Scene::_process_events(){
 MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     float ratio = (float)h/(float)w;
     // Fonts
-    AFont font = new Font("fonts/small-outline-8.fnt");
+    AFont font = new Font("fonts/small-outline.fnt");
     
     // Textures
     ATexture tex_buttons = loadBitmap("images/buttons.png");
@@ -153,21 +153,17 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     b_location = new Node();
     b_location->setParent(root_location);
     b_location->setLocation(-0.5f, -0.f, 0.0f);
-    b_location->setEulerRotation(0, 180, 0);
+    //b_location->setEulerRotation(0, 180, 0);
+    
+    ANode text_location = new Node();
+    text_location->setParent(b_location);
+    //text_location->setScale(5f, 0.005f, 1.f);
 
     AMesh a_mesh = new Rectangle();
     group->addObject(a_mesh);
     a_mesh->setTexture(tex);
     a_mesh->setLocation(a_location);
-    /*
-    Rectangle * rec = new Rectangle(59.f/287.f);
-    b_mesh = rec;
-    rec->setLocation(b_location);
-    group->addObject(b_mesh);
-    rec->setTexture(tex_buttons);
-    rec->setTextureRect(12.f/1024.f, 125.f/666.f, 299.f/1024.f, 184.f/666.f);
-    rec->setHitable(true);
-    */
+
     AMesh button_mesh;
     Button*butt = new Button(287, 59);
     button_mesh = butt;
@@ -179,9 +175,15 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     butt->setStateTexture(2, 12, 281);
     butt->setStateTexture(3, 12, 359);
     
+    ATextArea text_mesh = new TextArea();
+    group->addObject(text_mesh);
+    text_mesh->setFont(font);
+    text_mesh->setText("ABCDEFGHIJKLMNOPQRST\nabcdefghijklmnopqrst");
+    text_mesh->setLocation(text_location);
+    text_mesh->setSize(0.1f);
     
     _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
-    //_view_matrix = GLMatrix().ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
+    //_view_matrix = GLMatrix().ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, -1.0f);
     
     // perspective view:
     //_view_matrix = GLMatrix().perspective(10.f, (float)w/(float)h, 1.f, 1000.f);
@@ -194,8 +196,10 @@ void MainScene::prepareScene(){
     gettimeofday(&curr_time, NULL);
     double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;    
     t = t*20;
-    t = abs((fmod(t, 360))-180) - 90;
-    a_location->setEulerRotation(0, t, 0);
+    t = abs((fmod(t, 360.))-180.f);
+
+    //_view_matrix = GLMatrix().ortho(-t, t, -t, t, 1.0f, -1.0f);
+    //a_location->setEulerRotation(0, t, 0);
 }
 
 void MainScene::renderFrame(){

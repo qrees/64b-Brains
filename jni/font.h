@@ -79,8 +79,8 @@ struct FILE_DATA FontCommon {
     uint16_t y; \
     uint16_t width; \
     uint16_t height; \
-    uint16_t xoffset; \
-    uint16_t yoffset; \
+    int16_t xoffset; \
+    int16_t yoffset; \
     uint16_t xadvance; \
     uint8_t  page; \
     uint8_t  channel;
@@ -113,6 +113,7 @@ public:
     ATexture getTexture(uint32_t);
     uint16_t getPageWidth();
     uint16_t getPageHeight();
+    uint16_t getLineHeight();
     AFontChar getCharData(uint32_t);
 private:
     AFontChar _char_from_fchar(FFontChar*);
