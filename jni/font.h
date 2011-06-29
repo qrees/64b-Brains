@@ -119,7 +119,8 @@ private:
     AFontChar _char_from_fchar(FFontChar*);
     const u_char * _data;
     uint _pages_count;
-    vector<ATexture> _pages;
+    ATexture _page_texture;
+    //vector<ATexture> _pages;
     map<uint32_t, AFontChar> _characters;
     
     uint16_t _line_height;

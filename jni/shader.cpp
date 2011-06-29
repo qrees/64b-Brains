@@ -10,6 +10,7 @@ Shader::~Shader(){
     LOGI("Deleting shader %d", _id);
     if(_id)
         glDeleteShader(_id);
+    checkGlError("glDeleteShader");
 }
 Shader::Shader(const char * source, GLenum shaderType) {
     _source = string(source);

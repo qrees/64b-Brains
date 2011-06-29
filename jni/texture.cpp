@@ -10,9 +10,11 @@
 void Texture::_init(){
     glGenTextures(1, &_id);
     checkGlError("glGenTextures");
+    LOGI("Allocated texture %i", _id);
     glBindTexture(GL_TEXTURE_2D, _id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    checkGlError("glTexParameteri");
 }
 
 Texture::Texture(){
@@ -21,7 +23,9 @@ Texture::Texture(){
 }
 Texture::~Texture(){
     delete[] _data;
+    LOGI("Deleting texture %i", _id);
     glDeleteTextures(1, &_id);
+    checkGlError("glDeleteTextures");
 }
 
 GLuint Texture::getName(){
@@ -102,7 +106,7 @@ void Texture::load_compressed(GLuint width, GLuint height, const u_char * data){
 }
 
 void Texture::loaded(){
-    glGenerateMipmap(GL_TEXTURE_2D);
+    //glGenerateMipmap(GL_TEXTURE_2D);
     checkGlError("glGenerateMipmap");
 }
 

@@ -31,7 +31,6 @@ private:
     GLfloat _x, _y, _z;         // Relative transposition
     GLQuaternion _rotation;     // Relative rotation
     GLfloat _sx, _sy, _sz;      // Relative scale.
-    GLfloat _angle, _rx, _ry, _rz;
     bool _valid;
 public:
     enum TransformSpace {
@@ -43,10 +42,19 @@ public:
     Node();
     Node(string name);
     void init();
-    ~Node(){};
+    ~Node();
     void addChild(AutoPtr<Node> node);
     void setParent(AutoPtr<Node>);
     
+    /**
+     * Return parent of this node as set by setParent.
+     */
+    AutoPtr<Node> getParent();
+    
+    /**
+     * Return set of the node as set during creation.
+     */
+    string getName();
     /**
      * Updates absolute orientation from relative orienation
      * and parent nodes. If there is no parent node,

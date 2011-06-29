@@ -12,6 +12,7 @@ Framebuffer::Framebuffer(){
     _color_id = 0;
     _depth_id = 0;
     glGenFramebuffers(1, &_id);
+    checkGlError("glGenFramebuffers");
 }
 
 Framebuffer::~Framebuffer(){
@@ -19,6 +20,7 @@ Framebuffer::~Framebuffer(){
     glDeleteRenderbuffers(1, &_depth_id);
     glDeleteRenderbuffers(1, &_stencil_id);
     glDeleteFramebuffers(1, &_id);
+    checkGlError("glDeleteFramebuffers");
 }
 
 void Framebuffer::setDepthStencilBuffer(GLuint width, GLuint height){

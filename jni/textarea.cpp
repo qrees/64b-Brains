@@ -32,6 +32,8 @@ void TextArea::_update(){
     GLfloat cur_y=0;
     if(_text.length() > 0)
         setTexture(_font->getTexture(_text.at(0)));
+    else
+        LOGE("Not settings texture for text, because text is empty");
     for(size_t i=0; i<_text.length(); i++){
         //ATexture texture = _font->getTexture(_text.at(i)); // XXX : to make it simple, text should not refer to multiple font textures
         if(_text.at(i) == 10){
@@ -40,11 +42,11 @@ void TextArea::_update(){
             continue;
         }
         character = _font->getCharData(_text.at(i));
-        LOGI("Drawing character %c %i\toffset:%i %i\tpos:%i %i\tsize: %i %i",
+        /*LOGI("Drawing character %c %i\toffset:%i %i\tpos:%i %i\tsize: %i %i",
                 character->id, character->id,
                 character->xoffset, character->yoffset,
                 character->x, character->y,
-                character->width, character->height);
+                character->width, character->height);*/
         // First triangle
         yoffset = _font->getLineHeight() - character->yoffset - character->height;
         *cur_index++ = index++; // =0
@@ -89,6 +91,7 @@ void TextArea::_update(){
     setType(GL_TRIANGLES);
     delete[] tex_coord;
     delete[] vertices;
+    delete[] indexes;
     _dirty = false;
 }
 

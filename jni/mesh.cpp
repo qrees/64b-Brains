@@ -20,6 +20,10 @@ Node::Node(string name){
     init();
 }
 
+Node::~Node(){
+    LOGI("Deleting node %s", _name.c_str());
+}
+
 void Node::init(){
     _matrix.identity();
     _local_matrix.identity();
@@ -27,11 +31,24 @@ void Node::init(){
     _valid = true;
     _rotation = GLQuaternion::idt();
     _sx = _sy = _sz = 1.0f;
+    _x = _y = _z = 0.f;
+    LOGI("Created node %s", _name.c_str());
+}
+
+string Node::getName(){
+    if(_parent)
+        return _name + " -> " + _parent->getName();
+    else
+        return _name;
 }
 
 void Node::setParent(AutoPtr<Node> parent){
     _parent = parent;
     _valid = false;
+}
+
+ANode Node::getParent(){
+    return _parent;
 }
 
 void Node::setOrientation(GLMatrix matrix){
@@ -112,10 +129,15 @@ Mesh::Mesh() {
 
 Mesh::~Mesh(){
     glDeleteBuffers(BUF_COUNT, vboIds);
+    for(int i = 0; i < BUF_COUNT; i++)
+        LOGI("Deleted buffer %i", vboIds[i]);
+    checkGlError("glDeleteBuffers");
 }
 
 void Mesh::init() {
     glGenBuffers(BUF_COUNT, vboIds);
+    for(int i = 0; i < BUF_COUNT; i++)
+        LOGI("Created buffer %i", vboIds[i]);
     checkGlError("glGenBuffers");
     has_color = has_normal = has_texture = false;
     _solid_color = 0;
@@ -202,7 +224,7 @@ void Mesh::draw(ARenderVisitor visitor) {
     }
     if(has_color)
         program->bindColor(vboIds[COLOR_BUF]);
-    
+
     program->bindModelMatrix(_location->getMatrix());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);
     glDrawElements(getType(), numIndices, GL_UNSIGNED_SHORT, 0);

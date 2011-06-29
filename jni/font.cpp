@@ -45,7 +45,7 @@ void Font::load(const char * source){
     char * font_name;
     char * page_name;
     size_t char_count;
-    ATexture page_texture;
+    //ATexture page_texture;
     FontHeader *header;
     string path;
     char * base = basename(source);
@@ -95,8 +95,9 @@ void Font::load(const char * source){
                     page_name = (char*)page_start;
                     page_start += strlen(page_name)+1;
                     path = string(dir) + "/" + page_name;
-                    page_texture = loadBitmap(path.c_str());
-                    _pages.push_back(page_texture);
+                    _page_texture = loadBitmap(path.c_str());
+                    //_page_texture = page_texture;
+                    //_pages.push_back(page_texture);
                     LOGI("Font page name: %s", path.c_str());
                 };
                 break;
@@ -127,12 +128,14 @@ AFontChar Font::getCharData(uint32_t id){
     }
 }
 ATexture Font::getTexture(uint32_t id){
+    return _page_texture;
+    /*
     if(_characters.count(id))
         return _pages[_characters[id]->page];
     else{
         LOGE("Character %u not found", id);
         return _pages[0];
-    }
+    }*/
 }
 
 uint16_t Font::getPageWidth(){
@@ -161,6 +164,6 @@ AFontChar Font::_char_from_fchar(FFontChar* fcharacter){
     character->xoffset = fcharacter->xoffset;
     character->y = fcharacter->y;
     character->yoffset = fcharacter->yoffset;
-    LOGI("Drawing character %c %i offset:%i %i pos:%i %i size:%i %i", character->id, character->id, character->xoffset, character->yoffset, character->x, character->y, character->width, character->height);
+    //LOGI("Loading character %c %i offset:%i %i pos:%i %i size:%i %i", character->id, character->id, character->xoffset, character->yoffset, character->x, character->y, character->width, character->height);
     return a_character;
 }

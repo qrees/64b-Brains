@@ -25,9 +25,9 @@ void printGLString(const char *name, GLenum s) {
     LOGI("GL %s = %s", name, v);
 }
 
-void checkGlError(const char* op) {
+void _checkGlError(const char* op, int line, const char * file) {
     for (GLint error = glGetError(); error; error = glGetError()) {
-        LOGI("after %s() glError (0x%x)", op, error);
+        LOGE("%s[%i]: after %s() glError (0x%x)", file, line, op, error);
     }
 }
 

@@ -18,8 +18,8 @@ Program::Program() {
 
 Program::~Program() {
     LOGI("Deleting program %d", getName());
-    if (getName())
-        glDeleteProgram(getName());
+    glDeleteProgram(getName());
+    checkGlError("glDeleteProgram");
 }
 
 void Program::activateAttributes() {
@@ -98,6 +98,7 @@ void Program::bindTexture(GLuint buf_id, GLuint tex_id) {
     bindBuffer(TEXTURE_ATTRIB, buf_id, 2, GL_FLOAT, 0, 0);
     glActiveTexture(GL_TEXTURE0);
     checkGlError("glActiveTexture");
+    assert(glIsTexture(tex_id) == GL_TRUE, "Trying to bind non existant texture!");
     glBindTexture(GL_TEXTURE_2D, tex_id);
     checkGlError("glBindTexture");
     glUniform1i(uniforms[LOC_TEXTURE_SAMPLER], 0);
@@ -130,11 +131,9 @@ void Program::bindBuffer(GLuint location, GLuint buf_id, GLuint size,
 }
 
 void Program::make(AShader vertexShader, AShader fragmentShader) {
-    LOGI("Making program with fragment and vertex shaders");
     _vertex = vertexShader;
     _fragment = fragmentShader;
     _log = 0;
-    LOGI("Start linking program");
     _create();
     activateAttributes();
 }

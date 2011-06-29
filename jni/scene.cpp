@@ -17,7 +17,7 @@ Scene::Scene(GLuint w, GLuint h){
     _prepareForHit();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
+    checkGlError("glBlendFunc");
     AShader _vertex_shader = loadShader("shaders/vertex_attrib.gls", GL_VERTEX_SHADER);
     AShader _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
     _program = new Program();
@@ -144,20 +144,19 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     _root = group;
         
     // Location nodes, entities are attached to these nodes.
-    root_location = new Node();
+    root_location = new Node("root");
     root_location->setLocation(0.5f, 0.5f, 0.0f);
-    a_location = new Node();
+    a_location = new Node("a");
     a_location->setParent(root_location);
     a_location->setLocation(-0.5f, 0.5f-ratio, 0.0f);
     a_location->setScale(1, ratio, 1);
-    b_location = new Node();
+    b_location = new Node("b");
     b_location->setParent(root_location);
     b_location->setLocation(-0.5f, -0.f, 0.0f);
     //b_location->setEulerRotation(0, 180, 0);
     
-    ANode text_location = new Node();
+    ANode text_location = new Node("txt");
     text_location->setParent(b_location);
-    //text_location->setScale(5f, 0.005f, 1.f);
 
     AMesh a_mesh = new Rectangle();
     group->addObject(a_mesh);
@@ -174,7 +173,7 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     butt->setStateTexture(1, 12, 203);
     butt->setStateTexture(2, 12, 281);
     butt->setStateTexture(3, 12, 359);
-    
+
     ATextArea text_mesh = new TextArea();
     group->addObject(text_mesh);
     text_mesh->setFont(font);

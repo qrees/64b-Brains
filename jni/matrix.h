@@ -33,6 +33,15 @@ public:
         return _matrix;
     }
     
+    void print(){
+        int i;
+        LOGI("[ %f %f %f %f", _matrix[0], _matrix[1], _matrix[2], _matrix[3]);
+        for (i = 1; i < 3; i++) {
+            LOGI("  %f %f %f %f", _matrix[4*i], _matrix[4*i+1], _matrix[4*i+2], _matrix[4*i+3]);
+        }
+        LOGI("  %f %f %f %f ]", _matrix[4*i], _matrix[4*i+1], _matrix[4*i+2], _matrix[4*i+3]);
+    }
+    
     Matrix<T>& operator= (const Matrix<T> &other) {
         for (int i = 0; i < 16; i++) {
             _matrix[i] = other._matrix[i];
