@@ -84,7 +84,6 @@ void TextArea::_update(){
         cur_x+=character->xadvance;
         index++;
     }
-    LOGI("Index %i", index);
     setVertices(vertices, (index));
     setTextureCoord(tex_coord, (index));
     setIndexes(indexes, (index)/4 * 6);
@@ -99,9 +98,22 @@ void TextArea::setFont(AFont font){
     _font = font;
     _dirty = true;
 }
-
+/*
 void TextArea::setText(const char* text){
     setText(string(text));
+}
+*/
+void TextArea::setText(const char* format, ... ){
+    char *buffer;
+    char dummy;
+    va_list args;
+    va_start (args, format);
+    int count = vsnprintf(&dummy, 0, format, args);
+    buffer = new char[count];
+    vsnprintf(buffer, count, format, args);
+    setText(string(buffer));
+    delete buffer;
+    va_end (args);
 }
 
 void TextArea::setText(string text){
@@ -115,7 +127,6 @@ void TextArea::setSize(GLfloat size){
 
 void TextArea::drawPrepare(ARenderVisitor visitor){
     if(_dirty){
-        LOGI("TextArea is dirty, updating");
         _update();
         _location->setScale(1.f/float(_font->getLineHeight())*_size, 1.f/float(_font->getLineHeight())*_size, 1.0f);
     }else{

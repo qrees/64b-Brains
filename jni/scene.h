@@ -11,6 +11,7 @@
 #include <hash_map>
 #include <queue>
 #include "render_visitor.h"
+#include "textarea.h"
 
 class Event;
 typedef AutoPtr<Event> AEvent;
@@ -76,6 +77,7 @@ private:
     ANode a_location;
     ANode root_location;
     AMesh b_mesh;
+    ATextArea text_mesh;
 public:
     MainScene(GLuint w=0, GLuint h=0);
     void renderFrame();

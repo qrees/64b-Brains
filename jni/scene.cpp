@@ -174,10 +174,9 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     butt->setStateTexture(2, 12, 281);
     butt->setStateTexture(3, 12, 359);
 
-    ATextArea text_mesh = new TextArea();
+    text_mesh = new TextArea();
     group->addObject(text_mesh);
     text_mesh->setFont(font);
-    text_mesh->setText("ABCDEFGHIJKLMNOPQRST\nabcdefghijklmnopqrst");
     text_mesh->setLocation(text_location);
     text_mesh->setSize(0.1f);
     
@@ -192,8 +191,9 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
 void MainScene::prepareScene(){
     Scene::prepareScene();
     timeval curr_time;
-    gettimeofday(&curr_time, NULL);
-    double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;    
+    gettimeofday(&curr_time, NULL);    
+    double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;
+    text_mesh->setText("time: %Lf", t);
     t = t*20;
     t = abs((fmod(t, 360.))-180.f);
 

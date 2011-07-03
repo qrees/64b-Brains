@@ -15,7 +15,8 @@ class TextArea: public Mesh{
 public:
     TextArea();
     void setFont(AFont);
-    void setText(const char*);
+    //void setText(const char*);
+    void setText(const char* format, ... );
     void setText(string);
     void setSize(GLfloat);
     void drawPrepare(ARenderVisitor);

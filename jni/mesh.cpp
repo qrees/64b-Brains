@@ -151,7 +151,6 @@ void Mesh::setProgram(AProgram program) {
 }
 
 void Mesh::setVertices(GLfloat *buf, GLint num) {
-    LOGI("Set position");
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 3 * num, VERTEX_BUF);
 }
 
@@ -161,7 +160,6 @@ void Mesh::setNormal(GLfloat *buf, GLint num) {
 }
 
 void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
-    LOGI("Set texture");
     has_texture = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 2 * num, TEXTURE_BUF);
 }
@@ -406,9 +404,9 @@ void Button::drawPrepare(ARenderVisitor visitor){
         GLfloat tw = (float)(_texture->getWidth());
         GLfloat th = (float)(_texture->getHeight());
         GLfloat x1 = (float)(_state_textures[_state*2+0])/tw;
-        GLfloat y1 = (float)(_state_textures[_state*2+1])/th;
+        GLfloat y2 = (float)(_state_textures[_state*2+1])/th;
         GLfloat x2 = x1 + ((float)_sx/tw);
-        GLfloat y2 = y1 + ((float)_sy/th);
+        GLfloat y1 = y2 + ((float)_sy/th);
         LOGI("Button is dirty, updating texture: %f, %f, %f, %f", x1, y1, x2, y2);
         
         setTextureRect(x1, y1, x2, y2);
