@@ -85,7 +85,7 @@ void touchEvent(int x, int y, int action){
             downEvent(x, y);
             break;
         case ACTION_MOVE:
-            //moveEvent(x, y);
+            moveEvent(x, y);
             break;
         case ACTION_UP:
             upEvent(x, y);

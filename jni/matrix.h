@@ -165,15 +165,7 @@ public:
         _multiply(rot_mat);
         return *this;
     }
-    /*
-    Matrix<T>& rotate(Quaternion<T>&  quat) {
-        Matrix<T> rot_mat;
-        quat.toMatrix(rot_mat);
-        //Matrix<T> rot_mat = Matrix<T>().rotation(angle, x, y,z);
-        _multiply(rot_mat);
-        return *this;
-    }
-    */
+
     Matrix<T>& frustum(T left, T right, T bottom, T top, T nearZ, T farZ) {
         T deltaX = right - left;
         T deltaY = top - bottom;
@@ -280,7 +272,64 @@ public:
         return _M(i,j);
     }
 
+    /**
+     * Return inverted matrix from current matrix without modifying current matrix.
+     */
+    Matrix<T>& inverseGet(){
+        Matrix<T> *inverted = new Matrix<T>;
+        inverted->identity();
 
+        int swap;
+        T t;
+        T temp[4][4];
+        
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[i][j] = _M(i, j);
+            }
+        }
+        
+        for (int i = 0; i < 4; i++) {
+            swap = i;
+            for (int j = i + 1; j < 4; j++) {
+                if (fabs(temp[j][i]) > fabs(temp[i][i])) {
+                    swap = j;
+                }
+            }
+                
+            if (swap != i) {
+                for (int k = 0; k < 4; k++) {
+                    t = temp[i][k];
+                    temp[i][k] = temp[swap][k];
+                    temp[swap][k] = t;
+                    
+                    t = inverted->_M(i, k);
+                    inverted->_M(i, k) = inverted->_M(swap, k);
+                    inverted->_M(swap, k) = t;
+                }
+            }
+            if (temp[i][i] == 0) {
+                LOGI("Matrix: Matrix is singular, cannot invert.");
+                return *inverted;
+            }
+            t = temp[i][i];
+            for (int k = 0; k < 4; k++) {
+                temp[i][k] /= t;
+                inverted->_M(i, k) /= t;
+            }
+            for (int j = 0; j < 4; j++) {
+                if (j != i) {
+                    t = temp[j][i];
+                    for (int k = 0; k < 4; k++) {
+                        temp[j][k] -= temp[i][k] * t;
+                        inverted->_M(j, k) -= inverted->_M(i, k) * t;
+                    }
+                }
+            }
+        }
+        return *inverted;
+    }
+    
     Matrix<T>& inverse() {
         int swap;
         T t;

@@ -89,6 +89,7 @@ public:
     virtual void draw(ARenderVisitor){};
     virtual void _draw_hit_check(ARenderVisitor){};
     virtual void setLocation(ANode location);
+    virtual ANode getLocation();
     virtual Entity* getEntityForColor(GLubyte*);
 };
 typedef AutoPtr<Entity> AEntity;
@@ -178,16 +179,16 @@ public:
      * Down event method. Called when entity is pressed down
      * on touchscreen.
      */
-    virtual void down(int x, int y){LOGE("Called generic down method");};
+    virtual void down(GLfloat x, GLfloat y){LOGE("Called generic down method");};
     /**
      * Move event method. Called when finger is moved on 
      * touchscreen with this mesh pressed.
      */
-    virtual void move(int x, int y){};
+    virtual void move(GLfloat x, GLfloat y){};
     /**
      * Up event method. Called when finger is lifted.
      */
-    virtual void up(int x, int y){LOGE("Called generic up method");};
+    virtual void up(GLfloat x, GLfloat y){LOGE("Called generic up method");};
 private:
     void _setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel);
 };
@@ -248,8 +249,8 @@ public:
     void setStateTexture(int state, GLfloat x, GLfloat y);
     void setTextureSize(GLfloat sx, GLfloat xy);
     
-    void down(int x, int y);
-    void up(int x, int y);
+    void down(GLfloat x, GLfloat y);
+    void up(GLfloat x, GLfloat y);
 };
 
 #endif /* MESH_H_ */

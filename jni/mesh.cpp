@@ -116,6 +116,10 @@ void Entity::setLocation(ANode location){
     _location = location;
 }
 
+ANode Entity::getLocation(){
+    return _location;
+}
+
 Entity* Entity::getEntityForColor(GLubyte*){
     return this;
 }
@@ -390,11 +394,11 @@ void Button::setStateTexture(int state, GLfloat x, GLfloat y){
     _state_textures[state*2 + 1] = y;
 }
 
-void Button::down(int x, int y){
+void Button::down(GLfloat x, GLfloat y){
     setState(PRESSED);
 }
 
-void Button::up(int x, int y){
+void Button::up(GLfloat x, GLfloat y){
     setState(NORMAL);
 }
 

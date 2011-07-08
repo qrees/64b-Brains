@@ -85,4 +85,11 @@ public:
 };
 
 
+class GameScene: public Scene{
+public:
+    GameScene(GLuint w=0, GLuint h=0);
+    //void renderFrame();
+    //void prepareScene();
+};
+
 #endif /* SCENE_H_ */

@@ -11,6 +11,7 @@
  * Scene implementation
  */
 Scene::Scene(GLuint w, GLuint h){
+    float ratio = (float)h/(float)w;
     _w = w;
     _h = h;
     _screen_buffer = new ScreenBuffer;
@@ -22,6 +23,8 @@ Scene::Scene(GLuint w, GLuint h){
     AShader _fragment_shader = loadShader("shaders/fragment_attrib.gls", GL_FRAGMENT_SHADER);
     _program = new Program();
     _program->make(_vertex_shader, _fragment_shader);
+    
+    _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
 }
 
 Scene::~Scene(){
@@ -45,8 +48,8 @@ void Scene::_prepareForHit(){
     _hit_program->make(_vertex_shader, _fragment_shader);
     _hit_program->activateSolidColor();
     
-    _pixels = new Texture();
-    _pixels->empty(_w, _h);
+    //_pixels = new Texture();
+    //_pixels->empty(_w, _h);
     
     _framebuffer = new Framebuffer();
     _framebuffer->setColorBuffer(_w, _h);
@@ -99,20 +102,51 @@ void Scene::addEvent(AEvent event){
 void Scene::down(int x, int y){
     LOGI("Scene 'down' event");
     _clicked = hitCheck(x, y);
+    
     if(_clicked){
+        vector<GLfloat> position(4);
+        position[0] = 1;
+        position[1] = 0;
+        position[2] = 0;
+        position[3] = 1;
         LOGI("Mesh was touched");
-        ((Mesh*)(_clicked.m_ptr))->down(x, y);
+        ANode mesh_loc = ((Mesh*)(_clicked.m_ptr))->getLocation();
+        GLMatrix matrix = _view_matrix * mesh_loc->getMatrix();
+
+        position[0] = 0;
+        position[1] = 0;
+        position[2] = 0;
+        position[3] = 1;
+        vector<GLfloat> new_position = matrix.multiply(position);
+        position[0] = float(x)/float(_w);
+        position[1] = float(y)/float(_h);
+        position[2] = 0;
+        position[3] = 1;
+        vector<GLfloat> click_position = matrix.multiply(position);
+        LOGI("loc %f %f %f", click_position[0] - new_position[0], 
+                                click_position[1] - new_position[1], 
+                                click_position[2] - new_position[2]);
+
+        ((Mesh*)(_clicked.m_ptr))->down(float(x)/float(_w), float(y)/float(_h));
     }
 }
 
 void Scene::move(int x, int y){
+    GLMatrix inverted = _view_matrix.inverseGet();
+        
+    vector<GLfloat> tmp(4);
+    tmp[0] = float(x)/float(_w);
+    tmp[1] = float(y)/float(_h);
+    tmp[2] = 0;
+    tmp[3] = 1;
+    
     if(_clicked)
-        ((Mesh*)(_clicked.m_ptr))->move(x, y);
+        ((Mesh*)(_clicked.m_ptr))->move(float(x)/float(_w), float(y)/float(_h));
 }
 
 void Scene::up(int x, int y){
     if(_clicked)
-        ((Mesh*)(_clicked.m_ptr))->up(x, y);
+        ((Mesh*)(_clicked.m_ptr))->up(float(x)/float(_w), float(y)/float(_h));
 }
 
 void Scene::_process_events(){
@@ -174,13 +208,18 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     butt->setStateTexture(2, 12, 281);
     butt->setStateTexture(3, 12, 359);
 
+    AMesh c_mesh = new Rectangle();
+    group->addObject(c_mesh);
+    //c_mesh->setTexture(tex);
+    c_mesh->setLocation(b_location);
+    c_mesh->setType(GL_LINE_LOOP);
+
     text_mesh = new TextArea();
     group->addObject(text_mesh);
     text_mesh->setFont(font);
     text_mesh->setLocation(text_location);
     text_mesh->setSize(0.1f);
     
-    _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1-ratio, 1.0f, 1.0f, -1.0f);
     //_view_matrix = GLMatrix().ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, -1.0f);
     
     // perspective view:
@@ -213,5 +252,9 @@ void MainScene::renderFrame(){
     _program->activate();
     _program->bindViewMatrix(_view_matrix);
     _root->draw(visitor);
+}
+
+GameScene::GameScene(GLuint w, GLuint h){
+    
 }
 
