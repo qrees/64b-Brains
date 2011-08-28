@@ -51,6 +51,25 @@ class GL2JNIView extends GLSurfaceView {
 	    setRenderer(_renderer);
     }
     
+    public void onResume(){
+        GL2JNILib.onResume();
+        Log.d("Start EventLoopThread start by %d", Thread.currentThread().getId());
+        _event_loop_thread = new Thread(new EventLoopThread());
+        _event_loop_thread.start();
+        super.onResume();
+    }
+    
+    public void onPause(){
+        Log.d("onPause");
+        GL2JNILib.onPause();
+        try {
+            _event_loop_thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        super.onPause();
+    }
+    
     public boolean onTouchEvent (MotionEvent event){
         //_renderer.onTouch(Math.round(event.getX()), Math.round(event.getY()));
         _renderer.onTouchEvent(event);
@@ -177,7 +196,13 @@ class GL2JNIView extends GLSurfaceView {
         protected int mStencilSize;
         private int[] mValue = new int[1];
     }
-
+    
+    private static class EventLoopThread extends Thread{
+        public void run(){
+            GL2JNILib.runEventLoop();
+        }
+    }
+    
     private static class Renderer implements GLSurfaceView.Renderer {
 		public void onDrawFrame(GL10 gl) {
             GL2JNILib.step();
@@ -202,4 +227,5 @@ class GL2JNIView extends GLSurfaceView {
     }
     
     private Renderer _renderer;
+    private Thread _event_loop_thread;
 }

@@ -40,4 +40,63 @@ public:
     void process(Scene &scene);
 };
 
+/** UpEvent class
+ * 
+ * Represents single "up" event.
+ */
+class UpEvent : public Event {
+private:
+    int _x, _y;
+public:
+    /** Constructor for UpEvent.
+     * 
+     * @param x Horizontal coordinate of "up" event
+     * @param y Vertical coordinate of "up" event
+     */
+    UpEvent(int x, int y);
+    
+    /**
+     * Should be called by Scene class when event should be processed.
+     * 
+     * @param scene Scene that is going to be affected by this event.
+     */
+    void process(Scene &scene);
+};
+
+/** MoveEvent class
+ * 
+ * Represents single "move" event.
+ */
+class MoveEvent : public Event {
+private:
+    int _x, _y;
+public:
+    /** Constructor for MoveEvent.
+     * 
+     * @param x Horizontal coordinate of "move" event
+     * @param y Vertical coordinate of "move" event
+     */
+    MoveEvent(int x, int y);
+    
+    /**
+     * Should be called by Scene class when event should be processed.
+     * 
+     * @param scene Scene that is going to be affected by this event.
+     */
+    void process(Scene &scene);
+};
+
+/** MoveEvent class
+ * 
+ * Event sent when application is about to close. 
+ */
+class FinishEvent : public Event {
+private:
+    int _x, _y;
+public:
+    FinishEvent();
+    void process(Scene &scene);
+};
+
+
 #endif /* EVENT_H_ */

@@ -10,6 +10,10 @@
 
 #include "gl_code.h"
 
+#include <semaphore.h>
+#include <pthread.h>
+#include <unistd.h>
+
 // Some hacks for eclipse parser
 #ifdef __CDT_PARSER__
 #define JNIEXPORT
@@ -51,7 +55,6 @@ bool setupGraphics(int w, int h) {
 
 void renderFrame() {
     scene->renderFrame();
-    //scene->hit_check();
 }
 
 
@@ -66,17 +69,18 @@ void moveEvent(int x, int y){
     if(diff < 0.1f)
         return;
     touch_time = curr_time;
-    scene->move(x, y);
-}
-
-void downEvent(int x, int y){
-    gettimeofday(&touch_time, NULL);
-    AEvent event = new ClickEvent(x, y);
+    AEvent event = new MoveEvent(x, y);
+    //scene->move(x, y);
     scene->addEvent(event);
 }
 
+void downEvent(int x, int y){
+    scene->touched(x, y);
+}
+
 void upEvent(int x, int y){
-    scene->up(x, y);
+    AEvent event = new UpEvent(x, y);
+    scene->addEvent(event);
 }
 
 void touchEvent(int x, int y, int action){
@@ -226,6 +230,12 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
         JNIEnv * env, jobject obj, jint x, jint y);
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
         JNIEnv * env, jobject obj, jint x, jint y, jint action);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_runEventLoop(
+        JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
+        JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
+        JNIEnv * env, jobject obj);
 }
 
 jint throwJNI(const char *message) {
@@ -235,8 +245,52 @@ jint throwJNI(const char *message) {
     return _env->ThrowNew(exClass, message);
 }
 
+extern pthread_mutex_t producer;
+extern sem_t emptyCount;
+extern sem_t fillCount;
+extern bool running;
+
+void event_loop(){
+    LOGI("--> Start native event loop");
+    int pid = getpid();
+    while(running){
+        sem_wait(&fillCount);
+        LOGI("Process event");
+        pthread_mutex_lock(&producer);
+        scene->processEvent();
+        pthread_mutex_unlock(&producer);
+        LOGI("Event processed");
+        sem_post(&emptyCount);
+    }
+    LOGI("<-- Finished native event loop");
+}
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_runEventLoop(
+        JNIEnv * env, jobject obj){
+    running = true;
+    event_loop();
+}
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
+        JNIEnv * env, jobject obj){
+    LOGI("onResume");
+    _env = env;
+    int pid = getpid();
+    LOGI("Main Thread id %d", pid);
+    sem_init(&emptyCount, 0, 10);
+    sem_init(&fillCount, 0, 0);
+}
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
+        JNIEnv * env, jobject obj){
+    LOGI("onPause");
+    AEvent event = new FinishEvent();
+    scene->addEvent(event);
+}
+
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_init(
         JNIEnv * env, jobject obj, jint width, jint height) {
+    LOGI("init");
     _env = env;
     setupGraphics(width, height);
 }

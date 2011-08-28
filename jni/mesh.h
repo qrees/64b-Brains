@@ -55,12 +55,14 @@ public:
      * Return set of the node as set during creation.
      */
     string getName();
+    
     /**
      * Updates absolute orientation from relative orienation
      * and parent nodes. If there is no parent node,
      * absolute and relative orientation are the same.
      */
     void update();
+    
     /**
      * Sets relative orientation to given matrix.
      */
@@ -157,6 +159,7 @@ public:
      */
     void setType(GLenum);
     GLenum getType();
+    
     /**
      * setHitable(true) will allow the mesh to receive touch events.
      */
@@ -180,15 +183,19 @@ public:
      * on touchscreen.
      */
     virtual void down(GLfloat x, GLfloat y){LOGE("Called generic down method");};
+    
     /**
      * Move event method. Called when finger is moved on 
      * touchscreen with this mesh pressed.
      */
     virtual void move(GLfloat x, GLfloat y){};
+    
     /**
      * Up event method. Called when finger is lifted.
      */
     virtual void up(GLfloat x, GLfloat y){LOGE("Called generic up method");};
+    
+    virtual void click(){};
 private:
     void _setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel);
 };
@@ -243,6 +250,7 @@ public:
     Button(GLfloat sx, GLfloat sy);
     Button();
     ~Button();
+    void init();
     void drawPrepare(ARenderVisitor);
     void setState(ButtonState);
     void setStateCount(int);
@@ -251,6 +259,17 @@ public:
     
     void down(GLfloat x, GLfloat y);
     void up(GLfloat x, GLfloat y);
+};
+
+class GameScene;
+typedef AutoPtr<GameScene> AGameScene;
+
+class GameButton:public Button{
+private:
+    AGameScene _parent;
+public:
+    GameButton(AGameScene parent);
+    void click();
 };
 
 #endif /* MESH_H_ */

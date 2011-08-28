@@ -37,9 +37,11 @@ protected:
     GLMatrix _view_matrix;
     AFramebuffer _screen_buffer;
     queue<AEvent> _events;
+    bool _was_touched;
+    int _touch_x, _touch_y;
     void _prepareForHit();
     void _draw_hit_check();
-    void _process_events();
+    void _process_touch(int x, int y);
 public:
     Scene(GLuint w=0, GLuint h=0);
     virtual ~Scene();
@@ -52,9 +54,24 @@ public:
     AEntity hitCheck(int x, int y);
     
     /**
+     * Indicates that point x/y has been touched. Scene object will
+     * remember this event and process it in render thread to find which object
+     * has been touched. This can be done only in render thread, becase we need
+     * to render the scene.
+     */
+    void touched(int x, int y);
+    
+    /**
      * Add #event to an event queue to be processed when time comes.
      */
     void addEvent(AEvent event);
+    
+    /**
+     * Processes one event from scene event queue. This method should be called
+     * by event loop thread. 
+     */
+    void processEvent();
+    
     /**
      * Click event on the scene at screen coordinates #x and #y.
      */
@@ -64,7 +81,6 @@ public:
 };
 
 typedef AutoPtr<Scene> AScene;
-
 
 
 class MainScene: public Scene{
@@ -86,10 +102,18 @@ public:
 
 
 class GameScene: public Scene{
+private:
+    double start_time;
+    double end_time;
+    double stage_start_time;
+    
 public:
     GameScene(GLuint w=0, GLuint h=0);
+    void click(AMesh);
     //void renderFrame();
     //void prepareScene();
 };
+
+typedef AutoPtr<GameScene> AGameScene;
 
 #endif /* SCENE_H_ */

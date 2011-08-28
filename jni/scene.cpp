@@ -7,6 +7,9 @@
 
 #include "engine.h"
 
+#include <semaphore.h>
+#include <pthread.h>
+
 /*
  * Scene implementation
  */
@@ -95,11 +98,31 @@ AEntity Scene::hitCheck(int x, int y){
     return entity;
 }
 
+sem_t emptyCount;
+sem_t fillCount;
+pthread_mutex_t producer = PTHREAD_MUTEX_INITIALIZER;
+
 void Scene::addEvent(AEvent event){
+    sem_wait(&emptyCount);
+    pthread_mutex_lock(&producer);
     _events.push(event);
+    pthread_mutex_unlock(&producer);
+    sem_post(&fillCount);
 }
 
-void Scene::down(int x, int y){
+void Scene::processEvent(){
+    AEvent event = _events.front();
+    _events.pop();
+    event->process(*this);
+}
+
+void Scene::touched(int x, int y){
+    _was_touched = true;
+    _touch_x = x;
+    _touch_y = y;
+}
+
+void Scene::_process_touch(int x, int y){
     LOGI("Scene 'down' event");
     _clicked = hitCheck(x, y);
     
@@ -126,9 +149,13 @@ void Scene::down(int x, int y){
         LOGI("loc %f %f %f", click_position[0] - new_position[0], 
                                 click_position[1] - new_position[1], 
                                 click_position[2] - new_position[2]);
-
-        ((Mesh*)(_clicked.m_ptr))->down(float(x)/float(_w), float(y)/float(_h));
+        AEvent event = new ClickEvent(x, y);
+        this->addEvent(event);
     }
+}
+
+void Scene::down(int x, int y){
+    ((Mesh*)(_clicked.m_ptr))->down(float(x)/float(_w), float(y)/float(_h));
 }
 
 void Scene::move(int x, int y){
@@ -147,15 +174,6 @@ void Scene::move(int x, int y){
 void Scene::up(int x, int y){
     if(_clicked)
         ((Mesh*)(_clicked.m_ptr))->up(float(x)/float(_w), float(y)/float(_h));
-}
-
-void Scene::_process_events(){
-    AEvent event;
-    while(not _events.empty()){
-        event = _events.front();
-        _events.pop();
-        event->process(*this);
-    }
 }
 
 /*
@@ -241,8 +259,11 @@ void MainScene::prepareScene(){
 }
 
 void MainScene::renderFrame(){
-    _process_events();
-    
+    //_process_events();
+    if(_was_touched){
+        _was_touched = false;
+        _process_touch(_touch_x, _touch_y);
+    }
     _screen_buffer->activate();
     
     prepareScene();
@@ -255,6 +276,10 @@ void MainScene::renderFrame(){
 }
 
 GameScene::GameScene(GLuint w, GLuint h){
+    
+}
+
+void GameScene::click(AMesh mesh){
     
 }
 

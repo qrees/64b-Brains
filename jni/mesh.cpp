@@ -21,7 +21,7 @@ Node::Node(string name){
 }
 
 Node::~Node(){
-    LOGI("Deleting node %s", _name.c_str());
+    
 }
 
 void Node::init(){
@@ -32,7 +32,6 @@ void Node::init(){
     _rotation = GLQuaternion::idt();
     _sx = _sy = _sz = 1.0f;
     _x = _y = _z = 0.f;
-    LOGI("Created node %s", _name.c_str());
 }
 
 string Node::getName(){
@@ -140,8 +139,6 @@ Mesh::~Mesh(){
 
 void Mesh::init() {
     glGenBuffers(BUF_COUNT, vboIds);
-    for(int i = 0; i < BUF_COUNT; i++)
-        LOGI("Created buffer %i", vboIds[i]);
     checkGlError("glGenBuffers");
     has_color = has_normal = has_texture = false;
     _solid_color = 0;
@@ -355,17 +352,26 @@ void Rectangle::setTextureRect(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2){
 /*
  * Button methods implementation
  */
+
+Button::Button(){
+    init();
+}
+
 Button::Button(GLfloat sx, GLfloat sy):Rectangle((float)sy/(float)sx){
-    _state_textures = 0;
-    _state = NORMAL;
-    _dirty = true;
+    init();
     setTextureSize(sx, sy);
-    setStateCount(4); // button has 4 states: normal, pressed, active, disabled
-    setHitable(true); // Button can be pressed by default
 }
 
 Button::~Button(){
     delete[] _state_textures;
+}
+
+void Button::init(){
+    _state_textures = 0;
+    _state = NORMAL;
+    _dirty = true;
+    setStateCount(4); // button has 4 states: normal, pressed, active, disabled
+    setHitable(true); // Button can be pressed by default
 }
 
 void Button::setStateCount(int count){
@@ -400,6 +406,7 @@ void Button::down(GLfloat x, GLfloat y){
 
 void Button::up(GLfloat x, GLfloat y){
     setState(NORMAL);
+    click();
 }
 
 void Button::drawPrepare(ARenderVisitor visitor){
@@ -418,3 +425,10 @@ void Button::drawPrepare(ARenderVisitor visitor){
     }
 }
 
+GameButton::GameButton(AGameScene parent):Button(),_parent(parent){
+    
+}
+
+void GameButton::click(){
+    _parent->click(AMesh(this));
+}
