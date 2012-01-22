@@ -10,6 +10,8 @@
 
 #include <string>
 #include <list>
+#include <set>
+
 #include <GLES2/gl2.h>
 
 #include "log.h"
@@ -32,6 +34,7 @@ private:
     GLQuaternion _rotation;     // Relative rotation
     GLfloat _sx, _sy, _sz;      // Relative scale.
     bool _valid;
+    set<Node*> _children;
 public:
     enum TransformSpace {
         /// Transform is relative to the space of the parent node
@@ -43,7 +46,8 @@ public:
     Node(string name);
     void init();
     ~Node();
-    void addChild(AutoPtr<Node> node);
+    void addChild(Node* node);
+    void removeChild(Node* node);
     void setParent(AutoPtr<Node>);
     
     /**
@@ -55,12 +59,14 @@ public:
      * Return set of the node as set during creation.
      */
     string getName();
+
     /**
      * Updates absolute orientation from relative orienation
      * and parent nodes. If there is no parent node,
      * absolute and relative orientation are the same.
      */
     void update();
+
     /**
      * Sets relative orientation to given matrix.
      */

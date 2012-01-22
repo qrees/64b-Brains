@@ -22,7 +22,6 @@ public class ViewRenderer implements GLSurfaceView.Renderer {
 	private AssetManager _assets;
 	private int rawWidth, rawHeight;
 	
-	@Override
 	public void onDrawFrame(GL10 gl) {
 		Log.d("redrawing frame");
 		//if (gl instanceof GL11) {
@@ -77,7 +76,6 @@ public class ViewRenderer implements GLSurfaceView.Renderer {
 		}
     }
 
-	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		mLabels = new LabelMaker(true, 256, 64);
 		if (gl instanceof GL11) {

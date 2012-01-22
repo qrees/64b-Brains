@@ -21,3 +21,5 @@ using namespace std;
 #include "render_visitor.h"
 #include "font.h"
 #include "textarea.h"
+
+#include <Box2D/Box2D.h>

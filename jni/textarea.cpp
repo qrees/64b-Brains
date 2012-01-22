@@ -33,7 +33,7 @@ void TextArea::_update(){
     if(_text.length() > 0)
         setTexture(_font->getTexture(_text.at(0)));
     else
-        LOGE("Not settings texture for text, because text is empty");
+        LOGE("Not setting texture for text, because text is empty");
     for(size_t i=0; i<_text.length(); i++){
         //ATexture texture = _font->getTexture(_text.at(i)); // XXX : to make it simple, text should not refer to multiple font textures
         if(_text.at(i) == 10){

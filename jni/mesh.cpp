@@ -43,12 +43,26 @@ string Node::getName(){
 }
 
 void Node::setParent(AutoPtr<Node> parent){
+	if(_parent){
+		_parent->removeChild(this);
+	}
     _parent = parent;
+    _parent->addChild(this);
     _valid = false;
 }
 
 ANode Node::getParent(){
     return _parent;
+}
+
+void Node::removeChild(Node* node){
+	b64assert(_children.count(node) == 1, "Cannot remove this node as it's not one of my children.");
+	_children.erase(node);
+}
+
+void Node::addChild(Node* node){
+	b64assert(_children.count(node) == 0, "Cannot add this node again as a child.");
+	_children.insert(node);
 }
 
 void Node::setOrientation(GLMatrix matrix){
@@ -210,8 +224,8 @@ void Mesh::draw(ARenderVisitor visitor) {
     }else{
         program = visitor->getProgram();
     }
-    assert(program, "You need to set program for Mesh");
-    assert(program->isValid(), "Mesh program is not valid");
+    b64assert(program, "You need to set program for Mesh");
+    b64assert(program->isValid(), "Mesh program is not valid");
     
     program->activate();
     program->bindPosition(vboIds[VERTEX_BUF]);
@@ -244,7 +258,7 @@ void Mesh::_draw_hit_check(ARenderVisitor visitor){
 }
 
 void Mesh::_setBuffer(GLenum target, GLfloat *buf, GLuint size, GLuint sel) {
-    assert((sel >= 0) && (sel < BUF_COUNT), "this buffer does not exist");
+	b64assert((sel >= 0) && (sel < BUF_COUNT), "this buffer does not exist");
     glBindBuffer(target, vboIds[sel]);
     glBufferData(target, size, buf, GL_STATIC_DRAW);
     checkGlError("glBufferData");
@@ -365,14 +379,14 @@ Button::~Button(){
 }
 
 void Button::setStateCount(int count){
-    assert(count > 0, "Button need more than 0 states");
+	b64assert(count > 0, "Button need more than 0 states");
     delete[] _state_textures;
     _state_textures = new GLfloat[count*2];
     _state_count = count;
 }
 
 void Button::setState(ButtonState state){
-    assert((state < _state_count) && (state >= 0), "Button: Invalid state");
+	b64assert((state < _state_count) && (state >= 0), "Button: Invalid state");
     if (state != _state){
         _state = state;
         _dirty = true;
@@ -385,7 +399,7 @@ void Button::setTextureSize(GLfloat sx, GLfloat sy){
 }
 
 void Button::setStateTexture(int state, GLfloat x, GLfloat y){
-    assert(_state_textures, "Button: No states available.");
+	b64assert(_state_textures, "Button: No states available.");
     _state_textures[state*2 + 0] = x;
     _state_textures[state*2 + 1] = y;
 }
@@ -399,7 +413,7 @@ void Button::up(int x, int y){
 }
 
 void Button::drawPrepare(ARenderVisitor visitor){
-    assert(_state_textures, "Button: No states available.");
+	b64assert(_state_textures, "Button: No states available.");
     if(_dirty){
         GLfloat tw = (float)(_texture->getWidth());
         GLfloat th = (float)(_texture->getHeight());

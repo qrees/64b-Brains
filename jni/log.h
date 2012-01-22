@@ -12,7 +12,7 @@
 
 #include <android/log.h>
 
-#define assert(cond, mess) if(!(cond)){LOGE("Failed: %s file %s[%d]: %s", #cond, __FILE__, __LINE__, mess);exit(0);}
+#define b64assert(cond, mess) if(!(cond)){LOGE("Failed: %s file %s[%d]: %s", #cond, __FILE__, __LINE__, mess);exit(0);}
 
 #define  LOG_TAG    "Brains"
 #define  LOGI(msg, ...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,msg"\n", ##__VA_ARGS__)
