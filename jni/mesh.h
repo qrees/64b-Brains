@@ -49,7 +49,7 @@ public:
     void addChild(Node* node);
     void removeChild(Node* node);
     void setParent(AutoPtr<Node>);
-    
+    void invalidate();
     /**
      * Return parent of this node as set by setParent.
      */

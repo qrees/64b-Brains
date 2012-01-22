@@ -42,13 +42,23 @@ string Node::getName(){
         return _name;
 }
 
+void Node::invalidate(){
+	set<Node*>::iterator iter;
+	if(not _valid)
+		return;
+	for (iter = _children.begin(); iter != _children.end(); iter++){
+		(*iter)->invalidate();
+	}
+	_valid = false;
+}
+
 void Node::setParent(AutoPtr<Node> parent){
 	if(_parent){
 		_parent->removeChild(this);
 	}
     _parent = parent;
     _parent->addChild(this);
-    _valid = false;
+    invalidate();
 }
 
 ANode Node::getParent(){
@@ -92,7 +102,7 @@ void Node::update(){
 }
 
 GLMatrix& Node::getMatrix(){
-    //if(not _valid) # TODO : changing location of parent should mark descendants as invalid
+    if(not _valid)
         update();
     return _matrix;
 }
@@ -101,12 +111,12 @@ void Node::setLocation(GLfloat x, GLfloat y, GLfloat z){
     _x = x;
     _y = y;
     _z = z;
-    _valid = false;
+    invalidate();
 }
 
 void Node::setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle){
     _rotation.setFromAxis(x, y, z, angle);
-    _valid = false;
+    invalidate();
 }
 
 void Node::setEulerRotation(GLfloat yaw, GLfloat pitch, GLfloat roll){
@@ -117,6 +127,7 @@ void Node::setScale(GLfloat x, GLfloat y, GLfloat z){
     _sx = x;
     _sy = y;
     _sz = z;
+    invalidate();
 }
 
 /*

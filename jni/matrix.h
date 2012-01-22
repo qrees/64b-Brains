@@ -259,7 +259,7 @@ public:
     }
 
     vector<T> multiply(const vector<T> srcB) {
-        assert(srcB.size() == 4, "Matrix: Vector size must be equal to 4");
+        b64assert(srcB.size() == 4, "Matrix: Vector size must be equal to 4");
         
         vector<T> tmp(4);
         for (int i = 0; i < 4; i++) {
@@ -315,7 +315,7 @@ public:
             }
             if (temp[i][i] == 0) {
                 LOGI("Matrix: Matrix is singular, cannot invert.");
-                return;
+                return *this;
             }
             t = temp[i][i];
             for (int k = 0; k < 4; k++) {

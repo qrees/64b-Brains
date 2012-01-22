@@ -98,7 +98,7 @@ void Program::bindTexture(GLuint buf_id, GLuint tex_id) {
     bindBuffer(TEXTURE_ATTRIB, buf_id, 2, GL_FLOAT, 0, 0);
     glActiveTexture(GL_TEXTURE0);
     checkGlError("glActiveTexture");
-    assert(glIsTexture(tex_id) == GL_TRUE, "Trying to bind non existant texture!");
+    b64assert(glIsTexture(tex_id) == GL_TRUE, "Trying to bind non existant texture!");
     glBindTexture(GL_TEXTURE_2D, tex_id);
     checkGlError("glBindTexture");
     glUniform1i(uniforms[LOC_TEXTURE_SAMPLER], 0);
@@ -110,7 +110,7 @@ void Program::bindColor(GLuint buf_id) {
 }
 
 void Program::bindSolidColor(GLfloat*color) {
-    assert(_u_solid_color != -1, "bindSolidColor called with _u_solid_color not set");
+	b64assert(_u_solid_color != -1, "bindSolidColor called with _u_solid_color not set");
     glUniform4fv(_u_solid_color, 1, color);
 }
 
