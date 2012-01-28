@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <pthread.h>
+#include <unistd.h>
 
 #include "gl_code.h"
 
@@ -17,7 +19,7 @@
 #endif
 
 
-JNIEnv * _env;
+JNIEnv * _env, *_game_env = NULL;
 timeval touch_time;
 
 void printGLString(const char *name, GLenum s) {
@@ -65,6 +67,7 @@ void moveEvent(int x, int y){
     diff = t1 - t2;
     if(diff < 0.1f)
         return;
+    LOGI("Move %i %i", x, y);
     touch_time = curr_time;
     scene->move(x, y);
 }
@@ -85,7 +88,7 @@ void touchEvent(int x, int y, int action){
             downEvent(x, y);
             break;
         case ACTION_MOVE:
-            //moveEvent(x, y);
+            moveEvent(x, y);
             break;
         case ACTION_UP:
             upEvent(x, y);
@@ -226,6 +229,21 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
         JNIEnv * env, jobject obj, jint x, jint y);
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
         JNIEnv * env, jobject obj, jint x, jint y, jint action);
+/**
+ * Activity events
+ */
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationCreate(
+        JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationTerminate(
+        JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
+        JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
+        JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
+        JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onDestroy(
+        JNIEnv * env, jobject obj);
 }
 
 jint throwJNI(const char *message) {
@@ -275,3 +293,74 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
     touchEvent(x, y, action);
 }
 
+static JavaVM *gJavaVM;
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+	JNIEnv *env;
+	gJavaVM = vm;
+	LOGI("JNI_OnLoad called");
+	if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
+		LOGE("Failed to get the environment using GetEnv()");
+		return -1;
+	}
+	return JNI_VERSION_1_4;
+}
+
+pthread_t thread = NULL;
+bool running;
+/**
+ * Game thread
+ */
+void *gameThread(void*data){
+    if(gJavaVM == NULL) {
+    	LOGE("No JVM available");
+        return NULL;
+    }
+
+    gJavaVM->AttachCurrentThread(&_game_env, NULL);
+    if(_game_env == NULL){
+    	LOGE("Failed to create JVM envirement for game thread");
+		return NULL;
+	}
+    LOGI("Created game thread");
+    running = true;
+    while(running){
+    	sleep(10);
+    }
+    LOGI("Ending game thread");
+	gJavaVM->DetachCurrentThread();
+	return NULL;
+}
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
+        JNIEnv * env, jobject obj){
+	LOGI("onCreate");
+
+	thread = 0;
+	pthread_create(&thread, NULL, gameThread, NULL);
+}
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
+        JNIEnv * env, jobject obj){
+	LOGI("onResume");
+}
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
+        JNIEnv * env, jobject obj){
+	LOGI("onPause");
+}
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onDestroy(
+        JNIEnv * env, jobject obj){
+	LOGI("onDestroy");
+	running = false;
+	pthread_join(thread, NULL);
+}
+
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationCreate(
+        JNIEnv * env, jobject obj){
+	LOGI("onApplicationCreate");
+}
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationTerminate(
+        JNIEnv * env, jobject obj){
+	LOGI("onApplicationTerminate");
+}

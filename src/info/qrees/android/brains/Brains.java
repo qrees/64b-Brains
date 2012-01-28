@@ -33,9 +33,9 @@ public class Brains extends Activity {
         //mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_WHEN_DIRTY);
         mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_CONTINUOUSLY);
         setContentView(mGLSurfaceView);
+        GL2JNILib.onCreate();
     }
     
-
 	private void createStorageDirectory() {
         boolean mExternalStorageAvailable = false;
         boolean mExternalStorageWriteable = false;
@@ -62,13 +62,14 @@ public class Brains extends Activity {
         	Log.d("Storage is not writable");
         }
 	}
-
+	
 	@Override
     protected void onResume() {
         // Ideally a game should implement onResume() and onPause()
         // to take appropriate action when the activity looses focus
         super.onResume();
         mGLSurfaceView.onResume();
+        GL2JNILib.onResume();
     }
 
     @Override
@@ -77,5 +78,12 @@ public class Brains extends Activity {
         // to take appropriate action when the activity looses focus
         super.onPause();
         mGLSurfaceView.onPause();
+        GL2JNILib.onPause();
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onPause();
+        GL2JNILib.onDestroy();
     }
 }

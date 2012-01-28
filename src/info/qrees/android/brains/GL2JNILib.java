@@ -135,4 +135,16 @@ public class GL2JNILib {
 
     public static native void touch(int x, int y);
     public static native void motionevent(int x, int y, int action);
+
+	public static native void onCreate();
+
+	public static native void onResume();
+
+	public static native void onPause();
+
+	public static native void onDestroy();
+
+	public static native void onApplicationCreate();
+
+	public static native void onApplicationTerminate();
 }

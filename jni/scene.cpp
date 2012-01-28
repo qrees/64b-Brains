@@ -51,7 +51,7 @@ void Scene::_prepareForHit(){
     _framebuffer = new Framebuffer();
     _framebuffer->setColorBuffer(_w, _h);
     _framebuffer->setDepthStencilBuffer(_w, _h);
-    assert(_framebuffer->isValid(), "Framebuffer is not valid");
+    b64assert(_framebuffer->isValid(), "Framebuffer is not valid");
 }
 
 void Scene::clearScene(){
@@ -82,7 +82,7 @@ AEntity Scene::hitCheck(int x, int y){
     
     _prepareForHit();
 
-    assert(_framebuffer->isValid(), "Framebuffer is not valid");
+    b64assert(_framebuffer->isValid(), "Framebuffer is not valid");
     _draw_hit_check();
     glFinish();
     glReadPixels(x, _h-y, 1, 1,  GL_RGBA, GL_UNSIGNED_BYTE, data);
