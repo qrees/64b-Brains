@@ -24,13 +24,14 @@ typedef AutoPtr<Event> AEvent;
 class ClickEvent : public Event {
 private:
     int _x, _y;
+    AEntity _mesh;
 public:
     /** Constructor for ClickEvent.
      * 
      * @param x Horizontal coordinate of click event
      * @param y Vertical coordinate of click event
      */
-    ClickEvent(int x, int y);
+    ClickEvent(AEntity, int x, int y);
     
     /**
      * Should be called by Scene class when event should be processed.
@@ -40,4 +41,47 @@ public:
     void process(Scene &scene);
 };
 
+/**
+ * Represents move of the pointing device on the surface (preceded by ClickEvent)
+ */
+class MoveEvent : public Event {
+private:
+    int _x, _y;
+public:
+    /** Constructor for MoveEvent.
+     *
+     * @param x Horizontal coordinate of click event
+     * @param y Vertical coordinate of click event
+     */
+    MoveEvent(int x, int y);
+
+    /**
+     * Should be called by Scene class when event should be processed.
+     *
+     * @param scene Scene that is going to be affected by this event.
+     */
+    void process(Scene &scene);
+};
+
+/**
+ * Represents lifting of the pointing device.
+ */
+class UpEvent : public Event {
+private:
+    int _x, _y;
+public:
+    /** Constructor for MoveEvent.
+     *
+     * @param x Horizontal coordinate of click event
+     * @param y Vertical coordinate of click event
+     */
+    UpEvent(int x, int y);
+
+    /**
+     * Should be called by Scene class when event should be processed.
+     *
+     * @param scene Scene that is going to be affected by this event.
+     */
+    void process(Scene &scene);
+};
 #endif /* EVENT_H_ */

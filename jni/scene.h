@@ -25,6 +25,12 @@ typedef AutoPtr<Event> AEvent;
  * This class also handles processing of various events (like clicks), and redering.
  */
 class Scene: public RefCntObject {
+private:
+	bool _was_hit;
+	bool _hit_x, _hit_y;
+	sem_t _queue_read;
+	sem_t _queue_write;
+	pthread_mutex_t _queue_mutex;
 protected:
     ATexture _pixels;
     AProgram _hit_program;
@@ -38,6 +44,7 @@ protected:
     AFramebuffer _screen_buffer;
     queue<AEvent> _events;
     void _prepareForHit();
+    void _processHit();
     void _draw_hit_check();
     void _process_events();
 public:
@@ -51,6 +58,10 @@ public:
     virtual void prepareScene();
     AEntity hitCheck(int x, int y);
     
+    void _renderFrame();
+    void hit(int x, int y);
+    float x_pos(int x);
+    float y_pos(int y);
     /**
      * Add #event to an event queue to be processed when time comes.
      */
@@ -58,7 +69,7 @@ public:
     /**
      * Click event on the scene at screen coordinates #x and #y.
      */
-    virtual void down(int x, int y);
+    virtual void down(AEntity, int x, int y);
     virtual void move(int x, int y);
     virtual void up(int x, int y);
 };

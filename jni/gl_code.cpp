@@ -52,8 +52,7 @@ bool setupGraphics(int w, int h) {
 }
 
 void renderFrame() {
-    scene->renderFrame();
-    //scene->hit_check();
+    scene->_renderFrame();
 }
 
 
@@ -69,17 +68,18 @@ void moveEvent(int x, int y){
         return;
     LOGI("Move %i %i", x, y);
     touch_time = curr_time;
-    scene->move(x, y);
+    AEvent event = new MoveEvent(x, y);
+    scene->addEvent(event);
 }
 
 void downEvent(int x, int y){
     gettimeofday(&touch_time, NULL);
-    AEvent event = new ClickEvent(x, y);
-    scene->addEvent(event);
+    scene->hit(x, y);
 }
 
 void upEvent(int x, int y){
-    scene->up(x, y);
+    AEvent event = new UpEvent(x, y);
+    scene->addEvent(event);
 }
 
 void touchEvent(int x, int y, int action){
@@ -324,7 +324,7 @@ void *gameThread(void*data){
     LOGI("Created game thread");
     running = true;
     while(running){
-    	sleep(10);
+    	usleep(10);
     }
     LOGI("Ending game thread");
 	gJavaVM->DetachCurrentThread();

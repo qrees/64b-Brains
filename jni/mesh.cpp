@@ -415,11 +415,11 @@ void Button::setStateTexture(int state, GLfloat x, GLfloat y){
     _state_textures[state*2 + 1] = y;
 }
 
-void Button::down(int x, int y){
+void Button::down(float x, float y){
     setState(PRESSED);
 }
 
-void Button::up(int x, int y){
+void Button::up(float x, float y){
     setState(NORMAL);
 }
 
