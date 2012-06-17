@@ -19,8 +19,39 @@
 #endif
 
 
+pthread_t thread = NULL;
 JNIEnv * _env, *_game_env = NULL;
 timeval touch_time;
+static JavaVM *gJavaVM;
+AScene scene;
+
+bool running;
+/**
+ * Game thread
+ */
+void *gameThread(void*data){
+    if(gJavaVM == NULL) {
+    	LOGE("No JVM available");
+        return NULL;
+    }
+
+    gJavaVM->AttachCurrentThread(&_game_env, NULL);
+    if(_game_env == NULL){
+    	LOGE("Failed to create JVM envirement for game thread");
+		return NULL;
+	}
+    LOGI("Created game thread");
+    running = true;
+    while(running){
+    	LOGI("Call _process_events");
+    	scene->_process_events();
+		LOGI("finished _process_events");
+    }
+    LOGI("Ending game thread");
+	gJavaVM->DetachCurrentThread();
+	return NULL;
+}
+
 
 void printGLString(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
@@ -33,7 +64,6 @@ void _checkGlError(const char* op, int line, const char * file) {
     }
 }
 
-AScene scene;
 
 bool setupGraphics(int w, int h) {
     gettimeofday(&touch_time, NULL);
@@ -46,8 +76,15 @@ bool setupGraphics(int w, int h) {
     LOGI("setupGraphics(%d, %d)", w, h);
     glViewport(0, 0, w, h);
     checkGlError("glViewport");
+
+	if(thread){
+		pthread_kill(thread, SIGKILL);
+		thread = NULL;
+	}
     scene = 0; // Reset old scene in case it was already created
     scene = new MainScene(w, h);
+
+	pthread_create(&thread, NULL, gameThread, NULL);
     return true;
 }
 
@@ -66,7 +103,7 @@ void moveEvent(int x, int y){
     diff = t1 - t2;
     if(diff < 0.1f)
         return;
-    LOGI("Move %i %i", x, y);
+    //LOGI("Move %i %i", x, y);
     touch_time = curr_time;
     AEvent event = new MoveEvent(x, y);
     scene->addEvent(event);
@@ -293,7 +330,6 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
     touchEvent(x, y, action);
 }
 
-static JavaVM *gJavaVM;
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 	JNIEnv *env;
 	gJavaVM = vm;
@@ -305,38 +341,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 	return JNI_VERSION_1_4;
 }
 
-pthread_t thread = NULL;
-bool running;
-/**
- * Game thread
- */
-void *gameThread(void*data){
-    if(gJavaVM == NULL) {
-    	LOGE("No JVM available");
-        return NULL;
-    }
-
-    gJavaVM->AttachCurrentThread(&_game_env, NULL);
-    if(_game_env == NULL){
-    	LOGE("Failed to create JVM envirement for game thread");
-		return NULL;
-	}
-    LOGI("Created game thread");
-    running = true;
-    while(running){
-    	usleep(10);
-    }
-    LOGI("Ending game thread");
-	gJavaVM->DetachCurrentThread();
-	return NULL;
-}
 
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
         JNIEnv * env, jobject obj){
 	LOGI("onCreate");
 
-	thread = 0;
-	pthread_create(&thread, NULL, gameThread, NULL);
 }
 
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
@@ -351,6 +360,8 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onDestroy(
         JNIEnv * env, jobject obj){
 	LOGI("onDestroy");
 	running = false;
+    AEvent event = new InvalidateScene();
+    scene->addEvent(event);
 	pthread_join(thread, NULL);
 }
 

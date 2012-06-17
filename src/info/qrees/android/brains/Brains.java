@@ -76,14 +76,14 @@ public class Brains extends Activity {
     protected void onPause() {
         // Ideally a game should implement onResume() and onPause()
         // to take appropriate action when the activity looses focus
-        super.onPause();
         mGLSurfaceView.onPause();
         GL2JNILib.onPause();
+        super.onPause();
     }
     
     @Override
     protected void onDestroy() {
-        super.onPause();
         GL2JNILib.onDestroy();
+        super.onDestroy();
     }
 }

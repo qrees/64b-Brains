@@ -84,4 +84,21 @@ public:
      */
     void process(Scene &scene);
 };
+
+/**
+ * Stops processing of event queue for given scene.
+ */
+class InvalidateScene : public Event {
+public:
+    /** Constructor for InvalidateScene.
+     */
+    InvalidateScene();
+
+    /**
+     * Should be called by Scene class when event should be processed.
+     *
+     * @param scene Scene that is going to be affected by this event.
+     */
+    void process(Scene &scene);
+};
 #endif /* EVENT_H_ */

@@ -26,6 +26,7 @@ Scene::Scene(GLuint w, GLuint h){
     sem_init(&_queue_read, 0, 0);
     sem_init(&_queue_write, 0, 10);
     pthread_mutex_init(&_queue_mutex, NULL);
+    _valid_scene = true;
 }
 
 Scene::~Scene(){
@@ -89,6 +90,7 @@ AEntity Scene::hitCheck(int x, int y){
     b64assert(_framebuffer->isValid(), "Framebuffer is not valid");
     _draw_hit_check();
     glFinish();
+    LOGI("glReadpixels %i %i", x, _h-y);
     glReadPixels(x, _h-y, 1, 1,  GL_RGBA, GL_UNSIGNED_BYTE, data);
     checkGlError("glReadPixels");
     LOGI("Read pixels %i %i %i %i", data[0], data[1], data[2], data[3]);
@@ -117,14 +119,21 @@ void Scene::down(AEntity clicked, int x, int y){
 }
 
 void Scene::move(int x, int y){
+	if(!_clicked)
+		return;
 	b64assert(_clicked, "_clicked attribute is not set.");
 	((Mesh*)(_clicked.m_ptr))->move(x_pos(x), y_pos(y));
 }
 
 void Scene::up(int x, int y){
-	b64assert(_clicked, "_clicked attribute is not set.");
+	if(!_clicked)
+		return;
     ((Mesh*)(_clicked.m_ptr))->up(x_pos(x), y_pos(y));
 	_clicked = NULL;
+}
+
+void Scene::invalidate(){
+	_valid_scene = false;
 }
 
 float Scene::x_pos(int x){
@@ -137,14 +146,15 @@ float Scene::y_pos(int y){
 
 void Scene::_process_events(){
     AEvent event;
-    while(true){
+    b64assert(_valid_scene, "Scene is not valid, cannot process events");
+    while(_valid_scene){
     	sem_wait(&_queue_read);  // We can read
     	pthread_mutex_lock(&_queue_mutex);
         event = _events.front();
         _events.pop();
-        event->process(*this);
         pthread_mutex_unlock(&_queue_mutex);
     	sem_post(&_queue_write); // Others can write
+        event->process(*this);
     }
 }
 
@@ -156,11 +166,13 @@ void Scene::_processHit(){
     if(_clicked){
         AEvent event = new ClickEvent(_clicked, _hit_x, _hit_y);
         addEvent(event);
+    }else{
+    	LOGI("No hit detected");
     }
 }
 
 void Scene::_renderFrame(){
-    _process_events();
+    //_process_events();
     prepareScene();
     _processHit();
     renderFrame();

@@ -25,9 +25,11 @@ typedef AutoPtr<Event> AEvent;
  * This class also handles processing of various events (like clicks), and redering.
  */
 class Scene: public RefCntObject {
+	friend void *gameThread(void*);
 private:
 	bool _was_hit;
-	bool _hit_x, _hit_y;
+	bool _valid_scene;
+	int _hit_x, _hit_y;
 	sem_t _queue_read;
 	sem_t _queue_write;
 	pthread_mutex_t _queue_mutex;
@@ -72,6 +74,7 @@ public:
     virtual void down(AEntity, int x, int y);
     virtual void move(int x, int y);
     virtual void up(int x, int y);
+    virtual void invalidate();
 };
 
 typedef AutoPtr<Scene> AScene;

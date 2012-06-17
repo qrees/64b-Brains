@@ -27,6 +27,7 @@ ClickEvent::ClickEvent(AEntity mesh, int x, int y){
 }
 
 void ClickEvent::process(Scene &scene){
+	LOGI("EVT: process down event");
     scene.down(_mesh, _x, _y);
 }
 
@@ -45,6 +46,14 @@ MoveEvent::MoveEvent(int x, int y){
 }
 
 void MoveEvent::process(Scene &scene){
-    scene.up(_x, _y);
+    scene.move(_x, _y);
 }
 
+
+InvalidateScene::InvalidateScene(){
+
+}
+
+void InvalidateScene::process(Scene &scene){
+	scene.invalidate();
+}

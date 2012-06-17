@@ -1,6 +1,9 @@
 # binaries
 *.class
 *.o
+*.d
+*.a
+*.so
 
 # packaged application
 *.apk

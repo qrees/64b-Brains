@@ -27,7 +27,7 @@ typedef AutoPtr<RenderVisitor> ARenderVisitor;
 class Node:public RefCntObject {
 private:
     AutoPtr<Node> _parent;
-    GLMatrix _matrix;           // Absolute transform matrix, valid if 
+    GLMatrix _matrix;           // Absolute transform matrix, valid if _valid is true
     string _name;
     GLMatrix _local_matrix;     // Relative transform matrix
     GLfloat _x, _y, _z;         // Relative transposition
