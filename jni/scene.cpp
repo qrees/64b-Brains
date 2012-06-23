@@ -26,6 +26,7 @@ Scene::Scene(GLuint w, GLuint h){
     sem_init(&_queue_read, 0, 0);
     sem_init(&_queue_write, 0, 10);
     pthread_mutex_init(&_queue_mutex, NULL);
+    pthread_mutex_init(&_event_thread_mutex, NULL);
     _valid_scene = true;
 }
 
@@ -50,12 +51,11 @@ void Scene::_prepareForHit(){
     _hit_program->make(_vertex_shader, _fragment_shader);
     _hit_program->activateSolidColor();
     
-    _pixels = new Texture();
-    _pixels->empty(_w, _h);
+    //_pixels = new Texture();
+    //_pixels->empty(_w, _h);
     
     _framebuffer = new Framebuffer();
-    _framebuffer->setColorBuffer(_w, _h);
-    _framebuffer->setDepthStencilBuffer(_w, _h);
+    _framebuffer->setFormat(_w, _h);
     b64assert(_framebuffer->isValid(), "Framebuffer is not valid");
 }
 
@@ -178,6 +178,10 @@ void Scene::_renderFrame(){
     renderFrame();
 }
 
+void Scene::tick(){
+
+}
+
 /*
  * MainScene implementation
  * 
@@ -204,13 +208,16 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     a_location->setParent(root_location);
     a_location->setLocation(-0.5f, 0.5f-ratio, 0.0f);
     a_location->setScale(1, ratio, 1);
+    c_location = new Node("c");
+    c_location->setLocation(-0.5f, -0.f, 0.0f);
+    c_location->setParent(root_location);
     b_location = new Node("b");
-    b_location->setParent(root_location);
-    b_location->setLocation(-0.5f, -0.f, 0.0f);
+    b_location->setParent(c_location);
+    b_location->setScale(1, float(59)/float(287), 1);
     //b_location->setEulerRotation(0, 180, 0);
     
     ANode text_location = new Node("txt");
-    text_location->setParent(b_location);
+    text_location->setParent(c_location);
 
     AMesh a_mesh = new Rectangle();
     group->addObject(a_mesh);
@@ -242,15 +249,22 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     //_view_matrix.translate(-0.5f, 0.5f, -10.f);
 }
 
+void MainScene::tick(){
+    timeval curr_time;
+    gettimeofday(&curr_time, NULL);
+    double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;
+    text_mesh->setText("time: %Lf", t);
+}
+
 void MainScene::prepareScene(){
     Scene::prepareScene();
-    timeval curr_time;
+    /*timeval curr_time;
     gettimeofday(&curr_time, NULL);    
     double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;
     text_mesh->setText("time: %Lf", t);
     t = t*20;
     t = abs((fmod(t, 360.))-180.f);
-
+*/
     //_view_matrix = GLMatrix().ortho(-t, t, -t, t, 1.0f, -1.0f);
     //a_location->setEulerRotation(0, t, 0);
 }

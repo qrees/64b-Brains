@@ -33,6 +33,7 @@ private:
 	sem_t _queue_read;
 	sem_t _queue_write;
 	pthread_mutex_t _queue_mutex;
+	pthread_mutex_t _event_thread_mutex;
 protected:
     ATexture _pixels;
     AProgram _hit_program;
@@ -58,6 +59,7 @@ public:
     virtual void prepareViewMatrix(){};
     virtual void clearScene();
     virtual void prepareScene();
+    virtual void tick();
     AEntity hitCheck(int x, int y);
     
     void _renderFrame();
@@ -87,6 +89,7 @@ private:
     AShader _fragment_shader;
     hash_map<string, ATexture> _texture_map;
     hash_map<string, AEntity> _object_map;
+    ANode c_location;
     ANode b_location;
     ANode a_location;
     ANode root_location;
@@ -96,6 +99,7 @@ public:
     MainScene(GLuint w=0, GLuint h=0);
     void renderFrame();
     void prepareScene();
+    void tick();
 };
 
 

@@ -376,7 +376,7 @@ void Rectangle::setTextureRect(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2){
 /*
  * Button methods implementation
  */
-Button::Button(GLfloat sx, GLfloat sy):Rectangle((float)sy/(float)sx){
+Button::Button(GLfloat sx, GLfloat sy):Rectangle(1){
     _state_textures = 0;
     _state = NORMAL;
     _dirty = true;

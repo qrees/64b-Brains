@@ -25,7 +25,7 @@ Framebuffer::~Framebuffer(){
 
 void Framebuffer::setDepthStencilBuffer(GLuint width, GLuint height){
     glBindFramebuffer(GL_FRAMEBUFFER, _id);
-    if(_stencil_id == 0)
+    if(_stencil_id)
         glDeleteRenderbuffers(1, &_stencil_id);
     
     glGenRenderbuffers(1, &_stencil_id);
@@ -43,7 +43,7 @@ void Framebuffer::setDepthStencilBuffer(GLuint width, GLuint height){
 
 void Framebuffer::setColorBuffer(GLuint width, GLuint height){
     glBindFramebuffer(GL_FRAMEBUFFER, _id);
-    if(_color_id == 0)
+    if(_color_id)
         glDeleteRenderbuffers(1, &_color_id);
     
     glGenRenderbuffers(1, &_color_id);
@@ -59,7 +59,7 @@ void Framebuffer::setColorBuffer(GLuint width, GLuint height){
 
 void Framebuffer::setColorTextureBuffer(ATexture texture){
     glBindFramebuffer(GL_FRAMEBUFFER, _id);
-    if(_stencil_id == 0)
+    if(_stencil_id)
         glDeleteRenderbuffers(1, &_color_id);
     
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->getName(), 0);
@@ -99,7 +99,8 @@ bool Framebuffer::isValid(){
 }
 
 void Framebuffer::setFormat(GLuint width, GLuint height){
-    
+    _width = width;
+    _height = height;
     setDepthStencilBuffer(width, height);
     setColorBuffer(width, height);
 

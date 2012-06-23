@@ -19,13 +19,13 @@
 #endif
 
 
-pthread_t thread = NULL;
-JNIEnv * _env, *_game_env = NULL;
+pthread_t event_thread = NULL, timer_thread = NULL;
+JNIEnv * _env, *_game_env = NULL, *_timer_env = NULL;
 timeval touch_time;
 static JavaVM *gJavaVM;
 AScene scene;
 
-bool running;
+bool event_running, timer_running;
 /**
  * Game thread
  */
@@ -41,8 +41,8 @@ void *gameThread(void*data){
 		return NULL;
 	}
     LOGI("Created game thread");
-    running = true;
-    while(running){
+    event_running = true;
+    while(event_running){
     	LOGI("Call _process_events");
     	scene->_process_events();
 		LOGI("finished _process_events");
@@ -52,6 +52,29 @@ void *gameThread(void*data){
 	return NULL;
 }
 
+
+void *timerThread(void *data){
+    if(gJavaVM == NULL) {
+    	LOGE("No JVM available");
+        return NULL;
+    }
+
+    gJavaVM->AttachCurrentThread(&_timer_env, NULL);
+    if(_timer_env == NULL){
+    	LOGE("Failed to create JVM envirement for game thread");
+		return NULL;
+	}
+    LOGI("Created game thread");
+    timer_running = true;
+    while(timer_running){
+		usleep(200000);
+		scene->tick();
+    }
+
+    LOGI("Ending timer thread");
+	gJavaVM->DetachCurrentThread();
+	return NULL;
+}
 
 void printGLString(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
@@ -77,14 +100,24 @@ bool setupGraphics(int w, int h) {
     glViewport(0, 0, w, h);
     checkGlError("glViewport");
 
-	if(thread){
-		pthread_kill(thread, SIGKILL);
-		thread = NULL;
+	if(event_thread){
+		if(scene){
+		    AEvent event = new InvalidateScene();
+		    scene->addEvent(event);
+		}
+	    pthread_join(event_thread, NULL);
+		event_thread = NULL;
+	}
+	if(timer_thread){
+		timer_running = false;
+	    pthread_join(timer_thread, NULL);
+	    timer_thread = NULL;
 	}
     scene = 0; // Reset old scene in case it was already created
     scene = new MainScene(w, h);
 
-	pthread_create(&thread, NULL, gameThread, NULL);
+	pthread_create(&event_thread, NULL, gameThread, NULL);
+	pthread_create(&timer_thread, NULL, timerThread, NULL);
     return true;
 }
 
@@ -359,10 +392,12 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onDestroy(
         JNIEnv * env, jobject obj){
 	LOGI("onDestroy");
-	running = false;
+	event_running = false;
+	timer_running = false;
     AEvent event = new InvalidateScene();
     scene->addEvent(event);
-	pthread_join(thread, NULL);
+	pthread_join(event_thread, NULL);
+	pthread_join(timer_thread, NULL);
 }
 
 

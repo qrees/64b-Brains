@@ -24,6 +24,8 @@ private:
     GLuint _depth_id;
     GLuint _stencil_id;
     GLuint _id;
+    GLuint _width;
+    GLuint _height;
 };
 
 class ScreenBuffer : public Framebuffer{
