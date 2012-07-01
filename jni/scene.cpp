@@ -26,7 +26,7 @@ Scene::Scene(GLuint w, GLuint h){
     sem_init(&_queue_read, 0, 0);
     sem_init(&_queue_write, 0, 10);
     pthread_mutex_init(&_queue_mutex, NULL);
-    pthread_mutex_init(&_event_thread_mutex, NULL);
+    pthread_mutex_init(&_animation_mutex, NULL);
     _valid_scene = true;
 }
 
@@ -69,6 +69,30 @@ void Scene::clearScene(){
 void Scene::prepareScene(){
     clearScene();
     prepareViewMatrix();
+    handleAnimations();
+}
+
+void Scene::handleAnimations(){
+    AAnimation anim;
+    list<AAnimation> processed;
+    list<AAnimation>::iterator it;
+
+    struct timeval tv;
+    unsigned int current;
+    gettimeofday(&tv,NULL);
+    current = tv.tv_sec*1000000 + tv.tv_usec;
+
+    pthread_mutex_lock(&_animation_mutex);
+    for(it = _animations.begin(); it != _animations.end(); it++){
+        if(!(*it)->process(current)){
+            processed.push_back(*it);
+        }
+    }
+    _animations.clear();
+    for(it = processed.begin(); it != processed.end(); it++){
+        _animations.push_back(*it);
+    }
+    pthread_mutex_unlock(&_animation_mutex);
 }
 
 void Scene::_draw_hit_check(){
@@ -178,8 +202,18 @@ void Scene::_renderFrame(){
     renderFrame();
 }
 
-void Scene::tick(){
+void Scene::add_animation(AAnimation anim){
+    pthread_mutex_lock(&_animation_mutex);
+    _animations.push_back(anim);
+    pthread_mutex_unlock(&_animation_mutex);
+}
 
+void Scene::handle_tick(){
+
+}
+
+void Scene::tick(){
+    handle_tick();
 }
 
 /*
@@ -187,6 +221,26 @@ void Scene::tick(){
  * 
  * This is example Scene class to test various features.
  */
+
+class AnimatedButton:public Button{
+private:
+    Scene* _scene;
+public:
+    AnimatedButton(int w, int h, Scene* scene):Button(w, h){
+        _scene = scene;
+    };
+    void click(){
+        ANode location = _location->getParent();
+        ANode end = new Node("animation end");
+        end->setFrom(location);
+        //end->updateLocation(0, -0.5f, 0);
+        end->setEulerRotation(0, 0, 360);
+        AAnimation anim = new EntityAnimation(location, end, 5*1000000);
+        _scene->add_animation(anim);
+    }
+};
+
+
 
 MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     float ratio = (float)h/(float)w;
@@ -225,7 +279,8 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     a_mesh->setLocation(a_location);
 
     AMesh button_mesh;
-    Button*butt = new Button(287, 59);
+    Button*butt = new AnimatedButton(287, 59, this);
+    //Button*butt = new Button(287, 59);
     button_mesh = butt;
     group->addObject(button_mesh);
     butt->setLocation(b_location);
@@ -249,10 +304,10 @@ MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     //_view_matrix.translate(-0.5f, 0.5f, -10.f);
 }
 
-void MainScene::tick(){
+void MainScene::handle_tick(){
     timeval curr_time;
     gettimeofday(&curr_time, NULL);
-    double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;
+    double t = (double)(curr_time.tv_sec) + (double)(curr_time.tv_usec)/1000000.0f;
     text_mesh->setText("time: %Lf", t);
 }
 

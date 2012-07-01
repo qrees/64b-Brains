@@ -1,5 +1,6 @@
 #include <list>
 #include <string>
+#include <sstream>
 using namespace std;
 
 #include <semaphore.h>
@@ -17,6 +18,7 @@ using namespace std;
 #include "texture.h"
 #include "framebuffer.h"
 #include "mesh.h"
+#include "animation.h"
 #include "scene.h"
 #include "event.h"
 #include "render_visitor.h"

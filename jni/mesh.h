@@ -24,6 +24,9 @@
 class RenderVisitor;
 typedef AutoPtr<RenderVisitor> ARenderVisitor;
 
+class Node;
+typedef AutoPtr<Node> ANode;
+
 class Node:public RefCntObject {
 private:
     AutoPtr<Node> _parent;
@@ -48,7 +51,7 @@ public:
     ~Node();
     void addChild(Node* node);
     void removeChild(Node* node);
-    void setParent(AutoPtr<Node>);
+    void setParent(ANode);
     void invalidate();
     /**
      * Return parent of this node as set by setParent.
@@ -71,6 +74,9 @@ public:
      * Sets relative orientation to given matrix.
      */
     void setOrientation(GLMatrix matrix);
+    void setFrom(ANode other);
+    void blend(ANode other, float alpha);
+    void updateLocation(GLfloat x, GLfloat y, GLfloat z);
     void setLocation(GLfloat x, GLfloat y, GLfloat z);
     void setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle);
     void setEulerRotation(GLfloat yaw, GLfloat pitch, GLfloat roll);
@@ -256,6 +262,8 @@ public:
     
     void down(float x, float y);
     void up(float x, float y);
+
+    virtual void click();
 };
 
 #endif /* MESH_H_ */

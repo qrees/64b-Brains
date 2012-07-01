@@ -55,13 +55,13 @@ void *gameThread(void*data){
 
 void *timerThread(void *data){
     if(gJavaVM == NULL) {
-    	LOGE("No JVM available");
+        LOGE("No JVM available");
         return NULL;
     }
 
     gJavaVM->AttachCurrentThread(&_timer_env, NULL);
     if(_timer_env == NULL){
-    	LOGE("Failed to create JVM envirement for game thread");
+    	LOGE("Failed to create JVM envirement for timer thread");
 		return NULL;
 	}
     LOGI("Created game thread");

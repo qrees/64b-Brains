@@ -344,6 +344,25 @@ public:
         return set((T) x, (T) y, (T) z, (T) w);
     }
     
+    Quaternion<T>& lerp(const Quaternion<T>& end, T alpha, int extraSpins = 1) {
+        if (this == &end) {
+            return *this;
+        }
+        // Set the first and second scale for the interpolation
+        T scale0 = 1 - alpha;
+        T scale1 = alpha;
+
+        // Calculate the x, y, z and w values for the quaternion by using a
+        // special form of linear interpolation for quaternions.
+        T _x = (scale0 * x) + (scale1 * end.x);
+        T _y = (scale0 * y) + (scale1 * end.y);
+        T _z = (scale0 * z) + (scale1 * end.z);
+        T _w = (scale0 * w) + (scale1 * end.w);
+        set(_x, _y, _z, _w);
+        // Return the interpolated quaternion
+        return *this;
+    }
+
     /**
      * Spherical linear interpolation between this quaternion and the other
      * quaternion, based on the alpha value in the range [0,1]. Taken
@@ -352,16 +371,16 @@ public:
      * @param alpha alpha in the range [0,1]
      * @return this quaternion for chaining
      */
-    Quaternion<T>& slerp(const Quaternion<T>& end, T alpha) {
-        if (this == end) {
-            return this;
+    Quaternion<T>& slerp(const Quaternion<T>& end, T alpha, int extraSpins = 1) {
+        if (this == &end) {
+            return *this;
         }
 
         T result = dot(end);
+        Quaternion<T> end_copy = end;
 
         if (result < 0.0) {
-            // Negate the second quaternion and the result of the dot product
-            end.mul(-1);
+            end_copy.mul(-1);
             result = -result;
         }
 
@@ -374,22 +393,22 @@ public:
         if ((1 - result) > 0.1) {// Get the angle between the 2 quaternions,
             // and then store the sin() of that angle
             double theta = acos(result);
+            double phase = PI*extraSpins*alpha;
             double invSinTheta = 1.0f / sin(theta);
 
             // Calculate the scale for q1 and q2, according to the angle and
             // it's sine value
-            scale0 = (T)(sin((1 - alpha) * theta) * invSinTheta);
-            scale1 = (T)(sin((alpha * theta)) * invSinTheta);
+            scale0 = (T)(sin((1 - alpha) * theta - phase) * invSinTheta);
+            scale1 = (T)(sin((alpha * theta + phase)) * invSinTheta);
         }
 
         // Calculate the x, y, z and w values for the quaternion by using a
         // special form of linear interpolation for quaternions.
-        T x = (scale0 * x) + (scale1 * end.x);
-        T y = (scale0 * y) + (scale1 * end.y);
-        T z = (scale0 * z) + (scale1 * end.z);
-        T w = (scale0 * w) + (scale1 * end.w);
-        set(x, y, z, w);
-
+        T _x = (scale0 * x) + (scale1 * end_copy.x);
+        T _y = (scale0 * y) + (scale1 * end_copy.y);
+        T _z = (scale0 * z) + (scale1 * end_copy.z);
+        T _w = (scale0 * w) + (scale1 * end_copy.w);
+        set(_x, _y, _z, _w);
         // Return the interpolated quaternion
         return *this;
     }
@@ -403,7 +422,7 @@ public:
     * @param other the other quaternion.
     * @return this quaternion for chaining.
     */
-   T dot(Quaternion<T>& other) {
+   T dot(const Quaternion<T>& other) {
         return x * other.x + y * other.y + z * other.z + w * other.w;
     }
    

@@ -33,7 +33,7 @@ private:
 	sem_t _queue_read;
 	sem_t _queue_write;
 	pthread_mutex_t _queue_mutex;
-	pthread_mutex_t _event_thread_mutex;
+	pthread_mutex_t _animation_mutex;
 protected:
     ATexture _pixels;
     AProgram _hit_program;
@@ -46,6 +46,7 @@ protected:
     GLMatrix _view_matrix;
     AFramebuffer _screen_buffer;
     queue<AEvent> _events;
+    list<AAnimation> _animations;
     void _prepareForHit();
     void _processHit();
     void _draw_hit_check();
@@ -55,11 +56,14 @@ public:
     virtual ~Scene();
     void setRoot(AEntity root);
     void setProgram(AProgram program);
+    void add_animation(AAnimation anim);
     virtual void renderFrame();
     virtual void prepareViewMatrix(){};
     virtual void clearScene();
     virtual void prepareScene();
-    virtual void tick();
+    void tick();
+    void handleAnimations();
+    virtual void handle_tick();
     AEntity hitCheck(int x, int y);
     
     void _renderFrame();
@@ -99,7 +103,7 @@ public:
     MainScene(GLuint w=0, GLuint h=0);
     void renderFrame();
     void prepareScene();
-    void tick();
+    void handle_tick();
 };
 
 

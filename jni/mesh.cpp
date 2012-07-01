@@ -35,6 +35,34 @@ void Node::init(){
     LOGI("Created node %s", _name.c_str());
 }
 
+std::string f_to_s(float val){
+    std::ostringstream sstr;
+    sstr << val;
+    return sstr.str();
+}
+
+void Node::setFrom(ANode other){
+    this->_x = other->_x;
+    this->_y = other->_y;
+    this->_z = other->_z;
+    this->_sx = other->_sx;
+    this->_sy = other->_sy;
+    this->_sz = other->_sz;
+    this->_rotation = other->_rotation;
+    invalidate();
+}
+
+void Node::blend(ANode other, float alpha){
+    _x = _x + ((other->_x - _x) * alpha);
+    _y = _y + ((other->_y - _y) * alpha);
+    _z = _z + ((other->_z - _z) * alpha);
+    _rotation.lerp(other->_rotation, alpha);
+    _sx = _sx + ((other->_sx - _sx) * alpha);
+    _sy = _sy + ((other->_sy - _sy) * alpha);
+    _sz = _sz + ((other->_sz - _sz) * alpha);
+    invalidate();
+}
+
 string Node::getName(){
     if(_parent)
         return _name + " -> " + _parent->getName();
@@ -52,7 +80,7 @@ void Node::invalidate(){
 	_valid = false;
 }
 
-void Node::setParent(AutoPtr<Node> parent){
+void Node::setParent(ANode parent){
 	if(_parent){
 		_parent->removeChild(this);
 	}
@@ -107,6 +135,13 @@ GLMatrix& Node::getMatrix(){
     return _matrix;
 }
 
+void Node::updateLocation(GLfloat x, GLfloat y, GLfloat z){
+    _x = _x + x;
+    _y = _y + y;
+    _z = _z + z;
+    invalidate();
+}
+
 void Node::setLocation(GLfloat x, GLfloat y, GLfloat z){
     _x = x;
     _y = y;
@@ -121,6 +156,7 @@ void Node::setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle){
 
 void Node::setEulerRotation(GLfloat yaw, GLfloat pitch, GLfloat roll){
     _rotation.setEulerAngles(yaw, pitch, roll);
+    invalidate();
 }
 
 void Node::setScale(GLfloat x, GLfloat y, GLfloat z){
@@ -421,6 +457,11 @@ void Button::down(float x, float y){
 
 void Button::up(float x, float y){
     setState(NORMAL);
+    click();
+}
+
+void Button::click(){
+
 }
 
 void Button::drawPrepare(ARenderVisitor visitor){
