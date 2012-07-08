@@ -5,9 +5,21 @@
  *      Author: qrees
  */
 
-#include "engine.h"
+//#include "engine.h"
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <semaphore.h>
+#include <pthread.h>
+#include <list>
 
-class ClickEvent;
+#include "log.h"
+#include "common.h"
+#include "framebuffer.h"
+#include "animation.h"
+#include "scene.h"
+
+
+//class ClickEvent;
 /*
  * Scene implementation
  */
@@ -334,3 +346,45 @@ void MainScene::renderFrame(){
     _root->draw(visitor);
 }
 
+/*
+ * Scene events implementation
+ */
+
+
+ClickEvent::ClickEvent(AEntity mesh, int x, int y){
+    _mesh = mesh;
+    _x = x;
+    _y = y;
+}
+
+void ClickEvent::process(RefCntObject &scene){
+    LOGI("EVT: process down event");
+    static_cast<Scene&>(scene).down(_mesh, _x, _y);
+}
+
+UpEvent::UpEvent(int x, int y){
+    _x = x;
+    _y = y;
+}
+
+void UpEvent::process(RefCntObject &scene){
+    static_cast<Scene&>(scene).up(_x, _y);
+}
+
+MoveEvent::MoveEvent(int x, int y){
+    _x = x;
+    _y = y;
+}
+
+void MoveEvent::process(RefCntObject &scene){
+    static_cast<Scene&>(scene).move(_x, _y);
+}
+
+
+InvalidateScene::InvalidateScene(){
+
+}
+
+void InvalidateScene::process(RefCntObject &scene){
+    static_cast<Scene&>(scene).invalidate();
+}

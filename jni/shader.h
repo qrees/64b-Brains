@@ -8,6 +8,12 @@
 #ifndef SHADER_H_
 #define SHADER_H_
 
+#include <string>
+#include <GLES2/gl2.h>
+
+#include "smart_ptr.h"
+using namespace std;
+
 class Shader:public RefCntObject {
 private:
     string _source;

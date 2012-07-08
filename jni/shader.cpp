@@ -1,5 +1,11 @@
+#include <string>
+#include <GLES2/gl2.h>
 
-#include "engine.h"
+#include "log.h"
+#include "common.h"
+#include "shader.h"
+
+using namespace std;
 
 Shader::Shader() {
     valid = false;

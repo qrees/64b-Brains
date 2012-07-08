@@ -5,7 +5,7 @@
  *      Author: qrees
  */
 
-#include "engine.h"
+#include "event.h"
 
 /** Event class. 
  * 
@@ -20,40 +20,3 @@ Event::~Event(){
     
 }
 
-ClickEvent::ClickEvent(AEntity mesh, int x, int y){
-	_mesh = mesh;
-    _x = x;
-    _y = y;
-}
-
-void ClickEvent::process(Scene &scene){
-	LOGI("EVT: process down event");
-    scene.down(_mesh, _x, _y);
-}
-
-UpEvent::UpEvent(int x, int y){
-    _x = x;
-    _y = y;
-}
-
-void UpEvent::process(Scene &scene){
-    scene.up(_x, _y);
-}
-
-MoveEvent::MoveEvent(int x, int y){
-    _x = x;
-    _y = y;
-}
-
-void MoveEvent::process(Scene &scene){
-    scene.move(_x, _y);
-}
-
-
-InvalidateScene::InvalidateScene(){
-
-}
-
-void InvalidateScene::process(Scene &scene){
-	scene.invalidate();
-}

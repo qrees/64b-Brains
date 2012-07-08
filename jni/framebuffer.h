@@ -8,6 +8,8 @@
 #ifndef FRAMEBUFFER_H_
 #define FRAMEBUFFER_H_
 
+#include "smart_ptr.h"
+#include "texture.h"
 
 class Framebuffer: public RefCntObject{
 public:

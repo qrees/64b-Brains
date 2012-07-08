@@ -8,6 +8,7 @@
 #ifndef ANIMATION_H_
 #define ANIMATION_H_
 
+#include "mesh.h"
 
 class Animation : public RefCntObject {
 protected:
