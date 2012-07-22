@@ -7,17 +7,7 @@
 
 #ifndef FONT_H_
 #define FONT_H_
-/*
- * Fixes for Boost library
- * 
-namespace std {
-    struct bad_alloc : public exception { bad_alloc operator()(){}};
-    struct bad_cast : public exception {bad_cast operator()(){}};
-}
 
-#include <boost/config/warning_disable.hpp>
-#include <boost/spirit/include/qi.hpp>
- */
 
 #include "sys/types.h"
 #include "smart_ptr.h"

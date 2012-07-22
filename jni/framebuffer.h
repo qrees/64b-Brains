@@ -8,6 +8,7 @@
 #ifndef FRAMEBUFFER_H_
 #define FRAMEBUFFER_H_
 
+#include "common.h"
 #include "smart_ptr.h"
 #include "texture.h"
 

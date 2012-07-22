@@ -9,9 +9,9 @@
 #define MESH_H_
 
 #include <string>
+#include <sstream>
 #include <list>
 #include <set>
-
 #include <GLES2/gl2.h>
 
 #include "log.h"
@@ -20,6 +20,7 @@
 #include "quaternion.h"
 #include "program.h"
 #include "texture.h"
+
 
 class RenderVisitor;
 typedef AutoPtr<RenderVisitor> ARenderVisitor;

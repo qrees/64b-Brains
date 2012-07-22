@@ -1,53 +1,67 @@
 package info.qrees.android.brains;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class Brains extends Activity {
+
+public class Brains extends Activity implements SensorEventListener {
+    private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
 	private GLSurfaceView mGLSurfaceView;
 	AssetManager assets;
+	
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        
+        initSensor();
+        createStorageDirectory();
+        
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.setRequestedOrientation(1);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        assets = getAssets();
-        GL2JNILib.assets = assets;
-        createStorageDirectory();
         //mGLSurfaceView = new TouchView(this, new ViewRenderer(getAssets()));
         mGLSurfaceView = new GL2JNIView(getApplication(), assets);
         //mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_WHEN_DIRTY);
         mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_CONTINUOUSLY);
         setContentView(mGLSurfaceView);
+        
+        assets = getAssets();
+        GL2JNILib.assets = assets;
         GL2JNILib.onCreate();
     }
     
+    private void initSensor() {
+        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    }
+    
 	private void createStorageDirectory() {
-        boolean mExternalStorageAvailable = false;
         boolean mExternalStorageWriteable = false;
         String state = Environment.getExternalStorageState();
         
     	if (Environment.MEDIA_MOUNTED.equals(state)) {
-            mExternalStorageAvailable = mExternalStorageWriteable = true;
+            mExternalStorageWriteable = true;
         } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            mExternalStorageAvailable = true;
             mExternalStorageWriteable = false;
         } else {
-            mExternalStorageAvailable = mExternalStorageWriteable = false;
+            mExternalStorageWriteable = false;
         }
         if(mExternalStorageWriteable){
         	Log.d(Environment.getExternalStorageDirectory().getAbsolutePath());
@@ -65,19 +79,17 @@ public class Brains extends Activity {
 	
 	@Override
     protected void onResume() {
-        // Ideally a game should implement onResume() and onPause()
-        // to take appropriate action when the activity looses focus
         super.onResume();
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
         mGLSurfaceView.onResume();
         GL2JNILib.onResume();
     }
 
     @Override
     protected void onPause() {
-        // Ideally a game should implement onResume() and onPause()
-        // to take appropriate action when the activity looses focus
         mGLSurfaceView.onPause();
         GL2JNILib.onPause();
+        mSensorManager.unregisterListener(this);
         super.onPause();
     }
     
@@ -86,4 +98,19 @@ public class Brains extends Activity {
         GL2JNILib.onDestroy();
         super.onDestroy();
     }
+
+	public void onAccuracyChanged(Sensor arg0, int arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onSensorChanged(SensorEvent event) {
+		ArrayList<String> values = new ArrayList<String>();
+		for(int i = 0; i < event.values.length; i++){
+			values.add(String.valueOf(event.values[i]));
+		}
+		Log.d(TextUtils.join(", ", values.toArray()));
+		
+		
+	}
 }

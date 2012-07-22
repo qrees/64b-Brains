@@ -5,7 +5,7 @@
  *      Author: Krzysztof
  */
 
-#include "engine.h"
+#include "animation.h"
 
 Animation::Animation(){
 

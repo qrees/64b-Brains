@@ -8,6 +8,8 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include "sys/types.h"
+
 #define PI 3.1415926535897932384626433832795f
 #define toRadians(angle) (angle * PI / 180.0f)
 #define min(a, b) ((a) < (b) ? (a) : (b))

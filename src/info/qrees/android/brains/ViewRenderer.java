@@ -18,7 +18,6 @@ import android.opengl.GLU;
 public class ViewRenderer implements GLSurfaceView.Renderer {
 	Square mSquare;
 	Group root = new Group();
-	LabelMaker mLabels;
 	private AssetManager _assets;
 	private int rawWidth, rawHeight;
 	
@@ -77,7 +76,6 @@ public class ViewRenderer implements GLSurfaceView.Renderer {
     }
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		mLabels = new LabelMaker(true, 256, 64);
 		if (gl instanceof GL11) {
 			GL11 gl11 = (GL11)gl;
 			gl11.glDisable(GL11.GL_DITHER);

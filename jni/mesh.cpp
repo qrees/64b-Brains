@@ -5,7 +5,10 @@
  *      Author: qrees
  */
 
-#include "engine.h"
+//#include "engine.h"
+
+#include "mesh.h"
+#include "render_visitor.h"
 
 /*
  * Node class implementation

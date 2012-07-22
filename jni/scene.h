@@ -115,8 +115,7 @@ public:
 
 
 
-/** ClickEvent class
- *
+/**
  * Represents single click event.
  */
 class ClickEvent : public Event {

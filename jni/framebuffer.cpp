@@ -5,7 +5,12 @@
  *      Author: qrees
  */
 
-#include "engine.h"
+//#include "engine.h"
+
+
+#include "log.h"
+#include "framebuffer.h"
+#include <GLES2/gl2ext.h>
 
 Framebuffer::Framebuffer(){
     _stencil_id = 0;

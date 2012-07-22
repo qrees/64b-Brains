@@ -10,6 +10,8 @@
 
 #include <GLES2/gl2.h>
 
+#include "common.h"
+
 #define ETC_PKM_HEADER_SIZE 16
 #define ETC1_PKM_WIDTH_OFFSET 12
 #define ETC1_PKM_HEIGHT_OFFSET 14
