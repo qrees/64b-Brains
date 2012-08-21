@@ -8,6 +8,7 @@
 #ifndef QUATERNION_H_
 #define QUATERNION_H_
 
+#include "log.h"
 #include "common.h"
 
 #define NORMALIZATION_TOLERANCE 0.00001f
@@ -76,7 +77,7 @@ public:
      * @return This quaternion for chaining.
      */
     Quaternion<T>& set(vector<T> axis, T angle) {
-        assert(axis.size() == 3, "Quaternion reuires 3 values for axis in set method");
+        assert2(axis.size() == 3, "Quaternion reuires 3 values for axis in set method");
         T l_ang = (T)toRadians(angle);
         T l_sin = (T)sin(l_ang / 2);
         T l_cos = (T)cos(l_ang / 2);
@@ -159,7 +160,7 @@ public:
      */
     void transform(vector<T> v) {
         
-        assert(v.size() == 3, "Quaternion transform method required vector of size 3");
+        assert2(v.size() == 3, "Quaternion transform method required vector of size 3");
         Quaternion<T> tmp2, tmp1;
         tmp2.set(this);
         tmp2.conjugate();
@@ -257,7 +258,7 @@ public:
      * @return This quaternion for chaining.
      */
     Quaternion<T>& setFromAxis(vector<T> axis, T angle) {
-        assert(axis.size() == 3, "Quaternion requires axis of length 3 to setFromAxis method");
+        assert2(axis.size() == 3, "Quaternion requires axis of length 3 to setFromAxis method");
         return setFromAxis(axis[0], axis[1], axis[3], angle);
     }
 

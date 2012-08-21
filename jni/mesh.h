@@ -222,6 +222,7 @@ public:
     void _draw_hit_check(ARenderVisitor);
     Entity* getEntityForColor(GLubyte*);
 };
+typedef AutoPtr<Group> AGroup;
 
 /**
  * Rectangle:

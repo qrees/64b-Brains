@@ -14,6 +14,8 @@
 
 #define b64assert(cond, mess) if(!(cond)){LOGE("Failed: %s file %s[%d]: %s", #cond, __FILE__, __LINE__, mess);exit(0);}
 
+#define assert2(cond, mess) b64assert(cond, mess)
+
 #define  LOG_TAG    "Brains"
 #define  LOGI(msg, ...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,msg"\n", ##__VA_ARGS__)
 #define  LOGE(msg, ...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,msg"\n", ##__VA_ARGS__)

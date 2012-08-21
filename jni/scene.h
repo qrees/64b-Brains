@@ -10,6 +10,10 @@
 
 #include <hash_map>
 #include <queue>
+#include <semaphore.h>
+
+#include "animation.h"
+#include "framebuffer.h"
 #include "render_visitor.h"
 #include "textarea.h"
 #include "event.h"
@@ -26,7 +30,7 @@
  * This class also handles processing of various events (like clicks), and redering.
  */
 class Scene: public RefCntObject {
-	friend void *gameThread(void*);
+	friend void *eventThread(void*);
 private:
 	bool _was_hit;
 	bool _valid_scene;
@@ -41,7 +45,7 @@ protected:
     AFramebuffer _framebuffer;
     GLuint _w;
     GLuint _h;
-    AEntity _root;
+    AGroup _root;
     AEntity _clicked;
     AProgram _program;
     GLMatrix _view_matrix;
@@ -87,7 +91,7 @@ public:
 typedef AutoPtr<Scene> AScene;
 
 
-
+/*
 class MainScene: public Scene{
 private:
     AShader _vertex_shader;
@@ -106,7 +110,7 @@ public:
     void prepareScene();
     void handle_tick();
 };
-
+*/
 
 
 /*

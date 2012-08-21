@@ -8,15 +8,17 @@
 #ifndef WORLD_H_
 #define WORLD_H_
 
-#include "Box2D/Dynamics/b2Body.h"
+#include "Box2D/Box2D.h"
 #include "boxscene.h"
 
-class BaseWorld {
-    virtual ~BaseWorld();
-    virtual void tick();
-    virtual AScene initScene();
-    virtual void destroyScene();
+class BaseWorld:public RefCntObject {
+public:
+    virtual ~BaseWorld() { };
+    virtual void tick() = 0;
+    virtual AScene initScene(int w, int h) = 0;
+    virtual void detachScene() = 0;
 };
+typedef AutoPtr<BaseWorld> ABaseWorld;
 
 class BoxWorld: public BaseWorld {
 private:
@@ -26,16 +28,16 @@ private:
     int32 mPositionIterations;
     ABoxScene mScene;
 
-    b2BodyDef mBodyDef;
-    b2PolygonShape mBoxShape;
-    b2FixtureDef mFixtureDef;
-    b2Body* mBody;
+    //b2BodyDef mBodyDef;
+    //b2PolygonShape mBoxShape;
+    //b2FixtureDef mFixtureDef;
+    map<Mesh*, b2Body*> mBodyPolygonMap;
 public:
     BoxWorld();
     ~BoxWorld();
     void init();
-    AScene initScene();
-    void destroyScene();
+    AScene initScene(int w, int h);
+    void detachScene();
     void tick();
 };
 

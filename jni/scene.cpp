@@ -88,9 +88,9 @@ void Scene::handleAnimations(){
     AAnimation anim;
     list<AAnimation> processed;
     list<AAnimation>::iterator it;
-
     struct timeval tv;
     unsigned int current;
+
     gettimeofday(&tv,NULL);
     current = tv.tv_sec*1000000 + tv.tv_usec;
 
@@ -253,7 +253,7 @@ public:
 };
 
 
-
+/*
 MainScene::MainScene(GLuint w, GLuint h):Scene(w, h){
     float ratio = (float)h/(float)w;
     // Fonts
@@ -325,15 +325,6 @@ void MainScene::handle_tick(){
 
 void MainScene::prepareScene(){
     Scene::prepareScene();
-    /*timeval curr_time;
-    gettimeofday(&curr_time, NULL);    
-    double t = (double)(curr_time.tv_sec%1000000) + (double)(curr_time.tv_usec)/1000000.0f;
-    text_mesh->setText("time: %Lf", t);
-    t = t*20;
-    t = abs((fmod(t, 360.))-180.f);
-*/
-    //_view_matrix = GLMatrix().ortho(-t, t, -t, t, 1.0f, -1.0f);
-    //a_location->setEulerRotation(0, t, 0);
 }
 
 void MainScene::renderFrame(){
@@ -345,7 +336,7 @@ void MainScene::renderFrame(){
     _program->bindViewMatrix(_view_matrix);
     _root->draw(visitor);
 }
-
+*/
 /*
  * Scene events implementation
  */

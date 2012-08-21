@@ -8,6 +8,8 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
 
+#include "smart_ptr.h"
+#include "matrix.h"
 #include "shader.h"
 
 #define LOC_TEXTURE_SAMPLER 0

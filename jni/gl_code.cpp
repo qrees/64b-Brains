@@ -10,7 +10,14 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "gl_code.h"
+#include <GLES/gl.h>
+
+//#include "gl_code.h"
+#include "common.h"
+#include "log.h"
+#include "world.h"
+#include "boxscene.h"
+
 
 // Some hacks for eclipse parser
 #ifdef __CDT_PARSER__
@@ -23,13 +30,14 @@ pthread_t event_thread = NULL, timer_thread = NULL;
 JNIEnv * _env, *_game_env = NULL, *_timer_env = NULL;
 timeval touch_time;
 static JavaVM *gJavaVM;
-AScene scene;
+AScene scene = 0;
+ABaseWorld world = 0;
 
-bool event_running, timer_running;
+bool event_running, timer_running, world_running;
 /**
  * Game thread
  */
-void *gameThread(void*data){
+void *eventThread(void*data){
     if(gJavaVM == NULL) {
     	LOGE("No JVM available");
         return NULL;
@@ -42,10 +50,14 @@ void *gameThread(void*data){
 	}
     LOGI("Created game thread");
     event_running = true;
-    while(event_running){
-    	LOGI("Call _process_events");
-    	scene->_process_events();
-		LOGI("finished _process_events");
+    if(scene){
+        while(event_running){
+            LOGI("Call _process_events");
+            scene->_process_events();
+            LOGI("finished _process_events");
+        }
+    }else{
+        LOGE("Cannot start events thread, scene was not initialized");
     }
     LOGI("Ending game thread");
 	gJavaVM->DetachCurrentThread();
@@ -68,7 +80,8 @@ void *timerThread(void *data){
     timer_running = true;
     while(timer_running){
 		usleep(200000);
-		scene->tick();
+		if(world_running)
+		    world->tick();
     }
 
     LOGI("Ending timer thread");
@@ -87,6 +100,57 @@ void _checkGlError(const char* op, int line, const char * file) {
     }
 }
 
+bool setupWorld() {
+    world = new BoxWorld();
+    pthread_create(&timer_thread, NULL, timerThread, NULL);
+    return true;
+}
+
+bool resumeWorld() {
+    world_running = true;
+    return true;
+}
+
+bool pauseWorld() {
+    world_running = false;
+    return true;
+}
+
+bool clearWorld() {
+    if(timer_thread){
+        timer_running = false;
+        pthread_join(timer_thread, NULL);
+        timer_thread = NULL;
+    }
+    world = 0;
+    return true;
+}
+
+bool clearScene() {
+    if(event_thread){
+        event_running = false;
+        if(scene){
+            AEvent event = new InvalidateScene();
+            scene->addEvent(event);
+        }
+        pthread_join(event_thread, NULL);
+        event_thread = NULL;
+    }
+    b64assert(world, "world was not initialized");
+    world->detachScene();
+    scene = 0; // Reset old scene in case it was already created
+    return true;
+}
+
+bool setupScene(int w, int h) {
+    b64assert(world, "world was not initialized");
+    LOGI("setupGraphics(%d, %d)", w, h);
+    glViewport(0, 0, w, h);
+    checkGlError("glViewport");
+    scene = world->initScene(w, h);
+    pthread_create(&event_thread, NULL, eventThread, NULL);
+    return true;
+}
 
 bool setupGraphics(int w, int h) {
     gettimeofday(&touch_time, NULL);
@@ -96,32 +160,13 @@ bool setupGraphics(int w, int h) {
     printGLString("Renderer", GL_RENDERER);
     printGLString("Extensions", GL_EXTENSIONS);
     
-    LOGI("setupGraphics(%d, %d)", w, h);
-    glViewport(0, 0, w, h);
-    checkGlError("glViewport");
-
-	if(event_thread){
-		if(scene){
-		    AEvent event = new InvalidateScene();
-		    scene->addEvent(event);
-		}
-	    pthread_join(event_thread, NULL);
-		event_thread = NULL;
-	}
-	if(timer_thread){
-		timer_running = false;
-	    pthread_join(timer_thread, NULL);
-	    timer_thread = NULL;
-	}
-    scene = 0; // Reset old scene in case it was already created
-    scene = new MainScene(w, h);
-
-	pthread_create(&event_thread, NULL, gameThread, NULL);
-	pthread_create(&timer_thread, NULL, timerThread, NULL);
+    clearScene();
+    setupScene(w, h);
     return true;
 }
 
 void renderFrame() {
+    b64assert(scene, "scene was not initialized");
     scene->_renderFrame();
 }
 
@@ -186,7 +231,7 @@ char * load_asset(const char * source) {
     return ret_str;
 }
 
-unsigned char * load_raw(const char * source, size_t * file_size) {
+unsigned char * load_raw(const char * source, size_t * file_size=0) {
     
     /*
      * Get java method id to load bitmap and call this method
@@ -374,30 +419,42 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 	return JNI_VERSION_1_4;
 }
 
-
+/**
+ * Called when main activity is created
+ */
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
         JNIEnv * env, jobject obj){
 	LOGI("onCreate");
-
+	setupWorld();
 }
 
+/**
+* Called when main activity is resumed
+*/
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
         JNIEnv * env, jobject obj){
 	LOGI("onResume");
+	resumeWorld();
 }
+
+
+/**
+* Called when main activity is pasued (for example, context is switched to different application)
+*/
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
         JNIEnv * env, jobject obj){
 	LOGI("onPause");
+	pauseWorld();
+    clearScene();
 }
+
+/**
+* Called when main activity is destroyed
+*/
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onDestroy(
         JNIEnv * env, jobject obj){
 	LOGI("onDestroy");
-	event_running = false;
-	timer_running = false;
-    AEvent event = new InvalidateScene();
-    scene->addEvent(event);
-	pthread_join(event_thread, NULL);
-	pthread_join(timer_thread, NULL);
+	clearWorld();
 }
 
 

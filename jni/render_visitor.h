@@ -8,6 +8,9 @@
 #ifndef RENDER_VISITOR_H_
 #define RENDER_VISITOR_H_
 
+#include "program.h"
+#include "mesh.h"
+
 class RenderVisitor : public RefCntObject{
 public:
     void visit(AEntity);

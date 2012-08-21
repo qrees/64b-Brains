@@ -87,14 +87,16 @@ public class Brains extends Activity implements SensorEventListener {
 
     @Override
     protected void onPause() {
-        mGLSurfaceView.onPause();
+    	Log.d("onPause");
         GL2JNILib.onPause();
         mSensorManager.unregisterListener(this);
+        mGLSurfaceView.onPause();
         super.onPause();
     }
     
     @Override
     protected void onDestroy() {
+    	Log.d("onDestroy");
         GL2JNILib.onDestroy();
         super.onDestroy();
     }
@@ -109,7 +111,7 @@ public class Brains extends Activity implements SensorEventListener {
 		for(int i = 0; i < event.values.length; i++){
 			values.add(String.valueOf(event.values[i]));
 		}
-		Log.d(TextUtils.join(", ", values.toArray()));
+		//Log.d(TextUtils.join(", ", values.toArray()));
 		
 		
 	}
