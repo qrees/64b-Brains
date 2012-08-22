@@ -82,6 +82,7 @@ public:
     void setRotation(GLfloat x, GLfloat y, GLfloat z, GLfloat angle);
     void setEulerRotation(GLfloat yaw, GLfloat pitch, GLfloat roll);
     void setScale(GLfloat x, GLfloat y, GLfloat z);
+
     GLMatrix& getMatrix();
     GLMatrix& getLocalMatrix();
 };
@@ -102,6 +103,7 @@ public:
     virtual void draw(ARenderVisitor){};
     virtual void _draw_hit_check(ARenderVisitor){};
     virtual void setLocation(ANode location);
+    virtual ANode getLocation();
     virtual Entity* getEntityForColor(GLubyte*);
 };
 typedef AutoPtr<Entity> AEntity;
@@ -162,6 +164,7 @@ public:
     void setTexture(ATexture tex);
     void setColor(GLfloat *buf, GLint num);
     void setIndexes(GLushort *buf, GLint num);
+    void setColor(GLfloat r, GLfloat g, GLfloat b);
     
     /**
      * Set Mesh type to one of GL_POINTS, GL_LINES, GL_LINE_LOOP, GL_LINE_STRIP,

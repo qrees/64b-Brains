@@ -9,6 +9,16 @@
 #define COMMON_H_
 
 #include "sys/types.h"
+#include <string.h>
+
+using namespace std;
+
+struct cmp_str
+{
+   bool operator()(char const *a, char const *b) const {
+      return strcmp(a, b) < 0;
+   }
+};
 
 #define PI 3.1415926535897932384626433832795f
 #define toRadians(angle) (angle * PI / 180.0f)

@@ -27,29 +27,39 @@ void BoxWorld::init() {
     mWorld = new b2World(gravity, doSleep);
 
     mBodyDef.type = b2_dynamicBody;
+    mBodyDef.position.Set(0, 8); //middle, bottom
 
-    polygonShape.SetAsBox(0.1f, 0.1f);
+    polygonShape.SetAsBox(0.5f, 0.5f);
 
     mFixtureDef.shape = &polygonShape;
     mFixtureDef.density = 1.0f;
     mFixtureDef.friction = 0.3f;
+    mFixtureDef.restitution = 0.4f;
 
     b2Body* body = mWorld->CreateBody(&mBodyDef);
     body->CreateFixture(&mFixtureDef);
 
+    edge(-10, -10, 10, -10);
+    edge(-10, 10, 10, 10);
+    edge(-10, -10, -10, 10);
+    edge(10, -10, 10, 10);
+}
 
-    b2BodyDef mBodyDef2;
-    b2FixtureDef mFixtureDef2;
-    b2PolygonShape polygonShape2;
-    mFixtureDef2.shape = &polygonShape2;
-    mBodyDef2.type = b2_staticBody; //change body type
-    mBodyDef2.position.Set(0,-1); //middle, bottom
-    b2Body* staticBody = mWorld->CreateBody(&mBodyDef2);
-    polygonShape2.SetAsEdge( b2Vec2(-15,0), b2Vec2(15,0) );
-    mFixtureDef2.density = 1.0f;
-    mFixtureDef2.friction = 0.3f;
-    staticBody->CreateFixture(&mFixtureDef2);
+void BoxWorld::edge(float sx, float sy, float ex, float ey){
+    b2FixtureDef mFixtureDef;
+    b2PolygonShape polygonShape;
+    b2BodyDef mBodyDef;
 
+    mFixtureDef.density = 1.0f;
+    mFixtureDef.friction = 0.3f;
+    mFixtureDef.restitution = 0.4f;
+
+    mFixtureDef.shape = &polygonShape;
+    mBodyDef.type = b2_staticBody; //change body type
+    mBodyDef.position.Set(sx, sy); //middle, bottom
+    b2Body* staticBody = mWorld->CreateBody(&mBodyDef);
+    polygonShape.SetAsEdge( b2Vec2(0, 0), b2Vec2(ex-sx, ey-sy) );
+    staticBody->CreateFixture(&mFixtureDef);
 }
 
 AScene BoxWorld::initScene(int w, int h) {
@@ -79,6 +89,13 @@ AScene BoxWorld::initScene(int w, int h) {
                     }
                     Mesh * mesh = mScene->createPolygon(buf, vert_count);
                     mBodyPolygonMap[mesh] = body;
+
+                    /*
+                     * set initial body mesh position from Box2d body
+                     */
+                    ANode loc = mesh->getLocation();
+                    b2Vec2 pos = body->GetPosition();
+                    loc->setLocation(pos.x, pos.y, 0);
                 }
                 break;
             default:
@@ -106,6 +123,8 @@ void BoxWorld::tick() {
     map<Mesh*, b2Body*>::iterator it;
     for(it = mBodyPolygonMap.begin(); it != mBodyPolygonMap.end(); it++){
         b2Vec2 pos = (*it).second->GetPosition();
-        LOGI("Body location %f %f", pos.x, pos.y);
+        //LOGI("Body location %f %f", pos.x, pos.y);
+        ANode loc = (*it).first->getLocation();
+        loc->setLocation(pos.x, pos.y, 0);
     }
 }

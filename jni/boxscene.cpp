@@ -25,8 +25,8 @@ BoxScene::BoxScene(GLuint w, GLuint h) :
     // Location nodes, entities are attached to these nodes.
     mRootLocation = new Node("root");
     mRootLocation->setLocation(0.5f, 0.5f, 0.0f);
-
-    _view_matrix = GLMatrix().ortho(0.0f, 1.0f, 1 - ratio, 1.0f, 1.0f, -1.0f);
+    float half = (ratio - 1)/2;
+    _view_matrix = GLMatrix().ortho(-10.0f, 10.0f, (-1-half)*10.0f, (1+half)*10.0f, 1.0f, -1.0f);
     _body_texture = loadBitmap("images/background.png");
 }
 
@@ -66,8 +66,13 @@ Mesh* BoxScene::createPolygon(GLfloat* vert, int vert_count) {
     mesh->setVertices(vert, vert_count);
     //setTextureRect(0.f, 1.f, 1.f, 0.f);
     mesh->setIndexes(indexes, vert_count);
-    mesh->setType(GL_TRIANGLE_FAN);
-    mesh->setTexture(_body_texture);
+    if(vert_count > 2){
+        mesh->setType(GL_TRIANGLE_FAN);
+        mesh->setTexture(_body_texture);
+    }else{
+        mesh->setType(GL_LINES);
+        mesh->setColor(1.0f, 1.0f, 1.0f);
+    }
     mesh->setTextureCoord(tex_coord, vert_count);
     mesh->setLocation(root_location);
     delete[] indexes;

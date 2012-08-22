@@ -180,6 +180,10 @@ void Entity::setLocation(ANode location){
     _location = location;
 }
 
+ANode Entity::getLocation(){
+    return this->_location;
+}
+
 Entity* Entity::getEntityForColor(GLubyte*){
     return this;
 }
@@ -196,6 +200,8 @@ Mesh::~Mesh(){
     for(int i = 0; i < BUF_COUNT; i++)
         LOGI("Deleted buffer %i", vboIds[i]);
     checkGlError("glDeleteBuffers");
+    delete[] _solid_color;
+    delete[] _hit_color;
 }
 
 void Mesh::init() {
@@ -228,6 +234,15 @@ void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 2 * num, TEXTURE_BUF);
 }
 
+void Mesh::setColor(GLfloat r, GLfloat g, GLfloat b){
+    //has_solid_color = true;
+    has_color = true;
+    if(_solid_color == 0){
+        _solid_color = new GLfloat[4];
+    }
+    _solid_color[0] = r; _solid_color[1] = g; _solid_color[2] = b; _solid_color[3] = 1.0f;
+}
+
 void Mesh::setColor(GLfloat *buf, GLint num) {
     has_color = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 4 * num, COLOR_BUF);
@@ -241,6 +256,7 @@ void Mesh::setIndexes(GLushort *buf, GLint num) {
 }
 
 void Mesh::setTexture(ATexture tex){
+    has_color = false;
     _texture = tex;
 }
 
@@ -284,8 +300,9 @@ void Mesh::draw(ARenderVisitor visitor) {
     if(has_texture && bool(_texture)){
         program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
     }
+    program->useColor(has_color);
     if(has_color)
-        program->bindColor(vboIds[COLOR_BUF]);
+        program->bindSolidColor(_solid_color);
 
     program->bindModelMatrix(_location->getMatrix());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIds[INDEX_BUF]);

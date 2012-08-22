@@ -36,6 +36,7 @@ public:
     BoxWorld();
     ~BoxWorld();
     void init();
+    void edge(float sx, float sy, float ex, float ey);
     AScene initScene(int w, int h);
     void detachScene();
     void tick();

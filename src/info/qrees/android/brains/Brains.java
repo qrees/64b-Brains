@@ -13,6 +13,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -100,7 +101,16 @@ public class Brains extends Activity implements SensorEventListener {
         GL2JNILib.onDestroy();
         super.onDestroy();
     }
-
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            finish();
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+    
+    
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
 		// TODO Auto-generated method stub
 		

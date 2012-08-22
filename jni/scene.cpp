@@ -61,7 +61,6 @@ void Scene::_prepareForHit(){
     AShader _fragment_shader = loadShader("shaders/fragment_hit.gls", GL_FRAGMENT_SHADER);
     _hit_program = new Program();
     _hit_program->make(_vertex_shader, _fragment_shader);
-    _hit_program->activateSolidColor();
     
     //_pixels = new Texture();
     //_pixels->empty(_w, _h);

@@ -8,6 +8,8 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
 
+#include <map>
+
 #include "smart_ptr.h"
 #include "matrix.h"
 #include "shader.h"
@@ -46,30 +48,29 @@ public:
     void bindColor(GLuint buf_id);
     void bindViewMatrix(GLMatrix &matrix);
     void bindModelMatrix(GLMatrix &matrix);
+    void useColor(bool use_color);
+    void uniform1i(const char* uniform_name, GLint value);
     /*
      * Atributes activation, link string attributes names with OpenGL names (GLuint).
      */
-    void activateAttribute(const char *name, GLuint location);
-    void activateUniform(const char *name, GLuint location);
+    void initUniform(const char* uniform_name);
+    void initAttribute(const char *name);
     void activateAttributes();
-    void activateSolidColor();
-    void activateColor();
-    void activatePosition();
-    void activateTexture();
-    void activateTextureSampler();
     void activate();
 private:
+    map<const char*, GLint, cmp_str> mUniformMap;
+    map<const char*, GLint, cmp_str> mAttributeMap;
     GLuint _link();
 
     GLuint _create();
     AShader _vertex;
     AShader _fragment;
     GLuint _id;
-    GLuint attribs[8];
-    GLuint uniforms[8];
+    //GLuint attribs[8];
+    //GLuint uniforms[8];
     GLint _view_matrix;
     GLint _model_matrix;
-    GLint _u_solid_color;
+    //GLint _u_solid_color;
     char * _log;
 };
 typedef AutoPtr<Program> AProgram;

@@ -79,7 +79,7 @@ void *timerThread(void *data){
     LOGI("Created game thread");
     timer_running = true;
     while(timer_running){
-		usleep(200000);
+		usleep(16667);
 		if(world_running)
 		    world->tick();
     }
@@ -372,6 +372,7 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_init(
         JNIEnv * env, jobject obj, jint width, jint height) {
     _env = env;
     setupGraphics(width, height);
+    resumeWorld();
 }
 
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_step(
@@ -434,7 +435,6 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
         JNIEnv * env, jobject obj){
 	LOGI("onResume");
-	resumeWorld();
 }
 
 

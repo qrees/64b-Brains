@@ -23,42 +23,22 @@ Program::~Program() {
 }
 
 void Program::activateAttributes() {
-    activateColor();
-    activatePosition();
-    activateTexture();
-    activateTextureSampler();
+    initAttribute("a_color");
+    initAttribute("a_position");
+    initAttribute("a_texture");
+    initUniform("s_texture");
+    initUniform("u_use_color");
+    initUniform("u_solid_color");
     _view_matrix = glGetUniformLocation(getName(), "u_view_matrix");
     _model_matrix = glGetUniformLocation(getName(), "u_model_matrix");
 }
 
-void Program::activateSolidColor() {
-    _u_solid_color = glGetUniformLocation(getName(), "u_solid_color");
+void Program::initUniform(const char* uniform_name){
+    mUniformMap[uniform_name] = glGetUniformLocation(getName(), uniform_name);
 }
 
-void Program::activateColor() {
-    activateAttribute("a_color", LOC_COLOR);
-}
-
-void Program::activatePosition() {
-    activateAttribute("a_position", LOC_POSITION);
-}
-
-void Program::activateTexture() {
-    activateAttribute("a_texture", LOC_TEXTURE);
-}
-
-void Program::activateTextureSampler() {
-    activateUniform("s_texture", LOC_TEXTURE_SAMPLER);
-}
-
-void Program::activateAttribute(const char *name, GLuint location) {
-    attribs[location] = glGetAttribLocation(getName(), name);
-    //LOGI("New attribute %d at location %d (%s)", attribs[location], location, name);
-}
-
-void Program::activateUniform(const char *name, GLuint location) {
-    uniforms[location] = glGetUniformLocation(getName(), name);
-    //LOGI("New uniform %d at location %d (%s)", uniforms[location], location, name);
+void Program::initAttribute(const char *name) {
+    mAttributeMap[name] = glGetAttribLocation(getName(), name);
 }
 
 void Program::activate() {
@@ -75,43 +55,50 @@ void Program::bindModelMatrix(GLMatrix &matrix) {
     checkGlError("glUniformMatrix4fv");
 }
 
+void Program::useColor(bool use_color){
+    uniform1i("u_use_color", use_color);
+}
+
+void Program::uniform1i(const char* uniform_name, GLint value){
+    glUniform1i(mUniformMap[uniform_name], value);
+}
+
 void Program::bindColor(const void *data) {
-    bindAttribute(COLOR_ATTRIB, 4, GL_FLOAT, 0, data);
+    bindAttribute(mAttributeMap["a_color"], 4, GL_FLOAT, 0, data);
 }
 void Program::bindColorRGB(const void *data) {
-    bindAttribute(COLOR_ATTRIB, 3, GL_FLOAT, 0, data);
+    bindAttribute(mAttributeMap["a_color"], 3, GL_FLOAT, 0, data);
 }
 
 void Program::bindPosition(const void *data) {
-    bindAttribute(POSITION_ATTRIB, 3, GL_FLOAT, 0, data);
+    bindAttribute(mAttributeMap["a_position"], 3, GL_FLOAT, 0, data);
 }
 
 void Program::bindPosition(GLuint buf_id) {
-    bindBuffer(POSITION_ATTRIB, buf_id, 3, GL_FLOAT, 0, 0);
+    bindBuffer(mAttributeMap["a_position"], buf_id, 3, GL_FLOAT, 0, 0);
 }
 
 void Program::bindNormal(GLuint buf_id) {
-    bindBuffer(NORMAL_ATTRIB, buf_id, 3, GL_FLOAT, 0, 0);
+    bindBuffer(mAttributeMap["a_normal"], buf_id, 3, GL_FLOAT, 0, 0);
 }
 
 void Program::bindTexture(GLuint buf_id, GLuint tex_id) {
-    bindBuffer(TEXTURE_ATTRIB, buf_id, 2, GL_FLOAT, 0, 0);
+    bindBuffer(mAttributeMap["a_texture"], buf_id, 2, GL_FLOAT, 0, 0);
     glActiveTexture(GL_TEXTURE0);
     checkGlError("glActiveTexture");
     b64assert(glIsTexture(tex_id) == GL_TRUE, "Trying to bind non existant texture!");
     glBindTexture(GL_TEXTURE_2D, tex_id);
     checkGlError("glBindTexture");
-    glUniform1i(uniforms[LOC_TEXTURE_SAMPLER], 0);
+    glUniform1i(mUniformMap["s_texture"], 0);
     checkGlError("glUniform1i");
 }
 
 void Program::bindColor(GLuint buf_id) {
-    bindBuffer(COLOR_ATTRIB, buf_id, 4, GL_FLOAT, 0, 0);
+    bindBuffer(mAttributeMap["a_color"], buf_id, 4, GL_FLOAT, 0, 0);
 }
 
 void Program::bindSolidColor(GLfloat*color) {
-	b64assert(_u_solid_color != -1, "bindSolidColor called with _u_solid_color not set");
-    glUniform4fv(_u_solid_color, 1, color);
+    glUniform4fv(mUniformMap["u_solid_color"], 1, color);
 }
 
 void Program::bindAttribute(GLuint location, GLuint size, GLenum type,
