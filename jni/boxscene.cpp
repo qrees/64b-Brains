@@ -7,16 +7,18 @@
 #include <stdint.h>
 #include <GLES2/gl2.h>
 #include "boxscene.h"
+#include "world.h"
 
-BoxScene::BoxScene(GLuint w, GLuint h) :
+BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
         Scene(w, h) {
     float ratio = (float) h / (float) w;
+    _listener = world;
     // Fonts
     AFont font = new Font("fonts/small-outline.fnt");
 
     // Textures
     ATexture tex_buttons = loadBitmap("images/buttons.png");
-    ATexture tex = loadBitmap("images/background.png");
+    //ATexture tex = loadBitmap("images/background.png");
     //ATexture tex = loadTexture("images/background.pkm");
 
     Group * group = new Group();
@@ -28,6 +30,10 @@ BoxScene::BoxScene(GLuint w, GLuint h) :
     float half = (ratio - 1)/2;
     _view_matrix = GLMatrix().ortho(-10.0f, 10.0f, (-1-half)*10.0f, (1+half)*10.0f, 1.0f, -1.0f);
     _body_texture = loadBitmap("images/background.png");
+}
+
+void BoxScene::sensor(float x, float y, float z){
+    _listener->onSensor(x, y, z);
 }
 
 Mesh* BoxScene::createPolygon(GLfloat* vert, int vert_count) {

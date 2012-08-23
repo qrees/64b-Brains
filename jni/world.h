@@ -9,9 +9,17 @@
 #define WORLD_H_
 
 #include "Box2D/Box2D.h"
-#include "boxscene.h"
+#include "smart_ptr.h"
+#include "scene.h"
 
-class BaseWorld:public RefCntObject {
+class EventListener {
+public:
+    virtual ~EventListener() { };
+    virtual void onSensor(float x, float y, float z) = 0;
+};
+
+
+class BaseWorld:public RefCntObject, public EventListener {
 public:
     virtual ~BaseWorld() { };
     virtual void tick() = 0;
@@ -20,26 +28,5 @@ public:
 };
 typedef AutoPtr<BaseWorld> ABaseWorld;
 
-class BoxWorld: public BaseWorld {
-private:
-    b2World* mWorld;
-    float32 mTimeStep;
-    int32 mVelocityIterations;
-    int32 mPositionIterations;
-    ABoxScene mScene;
-
-    //b2BodyDef mBodyDef;
-    //b2PolygonShape mBoxShape;
-    //b2FixtureDef mFixtureDef;
-    map<Mesh*, b2Body*> mBodyPolygonMap;
-public:
-    BoxWorld();
-    ~BoxWorld();
-    void init();
-    void edge(float sx, float sy, float ex, float ey);
-    AScene initScene(int w, int h);
-    void detachScene();
-    void tick();
-};
 
 #endif /* WORLD_H_ */

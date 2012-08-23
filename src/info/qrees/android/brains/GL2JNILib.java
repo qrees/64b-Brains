@@ -137,6 +137,8 @@ public class GL2JNILib {
 	public static native void touch(int x, int y);
 
 	public static native void motionevent(int x, int y, int action);
+	
+	public static native void sensorevent(float x, float y, float z);
 
 	public static native void onCreate();
 

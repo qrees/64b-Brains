@@ -122,7 +122,9 @@ public class Brains extends Activity implements SensorEventListener {
 			values.add(String.valueOf(event.values[i]));
 		}
 		//Log.d(TextUtils.join(", ", values.toArray()));
-		
-		
+		if(event.values.length > 2)
+			GL2JNILib.sensorevent(event.values[0], event.values[1], event.values[2]);
+		else
+			Log.w("Incorrect sensor values length, expected at least 3");
 	}
 }

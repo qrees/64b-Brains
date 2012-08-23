@@ -167,6 +167,10 @@ void Scene::up(int x, int y){
 	_clicked = NULL;
 }
 
+void Scene::sensor(float x, float y, float z) {
+    LOGI("sensor %f %f %f", x, y, z);
+}
+
 void Scene::invalidate(){
 	_valid_scene = false;
 }
@@ -217,14 +221,6 @@ void Scene::add_animation(AAnimation anim){
     pthread_mutex_lock(&_animation_mutex);
     _animations.push_back(anim);
     pthread_mutex_unlock(&_animation_mutex);
-}
-
-void Scene::handle_tick(){
-
-}
-
-void Scene::tick(){
-    handle_tick();
 }
 
 /*
@@ -350,6 +346,16 @@ ClickEvent::ClickEvent(AEntity mesh, int x, int y){
 void ClickEvent::process(RefCntObject &scene){
     LOGI("EVT: process down event");
     static_cast<Scene&>(scene).down(_mesh, _x, _y);
+}
+
+SensorEvent::SensorEvent(float x, float y, float z) {
+    _x = x;
+    _y = y;
+    _z = z;
+}
+
+void SensorEvent::process(RefCntObject &scene){
+    static_cast<Scene&>(scene).sensor(_x, _y, _z);
 }
 
 UpEvent::UpEvent(int x, int y){

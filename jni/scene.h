@@ -66,9 +66,7 @@ public:
     virtual void prepareViewMatrix(){};
     virtual void clearScene();
     virtual void prepareScene();
-    void tick();
     void handleAnimations();
-    virtual void handle_tick();
     AEntity hitCheck(int x, int y);
     
     void _renderFrame();
@@ -85,6 +83,7 @@ public:
     virtual void down(AEntity, int x, int y);
     virtual void move(int x, int y);
     virtual void up(int x, int y);
+    virtual void sensor(float x, float y, float z);
     virtual void invalidate();
 };
 
@@ -186,6 +185,27 @@ public:
     void process(RefCntObject &scene);
 };
 
+/**
+ * Represents sensor event, for example accelerometer..
+ */
+class SensorEvent : public Event {
+private:
+    float _x, _y, _z;
+public:
+    /** Constructor for MoveEvent.
+     *
+     * @param x Horizontal coordinate of click event
+     * @param y Vertical coordinate of click event
+     */
+    SensorEvent(float x, float y, float z);
+
+    /**
+     * Should be called by Scene class when event should be processed.
+     *
+     * @param scene Scene that is going to be affected by this event.
+     */
+    void process(RefCntObject &scene);
+};
 /**
  * Stops processing of event queue for given scene.
  */

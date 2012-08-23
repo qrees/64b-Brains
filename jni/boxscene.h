@@ -11,7 +11,9 @@
 #include <hash_map>
 #include <queue>
 
+#include "world.h"
 #include "scene.h"
+
 
 using namespace std;
 
@@ -23,12 +25,12 @@ private:
     hash_map<string, ATexture> _texture_map;
     hash_map<string, AEntity> _object_map;
     ATexture _body_texture;
+    EventListener* _listener;
 public:
-    BoxScene(GLuint w=0, GLuint h=0);
+    BoxScene(EventListener* world, GLuint w=0, GLuint h=0);
     void renderFrame();
-    //void prepareScene();
-    //void handle_tick();
     Mesh* createPolygon(GLfloat* vert, int vert_count);
+    void sensor(float x, float y, float z);
 };
 typedef AutoPtr<BoxScene> ABoxScene;
 

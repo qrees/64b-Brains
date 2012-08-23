@@ -15,7 +15,7 @@
 //#include "gl_code.h"
 #include "common.h"
 #include "log.h"
-#include "world.h"
+#include "boxworld.h"
 #include "boxscene.h"
 
 
@@ -166,10 +166,18 @@ bool setupGraphics(int w, int h) {
 }
 
 void renderFrame() {
-    b64assert(scene, "scene was not initialized");
+    if(scene == 0)
+    LOGE("scene was not initialized");
     scene->_renderFrame();
 }
 
+void sensorEvent(float x, float y, float z){
+    AEvent event;
+    if(scene == 0)
+        return;
+    event = new SensorEvent(x, y, z);
+    scene->addEvent(event);
+}
 
 void moveEvent(int x, int y){
     timeval curr_time;
@@ -344,6 +352,9 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
         JNIEnv * env, jobject obj, jint x, jint y);
 JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
         JNIEnv * env, jobject obj, jint x, jint y, jint action);
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_sensorevent(
+        JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z);
+
 /**
  * Activity events
  */
@@ -408,6 +419,12 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
     _env = env;
     touchEvent(x, y, action);
 }
+
+JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_sensorevent(
+        JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z) {
+    sensorEvent(x, y, z);
+}
+
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 	JNIEnv *env;
