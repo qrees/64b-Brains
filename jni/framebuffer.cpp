@@ -32,17 +32,27 @@ void Framebuffer::setDepthStencilBuffer(GLuint width, GLuint height){
     glBindFramebuffer(GL_FRAMEBUFFER, _id);
     if(_stencil_id)
         glDeleteRenderbuffers(1, &_stencil_id);
+    if(_depth_id)
+        glDeleteRenderbuffers(1, &_depth_id);
     
     glGenRenderbuffers(1, &_stencil_id);
     glBindRenderbuffer(GL_RENDERBUFFER, _stencil_id);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, width, height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
     checkGlError("glRenderbufferStorage stencil");
 
+    glGenRenderbuffers(1, &_depth_id);
+    glBindRenderbuffer(GL_RENDERBUFFER, _depth_id);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+    checkGlError("glRenderbufferStorage stencil");
+
+    //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, width, height);
+
+
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                              GL_RENDERBUFFER, _stencil_id);
+                              GL_RENDERBUFFER, _depth_id);
     checkGlError("glFramebufferRenderbuffer");
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                              GL_RENDERBUFFER, _stencil_id);
+    //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+    //                          GL_RENDERBUFFER, _stencil_id);
     checkGlError("glFramebufferRenderbuffer");
 }
 
@@ -54,12 +64,13 @@ void Framebuffer::setColorBuffer(GLuint width, GLuint height){
     glGenRenderbuffers(1, &_color_id);
     glBindRenderbuffer(GL_RENDERBUFFER, _color_id);
     
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8_OES, width, height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width, height);
     checkGlError("glRenderbufferStorage color");
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_RENDERBUFFER, _color_id);
     checkGlError("glFramebufferRenderbuffer");
+    LOGI("Created color buffer");
 }
 
 void Framebuffer::setColorTextureBuffer(ATexture texture){

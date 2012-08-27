@@ -14,10 +14,10 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
     float ratio = (float) h / (float) w;
     _listener = world;
     // Fonts
-    AFont font = new Font("fonts/small-outline.fnt");
+    //AFont font = new Font("fonts/small-outline.fnt");
 
     // Textures
-    ATexture tex_buttons = loadBitmap("images/buttons.png");
+    //ATexture tex_buttons = loadBitmap("images/buttons.png");
     //ATexture tex = loadBitmap("images/background.png");
     //ATexture tex = loadTexture("images/background.pkm");
 
@@ -27,27 +27,40 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
     // Location nodes, entities are attached to these nodes.
     mRootLocation = new Node("root");
     mRootLocation->setLocation(0.5f, 0.5f, 0.0f);
-    float half = (ratio - 1)/2;
-    _view_matrix = GLMatrix().ortho(-10.0f, 10.0f, (-1-half)*10.0f, (1+half)*10.0f, 1.0f, -1.0f);
-    _body_texture = loadBitmap("images/background.png");
+    float margin = (ratio - 1);
+    _view_matrix = GLMatrix().ortho(-10.0f, 10.0f, (-1-margin)*10.0f, (1+margin)*10.0f, 1.0f, -1.0f);
+    _body_texture = loadBitmap("images/WoodFine_256.png");
+    _circle_texture = loadBitmap("images/circle.png");
 }
 
 void BoxScene::sensor(float x, float y, float z){
     _listener->onSensor(x, y, z);
 }
 
-Mesh* BoxScene::createPolygon(GLfloat* vert, int vert_count) {
+Mesh* BoxScene::_createPolygon(GLfloat* vert, int vert_count) {
     ANode root_location = new Node("root");
     root_location->setLocation(0.5f, 0.5f, 0.0f);
+    uint16_t * indexes = new uint16_t[vert_count];
+    for (int i = 0; i < vert_count; i++){
+        indexes[i] = i;
+    }
+    Mesh *mesh = new Mesh();
+    mesh->setVertices(vert, vert_count);
+    mesh->setIndexes(indexes, vert_count);
+    mesh->setLocation(root_location);
+    delete[] indexes;
+    _root->addObject(mesh);
+    return mesh;
+}
+
+Mesh * BoxScene::_applyTexture(Mesh* mesh, GLfloat* vert, int vert_count, ATexture texture) {
     GLfloat min_x = FLT_MAX;
     GLfloat max_x = -FLT_MAX;
     GLfloat min_y = FLT_MAX;
     GLfloat max_y = -FLT_MAX;
     GLfloat scale_x, scale_y;
-    uint16_t * indexes = new uint16_t[vert_count];
     GLfloat* tex_coord = new GLfloat[vert_count*2];
     for (int i = 0; i < vert_count; i++){
-        indexes[i] = i;
         min_x = min(vert[i*3], min_x);
         max_x = max(vert[i*3], max_x);
         min_y = min(vert[i*3+1], min_y);
@@ -68,21 +81,42 @@ Mesh* BoxScene::createPolygon(GLfloat* vert, int vert_count) {
 
         }
     }
-    Mesh *mesh = new Mesh();
-    mesh->setVertices(vert, vert_count);
-    //setTextureRect(0.f, 1.f, 1.f, 0.f);
-    mesh->setIndexes(indexes, vert_count);
+    mesh->setType(GL_TRIANGLE_FAN);
+    mesh->setTexture(texture);
+    mesh->setTextureCoord(tex_coord, vert_count);
+    delete[] tex_coord;
+    return mesh;
+}
+
+Mesh* BoxScene::createCircle(float radius) {
+    int vert_count = 4;
+    float max_coord = -radius;
+    float min_coord = -max_coord;
+    float *vert = new float[4*3];
+    vert[0*3+0] = min_coord;
+    vert[0*3+1] = min_coord;
+    vert[1*3+0] = max_coord;
+    vert[1*3+1] = min_coord;
+    vert[2*3+0] = max_coord;
+    vert[2*3+1] = max_coord;
+    vert[3*3+0] = min_coord;
+    vert[3*3+1] = max_coord;
+    for(int i = 1; i < 4; i++)vert[i*3+2] = 0.f;  // "z" coordinate
+    Mesh *mesh = this->_createPolygon(vert, vert_count);
+    this->_applyTexture(mesh, vert, vert_count, _circle_texture);
+    _root->addObject(mesh);
+    delete[] vert;
+    return mesh;
+}
+
+Mesh* BoxScene::createPolygon(GLfloat* vert, int vert_count) {
+    Mesh *mesh = this->_createPolygon(vert, vert_count);
     if(vert_count > 2){
-        mesh->setType(GL_TRIANGLE_FAN);
-        mesh->setTexture(_body_texture);
+        mesh = this->_applyTexture(mesh, vert, vert_count, _body_texture);
     }else{
         mesh->setType(GL_LINES);
         mesh->setColor(1.0f, 1.0f, 1.0f);
     }
-    mesh->setTextureCoord(tex_coord, vert_count);
-    mesh->setLocation(root_location);
-    delete[] indexes;
-    delete[] tex_coord;
     _root->addObject(mesh);
     return mesh;
 }

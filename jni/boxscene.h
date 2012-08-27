@@ -25,11 +25,15 @@ private:
     hash_map<string, ATexture> _texture_map;
     hash_map<string, AEntity> _object_map;
     ATexture _body_texture;
+    ATexture _circle_texture;
     EventListener* _listener;
+    Mesh* _createPolygon(GLfloat* vert, int vert_count);
+    Mesh* _applyTexture(Mesh*, GLfloat* vert, int vert_count, ATexture texture);
 public:
     BoxScene(EventListener* world, GLuint w=0, GLuint h=0);
     void renderFrame();
     Mesh* createPolygon(GLfloat* vert, int vert_count);
+    Mesh* createCircle(float radius);
     void sensor(float x, float y, float z);
 };
 typedef AutoPtr<BoxScene> ABoxScene;

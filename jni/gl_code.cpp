@@ -64,8 +64,14 @@ void *eventThread(void*data){
 	return NULL;
 }
 
+#define FRAME_STEP 16667
+
 
 void *timerThread(void *data){
+    timeval curr_time;
+    long current, previous;
+    int delta;
+
     if(gJavaVM == NULL) {
         LOGE("No JVM available");
         return NULL;
@@ -78,15 +84,22 @@ void *timerThread(void *data){
 	}
     LOGI("Created game thread");
     timer_running = true;
+    gettimeofday(&curr_time, NULL);
+    previous = curr_time.tv_sec * 1000000 + curr_time.tv_usec;
     while(timer_running){
-		usleep(16667);
-		if(world_running)
-		    world->tick();
+        gettimeofday(&curr_time, NULL);
+        current = curr_time.tv_sec * 1000000 + curr_time.tv_usec;
+        delta = FRAME_STEP - (current - previous);
+        if(delta > 0)
+            usleep(delta);
+        if(world_running)
+            world->tick();
+        previous = current;
     }
 
     LOGI("Ending timer thread");
-	gJavaVM->DetachCurrentThread();
-	return NULL;
+    gJavaVM->DetachCurrentThread();
+    return NULL;
 }
 
 void printGLString(const char *name, GLenum s) {

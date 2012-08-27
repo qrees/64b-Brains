@@ -3,7 +3,7 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := libgl2jni
-LOCAL_CFLAGS    := -g -Wall
+LOCAL_CFLAGS    := -O3 -Wall
 LOCAL_SRC_FILES := gl_code.cpp \
              shader.cpp program.cpp mesh.cpp texture.cpp scene.cpp render_visitor.cpp \
              framebuffer.cpp event.cpp font.cpp textarea.cpp animation.cpp world.cpp boxscene.cpp \

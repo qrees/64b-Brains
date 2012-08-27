@@ -12,8 +12,13 @@ void Texture::_init(){
     checkGlError("glGenTextures");
     LOGI("Allocated texture %i", _id);
     glBindTexture(GL_TEXTURE_2D, _id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    checkGlError("glGenerateMipmap");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     checkGlError("glTexParameteri");
 }
 
@@ -62,6 +67,7 @@ void Texture::load(GLuint width, GLuint height, int format, u_char * data){
     memcpy(_data, data, width*height*bpp);
     glBindTexture(GL_TEXTURE_2D, _id);
     glTexImage2D(GL_TEXTURE_2D, 0, gl_internal, width, height, 0, gl_format, gl_type, _data);
+    glGenerateMipmap(GL_TEXTURE_2D);
     _width = width;
     _height = height;
     checkGlError("glTexImage2D");
