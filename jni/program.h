@@ -50,6 +50,8 @@ public:
     void bindModelMatrix(GLMatrix &matrix);
     void useColor(bool use_color);
     void uniform1i(const char* uniform_name, GLint value);
+    void uniform4fv(const char* uniform_name, GLfloat * value);
+    void uniform4f(const char* uniform_name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4);
     /*
      * Atributes activation, link string attributes names with OpenGL names (GLuint).
      */

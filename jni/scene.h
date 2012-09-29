@@ -42,7 +42,7 @@ private:
 protected:
     ATexture _pixels;
     AProgram _hit_program;
-    AFramebuffer _framebuffer;
+    AFramebuffer _click_framebuffer;
     GLuint _w;
     GLuint _h;
     AGroup _root;

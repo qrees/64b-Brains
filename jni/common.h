@@ -24,6 +24,7 @@ struct cmp_str
 #define toDegrees(angle) (angle * 180.0f / PI)
 #define toRadians(angle) (angle * PI / 180.0f)
 #define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 #define null 0
 
 #define ACTION_DOWN 0

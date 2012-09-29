@@ -163,8 +163,9 @@ public:
     void setTextureCoord(GLfloat *buf, GLint num);
     void setTexture(ATexture tex);
     void setColor(GLfloat *buf, GLint num);
+    void setColorRGB(GLfloat r, GLfloat g, GLfloat b);
+    void setColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     void setIndexes(GLushort *buf, GLint num);
-    void setColor(GLfloat r, GLfloat g, GLfloat b);
     
     /**
      * Set Mesh type to one of GL_POINTS, GL_LINES, GL_LINE_LOOP, GL_LINE_STRIP,

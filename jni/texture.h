@@ -28,6 +28,7 @@ public:
     Texture();
     ~Texture();
     GLuint getName();
+    void generateMipmap();
     void empty(GLuint width, GLuint height);
     void load(GLuint width, GLuint height, int format, u_char * data);
     void load_pkm(const u_char * data);

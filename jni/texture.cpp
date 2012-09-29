@@ -12,10 +12,6 @@ void Texture::_init(){
     checkGlError("glGenTextures");
     LOGI("Allocated texture %i", _id);
     glBindTexture(GL_TEXTURE_2D, _id);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    checkGlError("glGenerateMipmap");
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -63,27 +59,30 @@ void Texture::load(GLuint width, GLuint height, int format, u_char * data){
             LOGE("Unknown texture format");
             return;
     }
-    _data = new u_char[width*height*bpp];
-    memcpy(_data, data, width*height*bpp);
     glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal, width, height, 0, gl_format, gl_type, _data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal, width, height, 0, gl_format, gl_type, data);
+    checkGlError("glTexImage2D");
+    generateMipmap();
+    checkGlError("glGenerateMipmap");
     _width = width;
     _height = height;
-    checkGlError("glTexImage2D");
     loaded();
 }
 
+void Texture::generateMipmap(){
+    glBindTexture(GL_TEXTURE_2D, _id);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+
 void Texture::empty(GLuint width, GLuint height){
-    if(_data)
-        delete[] _data;
-    _data = new u_char[width*height*4];
+    u_char* _data = new u_char[width*height*4];
     memset(_data, 0, width*height*4);
     glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _data);
     _width = width;
     _height = height;
     checkGlError("glTexImage2D");
+    delete[] _data;
 }
 
 void Texture::load_pkm(const u_char * data){
@@ -101,11 +100,8 @@ void Texture::load_compressed(GLuint width, GLuint height, const u_char * data){
     _width = width;
     _height = height;
     encodedSize = etc1_get_encoded_data_size(width, height);
-    if(_data)
-        delete[] _data;
-    _data = new u_char[encodedSize];
-    memcpy(_data, data, encodedSize);
-    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES, width, height, 0, encodedSize, _data);
+
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_OES, width, height, 0, encodedSize, data);
     _width = width;
     _height = height;
     checkGlError("glCompressedTexImage2D");
@@ -113,7 +109,7 @@ void Texture::load_compressed(GLuint width, GLuint height, const u_char * data){
 
 void Texture::loaded(){
     //glGenerateMipmap(GL_TEXTURE_2D);
-    checkGlError("glGenerateMipmap");
+    //checkGlError("glGenerateMipmap");
 }
 
 GLuint Texture::getWidth(){

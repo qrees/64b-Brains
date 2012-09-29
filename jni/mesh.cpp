@@ -234,7 +234,15 @@ void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 2 * num, TEXTURE_BUF);
 }
 
-void Mesh::setColor(GLfloat r, GLfloat g, GLfloat b){
+void Mesh::setColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
+    has_color = true;
+    if(_solid_color == 0){
+        _solid_color = new GLfloat[4];
+    }
+    _solid_color[0] = r; _solid_color[1] = g; _solid_color[2] = b; _solid_color[3] = a;
+}
+
+void Mesh::setColorRGB(GLfloat r, GLfloat g, GLfloat b){
     //has_solid_color = true;
     has_color = true;
     if(_solid_color == 0){
@@ -297,9 +305,10 @@ void Mesh::draw(ARenderVisitor visitor) {
     program->bindPosition(vboIds[VERTEX_BUF]);
     if(has_normal)
         program->bindNormal(vboIds[NORMAL_BUF]);
-    if(has_texture && bool(_texture)){
+    if(has_texture && bool(_texture)) {
         program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
     }
+    program->uniform4f("u_texture_multipler", 1, 1, 1, 0.95f);
     program->useColor(has_color);
     if(has_color)
         program->bindSolidColor(_solid_color);

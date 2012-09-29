@@ -43,7 +43,8 @@ void BoxWorld::init() {
     //body->CreateFixture(&mFixtureDef);
     for(int j = -9; j < 9; j ++){
         for(int i = -9; i < 9; i+=1){
-            circle.m_radius = 0.1f +  (float)rand()/(float)RAND_MAX*0.2;
+            //circle.m_radius = 0.1f +  (float)rand()/(float)RAND_MAX*0.2;
+            circle.m_radius = 0.4f;
             mBodyDef.position.Set(i, j); //middle, bottom
             b2Body* body = mWorld->CreateBody(&mBodyDef);
             body->CreateFixture(&mFixtureDef);
@@ -69,7 +70,7 @@ void BoxWorld::edge(float sx, float sy, float ex, float ey){
 
     mFixtureDef.density = 1.0f;
     mFixtureDef.friction = 0.3f;
-    mFixtureDef.restitution = 0.f;
+    mFixtureDef.restitution = 1.f;
 
     mFixtureDef.shape = &polygonShape;
     mBodyDef.type = b2_staticBody; //change body type

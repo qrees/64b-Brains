@@ -6,11 +6,12 @@ uniform sampler2D s_texture;
 uniform bool u_use_color;
 uniform bool u_use_texture;
 uniform vec4 u_solid_color;
+uniform vec4 u_texture_multipler;
 
 void main() {
   if(u_use_color){
     gl_FragColor = u_solid_color;
   }else{
-    gl_FragColor = texture2D(s_texture, v_texture);
+    gl_FragColor = texture2D(s_texture, v_texture) * u_texture_multipler;
   }
 }

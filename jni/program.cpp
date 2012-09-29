@@ -29,6 +29,7 @@ void Program::activateAttributes() {
     initUniform("s_texture");
     initUniform("u_use_color");
     initUniform("u_solid_color");
+    initUniform("u_texture_multipler");
     _view_matrix = glGetUniformLocation(getName(), "u_view_matrix");
     _model_matrix = glGetUniformLocation(getName(), "u_model_matrix");
 }
@@ -61,6 +62,14 @@ void Program::useColor(bool use_color){
 
 void Program::uniform1i(const char* uniform_name, GLint value){
     glUniform1i(mUniformMap[uniform_name], value);
+}
+
+void Program::uniform4fv(const char* uniform_name, GLfloat* value){
+    glUniform4fv(mUniformMap[uniform_name], 1, value);
+}
+
+void Program::uniform4f(const char* uniform_name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4){
+    glUniform4f(mUniformMap[uniform_name], v1, v2, v3, v4);
 }
 
 void Program::bindColor(const void *data) {
@@ -98,7 +107,7 @@ void Program::bindColor(GLuint buf_id) {
 }
 
 void Program::bindSolidColor(GLfloat*color) {
-    glUniform4fv(mUniformMap["u_solid_color"], 1, color);
+    uniform4fv("u_solid_color", color);
 }
 
 void Program::bindAttribute(GLuint location, GLuint size, GLenum type,

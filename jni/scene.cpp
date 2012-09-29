@@ -65,9 +65,9 @@ void Scene::_prepareForHit(){
     //_pixels = new Texture();
     //_pixels->empty(_w, _h);
     
-    _framebuffer = new Framebuffer();
-    _framebuffer->setFormat(_w, _h);
-    b64assert(_framebuffer->isValid(), "Framebuffer is not valid");
+    _click_framebuffer = new Framebuffer();
+    _click_framebuffer->setFormat(_w, _h);
+    b64assert(_click_framebuffer->isValid(), "Framebuffer is not valid");
 }
 
 void Scene::clearScene(){
@@ -78,7 +78,6 @@ void Scene::clearScene(){
 }
 
 void Scene::prepareScene(){
-    clearScene();
     prepareViewMatrix();
     handleAnimations();
 }
@@ -107,7 +106,11 @@ void Scene::handleAnimations(){
 }
 
 void Scene::_draw_hit_check(){
-    _framebuffer->activate();
+    _click_framebuffer->activate();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    checkGlError("glClearColor");
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    checkGlError("glClear");
     prepareScene();
     
     AHitVisitor visitor = new HitVisitor();
@@ -122,7 +125,7 @@ AEntity Scene::hitCheck(int x, int y){
     
     _prepareForHit();
 
-    b64assert(_framebuffer->isValid(), "Framebuffer is not valid");
+    //b64assert(_framebuffer->isValid(), "Framebuffer is not valid");
     _draw_hit_check();
     glFinish();
     LOGI("glReadpixels %i %i", x, _h-y);
@@ -212,6 +215,7 @@ void Scene::_processHit(){
 
 void Scene::_renderFrame(){
     //_process_events();
+    clearScene();
     prepareScene();
     _processHit();
     renderFrame();

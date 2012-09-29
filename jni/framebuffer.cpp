@@ -74,10 +74,10 @@ void Framebuffer::setColorBuffer(GLuint width, GLuint height){
 }
 
 void Framebuffer::setColorTextureBuffer(ATexture texture){
-    glBindFramebuffer(GL_FRAMEBUFFER, _id);
-    if(_stencil_id)
+    if(_color_id)
         glDeleteRenderbuffers(1, &_color_id);
-    
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _id);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->getName(), 0);
     checkGlError("glFramebufferTexture2D");
 }

@@ -13,13 +13,6 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
         Scene(w, h) {
     float ratio = (float) h / (float) w;
     _listener = world;
-    // Fonts
-    //AFont font = new Font("fonts/small-outline.fnt");
-
-    // Textures
-    //ATexture tex_buttons = loadBitmap("images/buttons.png");
-    //ATexture tex = loadBitmap("images/background.png");
-    //ATexture tex = loadTexture("images/background.pkm");
 
     Group * group = new Group();
     _root = group;
@@ -29,8 +22,44 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
     mRootLocation->setLocation(0.5f, 0.5f, 0.0f);
     float margin = (ratio - 1);
     _view_matrix = GLMatrix().ortho(-10.0f, 10.0f, (-1-margin)*10.0f, (1+margin)*10.0f, 1.0f, -1.0f);
+    _framebuffer_view_matrix = GLMatrix().ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, -1.0f);
     _body_texture = loadBitmap("images/WoodFine_256.png");
     _circle_texture = loadBitmap("images/circle.png");
+    ATexture metal = loadBitmap("images/metal.png");
+
+    _screen_texture = new Texture();
+    _screen_texture->empty(512, 512);
+
+    fade_out_background = new Rectangle();
+    fade_out_background->setTexture(_screen_texture);
+    ANode loc = fade_out_background->getLocation();
+    loc->setScale(20, -20, 1);
+    loc->setLocation(-10, 10, 0);
+
+    _screen_data = new GLubyte[w*h*4];
+
+    _framebuffer = new Framebuffer();
+    _framebuffer->setFormat(512, 512);
+    //_framebuffer->setDepthStencilBuffer(512, 512);
+    //_framebuffer->setColorTextureBuffer(_screen_texture);
+
+
+    background = new Rectangle();
+    background->setTexture(_screen_texture);
+    loc = background->getLocation();
+    loc->setScale(20, -20, 1);
+    loc->setLocation(-10, 10, 1);
+
+    _metal_background = new Rectangle();
+    _metal_background->setTexture(metal);
+    loc = _metal_background->getLocation();
+    loc->setScale(20, -20, 1);
+    loc->setLocation(-10, 10, 1);
+
+}
+
+BoxScene::~BoxScene(){
+    delete[] _screen_data;
 }
 
 void BoxScene::sensor(float x, float y, float z){
@@ -115,19 +144,47 @@ Mesh* BoxScene::createPolygon(GLfloat* vert, int vert_count) {
         mesh = this->_applyTexture(mesh, vert, vert_count, _body_texture);
     }else{
         mesh->setType(GL_LINES);
-        mesh->setColor(1.0f, 1.0f, 1.0f);
+        mesh->setColorRGB(1.0f, 1.0f, 1.0f);
     }
     _root->addObject(mesh);
     return mesh;
 }
 
-void BoxScene::renderFrame(){
+void BoxScene::clearScene(){
+    _framebuffer->activate();
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    checkGlError("glClearColor");
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    checkGlError("glClear");
+
     _screen_buffer->activate();
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    checkGlError("glClear");
+}
+
+void BoxScene::renderFrame(){
+    b64assert(_framebuffer->isValid(), "Framebuffe is not valid");
+    glViewport(0, 0, 512, 512);
+    _framebuffer->activate();
 
     ARenderVisitor visitor = new RenderVisitor();
     visitor->setProgram(_program);
     _program->activate();
-    _program->bindViewMatrix(_view_matrix);
+    _program->bindViewMatrix(_framebuffer_view_matrix);
+    fade_out_background->draw(visitor);
     _root->draw(visitor);
+
+    glReadPixels(0, 0, 512, 512,  GL_RGBA, GL_UNSIGNED_BYTE, _screen_data);
+    checkGlError("glReadPixels");
+    _screen_texture->load(512, 512, ARGB_8888, _screen_data);
+
+    _screen_texture->generateMipmap();
+    glViewport(0, 0, _w, _h);
+    _screen_buffer->activate();
+    _program->bindViewMatrix(_view_matrix);
+    _metal_background->draw(visitor);
+    background->draw(visitor);
+
 }
 
