@@ -8,6 +8,7 @@
 #include <GLES2/gl2.h>
 #include "boxscene.h"
 #include "world.h"
+#include "clipper/clipper.hpp"
 
 BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
         Scene(w, h) {
@@ -32,6 +33,7 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
 
     fade_out_background = new Rectangle();
     fade_out_background->setTexture(_screen_texture);
+    fade_out_background->setTextureFade(0., 0., 0., 0.03f);
     ANode loc = fade_out_background->getLocation();
     loc->setScale(20, -20, 1);
     loc->setLocation(-10, 10, 0);
@@ -52,6 +54,7 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
 
     _metal_background = new Rectangle();
     _metal_background->setTexture(metal);
+    //_metal_background->setColor(1.0, 1.0, 1.0, 1.0);
     loc = _metal_background->getLocation();
     loc->setScale(20, -20, 1);
     loc->setLocation(-10, 10, 1);

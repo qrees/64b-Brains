@@ -39,7 +39,6 @@ public class Brains extends Activity implements SensorEventListener {
                                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         //mGLSurfaceView = new TouchView(this, new ViewRenderer(getAssets()));
         mGLSurfaceView = new GL2JNIView(getApplication(), assets);
-        //mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_WHEN_DIRTY);
         mGLSurfaceView.setRenderMode(GL2JNIView.RENDERMODE_CONTINUOUSLY);
         setContentView(mGLSurfaceView);
         

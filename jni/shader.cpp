@@ -67,8 +67,8 @@ GLuint Shader::_compile() {
             LOGE("Failed to compile shader: %s", _source.c_str());
             char * info = getInfo();
             if (info)
-                LOGE("Could not compile shader %d:\n%s",
-                        _type, info);
+                LOGE("Could not compile shader %d:\n%s", _type, info);
+            assert2(false, "Failed to compile shader");
         } else {
             LOGI("Shader compilled succesfully %d", _id);
             valid = true;

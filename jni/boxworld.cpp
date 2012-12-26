@@ -41,10 +41,43 @@ void BoxWorld::init() {
 
     //b2Body* body = mWorld->CreateBody(&mBodyDef);
     //body->CreateFixture(&mFixtureDef);
-    for(int j = -9; j < 9; j ++){
+
+
+
+    for(int j = -9; j < -6; j ++){
         for(int i = -9; i < 9; i+=1){
-            //circle.m_radius = 0.1f +  (float)rand()/(float)RAND_MAX*0.2;
             circle.m_radius = 0.4f;
+            unsigned int val = 0;
+            unsigned int bits = 1 << val;
+            mFixtureDef.filter.categoryBits = bits;
+            mFixtureDef.filter.maskBits = bits;
+            mBodyDef.position.Set(i, j); //middle, bottom
+            b2Body* body = mWorld->CreateBody(&mBodyDef);
+            body->CreateFixture(&mFixtureDef);
+        }
+    }
+
+    for(int j = -6; j < -3; j ++){
+        for(int i = -9; i < 9; i+=1){
+            circle.m_radius = 0.4f;
+            unsigned int val = 1;
+            unsigned int bits = 1 << val;
+            mFixtureDef.filter.categoryBits = bits;
+            mFixtureDef.filter.maskBits = bits;
+            mBodyDef.position.Set(i, j); //middle, bottom
+            b2Body* body = mWorld->CreateBody(&mBodyDef);
+            body->CreateFixture(&mFixtureDef);
+        }
+    }
+
+    for(int j = -3; j < 0; j ++){
+        for(int i = -9; i < 9; i+=1){
+            circle.m_radius = 0.4f;
+            unsigned int val = 2;
+            unsigned int bits = 1 << val;
+            mFixtureDef.filter.categoryBits = bits;
+            mFixtureDef.filter.maskBits = bits;
+            //circle.m_radius = 0.2f + (float)val * 0.1f;
             mBodyDef.position.Set(i, j); //middle, bottom
             b2Body* body = mWorld->CreateBody(&mBodyDef);
             body->CreateFixture(&mFixtureDef);
@@ -70,7 +103,9 @@ void BoxWorld::edge(float sx, float sy, float ex, float ey){
 
     mFixtureDef.density = 1.0f;
     mFixtureDef.friction = 0.3f;
-    mFixtureDef.restitution = 1.f;
+    mFixtureDef.restitution = 0.f;
+    mFixtureDef.filter.categoryBits = 0xFFFF;
+    mFixtureDef.filter.maskBits = 0xFFFF;
 
     mFixtureDef.shape = &polygonShape;
     mBodyDef.type = b2_staticBody; //change body type
@@ -117,8 +152,17 @@ AScene BoxWorld::initScene(int w, int h) {
                     }
                     float radius = polygon->m_radius;
                     mesh = mScene->createCircle(radius);
-                    mBodyPolygonMap[mesh] = body;
-                    LOGI("Circle created %p", mesh);
+                    b2Filter filter = f->GetFilterData();
+                    if(filter.categoryBits & (1 << 0)){
+                        mesh->setTextureMultipler(1, 0, 0, 1.);
+                    }
+                    if(filter.categoryBits & (1 << 1)){
+                        mesh->setTextureMultipler(0, 1, 0, 1.);
+                    }
+                    if(filter.categoryBits & (1 << 2)){
+                        mesh->setTextureMultipler(0, 0, 1, 1.);
+                    }
+                    mBodyPolygonMap[mesh]  = body;
                 }
                 break;
             default:
@@ -130,11 +174,8 @@ AScene BoxWorld::initScene(int w, int h) {
                  * set initial body mesh position from Box2d body
                  */
                 ANode loc = mesh->getLocation();
-                LOGI("GetPosition");
                 b2Vec2 pos = body->GetPosition();
-                LOGI("setLocation");
                 loc->setLocation(pos.x, pos.y, 0);
-                LOGI("location set");
             }
 
         }

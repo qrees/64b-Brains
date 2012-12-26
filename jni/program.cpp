@@ -30,6 +30,7 @@ void Program::activateAttributes() {
     initUniform("u_use_color");
     initUniform("u_solid_color");
     initUniform("u_texture_multipler");
+    initUniform("u_texture_fade");
     _view_matrix = glGetUniformLocation(getName(), "u_view_matrix");
     _model_matrix = glGetUniformLocation(getName(), "u_model_matrix");
 }

@@ -197,8 +197,6 @@ Mesh::Mesh() {
 
 Mesh::~Mesh(){
     glDeleteBuffers(BUF_COUNT, vboIds);
-    for(int i = 0; i < BUF_COUNT; i++)
-        LOGI("Deleted buffer %i", vboIds[i]);
     checkGlError("glDeleteBuffers");
     delete[] _solid_color;
     delete[] _hit_color;
@@ -206,14 +204,15 @@ Mesh::~Mesh(){
 
 void Mesh::init() {
     glGenBuffers(BUF_COUNT, vboIds);
-    for(int i = 0; i < BUF_COUNT; i++)
-        LOGI("Created buffer %i", vboIds[i]);
     checkGlError("glGenBuffers");
     has_color = has_normal = has_texture = false;
     _solid_color = 0;
     _hit_color = 0;
     _hitable = false;
     _type = GL_TRIANGLES;
+
+    _tex_mult_r = _tex_mult_g = _tex_mult_b = _tex_mult_a = 1.f;
+    _tex_fade_r = _tex_fade_g = _tex_fade_b = _tex_fade_a = 0.f;
 }
 
 void Mesh::setProgram(AProgram program) {
@@ -223,11 +222,11 @@ void Mesh::setProgram(AProgram program) {
 void Mesh::setVertices(GLfloat *buf, GLint num) {
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 3 * num, VERTEX_BUF);
 }
-
+/*
 void Mesh::setNormal(GLfloat *buf, GLint num) {
     has_normal = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 3 * num, NORMAL_BUF);
-}
+}*/
 
 void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
     has_texture = true;
@@ -242,6 +241,20 @@ void Mesh::setColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
     _solid_color[0] = r; _solid_color[1] = g; _solid_color[2] = b; _solid_color[3] = a;
 }
 
+void Mesh::setTextureMultipler(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
+    _tex_mult_r = r;
+    _tex_mult_g = g;
+    _tex_mult_b = b;
+    _tex_mult_a = a;
+}
+
+void Mesh::setTextureFade(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
+    _tex_fade_r = r;
+    _tex_fade_g = g;
+    _tex_fade_b = b;
+    _tex_fade_a = a;
+}
+
 void Mesh::setColorRGB(GLfloat r, GLfloat g, GLfloat b){
     //has_solid_color = true;
     has_color = true;
@@ -251,10 +264,11 @@ void Mesh::setColorRGB(GLfloat r, GLfloat g, GLfloat b){
     _solid_color[0] = r; _solid_color[1] = g; _solid_color[2] = b; _solid_color[3] = 1.0f;
 }
 
+/*
 void Mesh::setColor(GLfloat *buf, GLint num) {
     has_color = true;
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 4 * num, COLOR_BUF);
-}
+}*/
 
 void Mesh::setIndexes(GLushort *buf, GLint num) {
     numIndices = num;
@@ -303,12 +317,13 @@ void Mesh::draw(ARenderVisitor visitor) {
     
     program->activate();
     program->bindPosition(vboIds[VERTEX_BUF]);
-    if(has_normal)
-        program->bindNormal(vboIds[NORMAL_BUF]);
+    //if(has_normal)
+    //    program->bindNormal(vboIds[NORMAL_BUF]);
     if(has_texture && bool(_texture)) {
         program->bindTexture(vboIds[TEXTURE_BUF], this->_texture->getName());
     }
-    program->uniform4f("u_texture_multipler", 1, 1, 1, 0.95f);
+    program->uniform4f("u_texture_multipler", _tex_mult_r, _tex_mult_g, _tex_mult_b, _tex_mult_a);
+    program->uniform4f("u_texture_fade", _tex_fade_r, _tex_fade_g, _tex_fade_b, _tex_fade_a);
     program->useColor(has_color);
     if(has_color)
         program->bindSolidColor(_solid_color);

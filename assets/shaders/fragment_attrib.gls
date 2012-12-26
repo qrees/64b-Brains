@@ -1,3 +1,5 @@
+#extension GL_NV_shader_framebuffer_fetch : enable
+
 precision mediump float;
 
 varying vec2 v_texture;
@@ -7,11 +9,14 @@ uniform bool u_use_color;
 uniform bool u_use_texture;
 uniform vec4 u_solid_color;
 uniform vec4 u_texture_multipler;
+uniform vec4 u_texture_fade;
 
 void main() {
+  vec4 v_tex;
   if(u_use_color){
-    gl_FragColor = u_solid_color;
+    v_tex = u_solid_color;
   }else{
-    gl_FragColor = texture2D(s_texture, v_texture) * u_texture_multipler;
+    v_tex = texture2D(s_texture, v_texture) * u_texture_multipler - u_texture_fade;
   }
+  gl_FragColor = v_tex;
 }

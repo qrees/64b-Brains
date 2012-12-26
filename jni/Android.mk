@@ -15,5 +15,7 @@ LOCAL_C_INCLUDES := /home/qrees/bin/android-ndk-r5b/sources/cxx-stl/stlport/stlp
 include $(LOCAL_PATH)/Box2D/Collision/_addon.mk 
 include $(LOCAL_PATH)/Box2D/Common/_addon.mk 
 include $(LOCAL_PATH)/Box2D/Dynamics/_addon.mk 
+include $(LOCAL_PATH)/clipper/_addon.mk 
+
 
 include $(BUILD_SHARED_LIBRARY)

@@ -40,19 +40,19 @@ void Texture::load(GLuint width, GLuint height, int format, u_char * data){
     int gl_format, gl_type, gl_internal;
     switch (format) {
         case ALPHA_8:
-            LOGI("glTexImage2D ALPHA_8 %i %i", width, height);
+            //LOGI("glTexImage2D ALPHA_8 %i %i", width, height);
             bpp = 1; gl_type = GL_UNSIGNED_BYTE; gl_format = GL_ALPHA; gl_internal = GL_RGBA;
             break;
         case RGB_565:
-            LOGI("glTexImage2D RGB_565 %i %i", width, height);
+            //LOGI("glTexImage2D RGB_565 %i %i", width, height);
             bpp = 2; gl_type = GL_UNSIGNED_SHORT_5_6_5; gl_format = gl_internal = GL_RGB;
             break;
         case ARGB_4444:
-            LOGI("glTexImage2D ARGB_4444 %i %i", width, height);
+            //LOGI("glTexImage2D ARGB_4444 %i %i", width, height);
             bpp = 2; gl_type = GL_UNSIGNED_SHORT_4_4_4_4; gl_format = gl_internal = GL_RGBA;
             break;
         case ARGB_8888:
-            LOGI("glTexImage2D ARGB_8888 %i %i", width, height);
+            //LOGI("glTexImage2D ARGB_8888 %i %i", width, height);
             bpp = 4; gl_type = GL_UNSIGNED_BYTE; gl_format = gl_internal = GL_RGBA;
             break;
         default:

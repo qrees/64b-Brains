@@ -113,12 +113,12 @@ typedef AutoPtr<Entity> AEntity;
  * 
  * Base class meshes that have vertices, textures, colors etc. 
  */
-#define BUF_COUNT   5
+#define BUF_COUNT   3
 #define VERTEX_BUF  0
-#define NORMAL_BUF  1
-#define TEXTURE_BUF 2
-#define INDEX_BUF   3
-#define COLOR_BUF   4
+//#define NORMAL_BUF  1
+#define TEXTURE_BUF 1
+#define INDEX_BUF   2
+//#define COLOR_BUF   4
 
 #define RED_BYTE   0xFF000000
 #define GREEN_BYTE 0x00FF0000
@@ -144,6 +144,8 @@ protected:
     GLenum _type;
     static GLint _hit_color_seq;
     bool has_color, has_normal, has_texture, _hitable;
+    GLfloat _tex_mult_r, _tex_mult_g, _tex_mult_b, _tex_mult_a;
+    GLfloat _tex_fade_r, _tex_fade_g, _tex_fade_b, _tex_fade_a;
 public:
     Mesh();
     ~Mesh();
@@ -162,7 +164,9 @@ public:
     void setNormal(GLfloat *buf, GLint num);
     void setTextureCoord(GLfloat *buf, GLint num);
     void setTexture(ATexture tex);
-    void setColor(GLfloat *buf, GLint num);
+    //void setColor(GLfloat *buf, GLint num);
+    void setTextureMultipler(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+    void setTextureFade(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     void setColorRGB(GLfloat r, GLfloat g, GLfloat b);
     void setColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     void setIndexes(GLushort *buf, GLint num);
