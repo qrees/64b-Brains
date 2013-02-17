@@ -1,4 +1,4 @@
-package info.qrees.android.brains;
+package info.plocharz.android.kaleidoscope;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

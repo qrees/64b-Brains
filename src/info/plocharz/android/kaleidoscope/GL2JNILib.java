@@ -1,4 +1,4 @@
-package info.qrees.android.brains;
+package info.plocharz.android.kaleidoscope;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

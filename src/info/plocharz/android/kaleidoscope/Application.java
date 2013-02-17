@@ -1,4 +1,4 @@
-package info.qrees.android.brains;
+package info.plocharz.android.kaleidoscope;
 
 public class Application extends android.app.Application {
 

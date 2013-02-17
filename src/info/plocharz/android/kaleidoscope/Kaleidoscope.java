@@ -1,4 +1,4 @@
-package info.qrees.android.brains;
+package info.plocharz.android.kaleidoscope;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 
-public class Brains extends Activity implements SensorEventListener {
+public class Kaleidoscope extends Activity implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
 	private GLSurfaceView mGLSurfaceView;

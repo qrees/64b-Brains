@@ -1,9 +1,9 @@
-package info.qrees.android.brains;
+package info.plocharz.android.kaleidoscope;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import info.qrees.android.brains.GL2JNILib;
+import info.plocharz.android.kaleidoscope.GL2JNILib;
 
 import android.opengl.GLSurfaceView.Renderer;
 

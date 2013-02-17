@@ -237,7 +237,7 @@ void touchEvent(int x, int y, int action){
 
 char * load_asset(const char * source) {
     jstring jstr = _env->NewStringUTF(source);
-    jclass jclass = _env->FindClass("info/qrees/android/brains/GL2JNILib");
+    jclass jclass = _env->FindClass("info/plocharz/android/kaleidoscope/GL2JNILib");
     jmethodID messageMe = _env->GetStaticMethodID(jclass, "loadAsset",
             "(Ljava/lang/String;)Ljava/lang/String;");
     jobject result = _env->CallStaticObjectMethod(jclass, messageMe, jstr);
@@ -258,7 +258,7 @@ unsigned char * load_raw(const char * source, size_t * file_size=0) {
      * Get java method id to load bitmap and call this method
      */
     jstring jstr = _env->NewStringUTF(source);
-    jclass jclass = _env->FindClass("info/qrees/android/brains/GL2JNILib");
+    jclass jclass = _env->FindClass("info/plocharz/android/kaleidoscope/GL2JNILib");
     jmethodID messageMe = _env->GetStaticMethodID(jclass, "loadRaw", "(Ljava/lang/String;)[B");
     jbyteArray result = (jbyteArray)_env->CallStaticObjectMethod(jclass, messageMe, jstr);
     if(result == NULL)
@@ -286,7 +286,7 @@ u_char * load_bitmap(const char * source) {
      * Get java method id to load bitmap and call this method
      */
     jstring jstr = _env->NewStringUTF(source);
-    jclass jclass = _env->FindClass("info/qrees/android/brains/GL2JNILib");
+    jclass jclass = _env->FindClass("info/plocharz/android/kaleidoscope/GL2JNILib");
     jmethodID messageMe = _env->GetStaticMethodID(jclass, "loadBitmap", "(Ljava/lang/String;)[B");
     jbyteArray result = (jbyteArray)_env->CallStaticObjectMethod(jclass, messageMe, jstr);
     if(result == NULL)
@@ -353,35 +353,35 @@ AShader loadShader(const char * source, GLuint type){
 }
 
 extern "C" {
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_init(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_init(
         JNIEnv * env, jobject obj, jint width, jint height);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_step(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_step(
         JNIEnv * env, jobject obj);
-JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
+JNIEXPORT jint JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_loadShader(
         JNIEnv * env, jobject obj, jstring javaString, jint type);
-JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
+JNIEXPORT jint JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_createProgram(
         JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_touch(
         JNIEnv * env, jobject obj, jint x, jint y);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_motionevent(
         JNIEnv * env, jobject obj, jint x, jint y, jint action);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_sensorevent(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_sensorevent(
         JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z);
 
 /**
  * Activity events
  */
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationCreate(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onApplicationCreate(
         JNIEnv * env, jobject obj);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationTerminate(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onApplicationTerminate(
         JNIEnv * env, jobject obj);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onCreate(
         JNIEnv * env, jobject obj);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onResume(
         JNIEnv * env, jobject obj);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onPause(
         JNIEnv * env, jobject obj);
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onDestroy(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onDestroy(
         JNIEnv * env, jobject obj);
 }
 
@@ -392,20 +392,20 @@ jint throwJNI(const char *message) {
     return _env->ThrowNew(exClass, message);
 }
 
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_init(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_init(
         JNIEnv * env, jobject obj, jint width, jint height) {
     _env = env;
     setupGraphics(width, height);
     resumeWorld();
 }
 
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_step(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_step(
         JNIEnv * env, jobject obj) {
     _env = env;
     renderFrame();
 }
 
-JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
+JNIEXPORT jint JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_loadShader(
         JNIEnv * env, jobject obj, jstring javaString, jint shaderType) {
     _env = env;
     const char *nativeString = env->GetStringUTFChars(javaString, 0);
@@ -415,25 +415,25 @@ JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_loadShader(
     return 0;
 }
 
-JNIEXPORT jint JNICALL Java_info_qrees_android_brains_GL2JNILib_createProgram(
+JNIEXPORT jint JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_createProgram(
         JNIEnv * env, jobject obj, jint vertexShader, jint pixelShader) {
     _env = env;
     return 0;
 }
 
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_touch(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_touch(
         JNIEnv * env, jobject obj, jint x, jint y) {
     _env = env;
     downEvent(x, y);
 }
 
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_motionevent(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_motionevent(
         JNIEnv * env, jobject obj, jint x, jint y, jint action) {
     _env = env;
     touchEvent(x, y, action);
 }
 
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_sensorevent(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_sensorevent(
         JNIEnv * env, jobject obj, jfloat x, jfloat y, jfloat z) {
     sensorEvent(x, y, z);
 }
@@ -453,7 +453,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 /**
  * Called when main activity is created
  */
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onCreate(
         JNIEnv * env, jobject obj){
 	LOGI("onCreate");
 	setupWorld();
@@ -462,7 +462,7 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onCreate(
 /**
 * Called when main activity is resumed
 */
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onResume(
         JNIEnv * env, jobject obj){
 	LOGI("onResume");
 }
@@ -471,7 +471,7 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onResume(
 /**
 * Called when main activity is pasued (for example, context is switched to different application)
 */
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onPause(
         JNIEnv * env, jobject obj){
 	LOGI("onPause");
 	pauseWorld();
@@ -481,19 +481,19 @@ JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onPause(
 /**
 * Called when main activity is destroyed
 */
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onDestroy(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onDestroy(
         JNIEnv * env, jobject obj){
 	LOGI("onDestroy");
 	clearWorld();
 }
 
 
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationCreate(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onApplicationCreate(
         JNIEnv * env, jobject obj){
 	LOGI("onApplicationCreate");
 }
 
-JNIEXPORT void JNICALL Java_info_qrees_android_brains_GL2JNILib_onApplicationTerminate(
+JNIEXPORT void JNICALL Java_info_plocharz_android_kaleidoscope_GL2JNILib_onApplicationTerminate(
         JNIEnv * env, jobject obj){
 	LOGI("onApplicationTerminate");
 }

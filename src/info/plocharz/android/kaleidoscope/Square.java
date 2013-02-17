@@ -1,5 +1,5 @@
 
-package info.qrees.android.brains;
+package info.plocharz.android.kaleidoscope;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,4 +1,4 @@
-package info.qrees.android.brains;
+package info.plocharz.android.kaleidoscope;
 
 import java.util.Vector;
 import javax.microedition.khronos.opengles.GL10;
