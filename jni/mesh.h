@@ -168,7 +168,7 @@ public:
     void setTextureMultipler(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     void setTextureFade(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     void setColorRGB(GLfloat r, GLfloat g, GLfloat b);
-    void setColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+    void setColorRGBA(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     void setIndexes(GLushort *buf, GLint num);
     
     /**

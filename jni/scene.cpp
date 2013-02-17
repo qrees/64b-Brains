@@ -26,6 +26,7 @@
 Scene::Scene(GLuint w, GLuint h){
     _w = w;
     _h = h;
+    _frame_counter = 0;
     _screen_buffer = new ScreenBuffer;
     _prepareForHit();
     glEnable(GL_BLEND);
@@ -178,6 +179,14 @@ void Scene::invalidate(){
 	_valid_scene = false;
 }
 
+int Scene::getHeight(){
+    return this->_h;
+}
+
+int Scene::getWidth(){
+    return this->_w;
+}
+
 float Scene::x_pos(int x){
 	return float(_w)/float(x);
 }
@@ -215,6 +224,7 @@ void Scene::_processHit(){
 
 void Scene::_renderFrame(){
     //_process_events();
+    _frame_counter++;
     clearScene();
     prepareScene();
     _processHit();

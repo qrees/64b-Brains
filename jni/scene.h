@@ -32,6 +32,7 @@
 class Scene: public RefCntObject {
 	friend void *eventThread(void*);
 private:
+    int _frame_counter;
 	bool _was_hit;
 	bool _valid_scene;
 	int _hit_x, _hit_y;
@@ -71,6 +72,8 @@ public:
     
     void _renderFrame();
     void hit(int x, int y);
+    int getWidth();
+    int getHeight();
     float x_pos(int x);
     float y_pos(int y);
     /**

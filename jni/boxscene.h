@@ -19,6 +19,7 @@ using namespace std;
 
 class BoxScene: public Scene{
 private:
+    AFramebuffer _framebuffer;
     AShader _vertex_shader;
     AShader _fragment_shader;
     ANode mRootLocation;
@@ -29,10 +30,11 @@ private:
     ATexture _screen_texture;
     EventListener* _listener;
     GLubyte *_screen_data;
-    AFramebuffer _framebuffer;
     GLMatrix _framebuffer_view_matrix;
-    ARectangle background, _metal_background;
-    ARectangle fade_out_background;
+    AMesh _metal_background;
+    AMesh backgroud;
+    AMesh preview;
+    AGroup fan;
     Mesh* _createPolygon(GLfloat* vert, int vert_count);
     Mesh* _applyTexture(Mesh*, GLfloat* vert, int vert_count, ATexture texture);
 public:

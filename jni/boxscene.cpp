@@ -5,10 +5,18 @@
  *      Author: Krzysztof
  */
 #include <stdint.h>
+#include <math.h>
 #include <GLES2/gl2.h>
 #include "boxscene.h"
 #include "world.h"
 #include "clipper/clipper.hpp"
+
+#define SCALE_W 10.f
+#define SCALE_H 10.f
+#define SCREEN_W 512
+#define SCREEN_H 512
+#define PARTS_COUNT 3
+#define M_2PI 2 * M_PI
 
 BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
         Scene(w, h) {
@@ -18,51 +26,70 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
     Group * group = new Group();
     _root = group;
 
-    // Location nodes, entities are attached to these nodes.
     mRootLocation = new Node("root");
     mRootLocation->setLocation(0.5f, 0.5f, 0.0f);
     float margin = (ratio - 1);
+    LOGI("Scene: %f %f", (-1-margin)*10.0f, (1+margin)*10.0f);
     _view_matrix = GLMatrix().ortho(-10.0f, 10.0f, (-1-margin)*10.0f, (1+margin)*10.0f, 1.0f, -1.0f);
     _framebuffer_view_matrix = GLMatrix().ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, -1.0f);
-    _body_texture = loadBitmap("images/WoodFine_256.png");
-    _circle_texture = loadBitmap("images/circle.png");
-    ATexture metal = loadBitmap("images/metal.png");
 
     _screen_texture = new Texture();
     _screen_texture->empty(512, 512);
 
-    fade_out_background = new Rectangle();
-    fade_out_background->setTexture(_screen_texture);
-    fade_out_background->setTextureFade(0., 0., 0., 0.03f);
-    ANode loc = fade_out_background->getLocation();
-    loc->setScale(20, -20, 1);
-    loc->setLocation(-10, 10, 0);
-
-    _screen_data = new GLubyte[w*h*4];
-
     _framebuffer = new Framebuffer();
     _framebuffer->setFormat(512, 512);
-    //_framebuffer->setDepthStencilBuffer(512, 512);
-    //_framebuffer->setColorTextureBuffer(_screen_texture);
+    _framebuffer->setDepthStencilBuffer(512, 512);
+    _framebuffer->setColorTextureBuffer(_screen_texture);
 
+    GLushort indexes[3] = { 0, 1, 2 };
 
-    background = new Rectangle();
-    background->setTexture(_screen_texture);
-    loc = background->getLocation();
-    loc->setScale(20, -20, 1);
-    loc->setLocation(-10, 10, 1);
+    fan = new Group();
 
+    GLfloat tex_coords[3*3];
+    int j = 0;
+    tex_coords[0 * 2 + 0] = 0.2f;
+    tex_coords[0 * 2 + 1] = 0.2f;
+    tex_coords[1 * 2 + 0] = (sin(M_PI * j / PARTS_COUNT));
+    tex_coords[1 * 2 + 1] = (cos(M_PI * j / PARTS_COUNT));
+    tex_coords[2 * 2 + 0] = (sin(M_PI * (j + 1) / PARTS_COUNT));
+    tex_coords[2 * 2 + 1] = (cos(M_PI * (j + 1) / PARTS_COUNT));
+
+    for(int i = 0; i < PARTS_COUNT * 2; i++){
+        GLfloat vert[3*3];
+        AMesh triangle = new Mesh();
+        vert[0 * 3 + 0] = 0.f;
+        vert[0 * 3 + 1] = 0.f;
+        vert[0 * 3 + 2] = 0.f;
+
+        int vert_id = (1 + i%2);
+        vert[vert_id * 3 + 0] = sin(M_PI * i / PARTS_COUNT) * SCALE_W;
+        vert[vert_id * 3 + 1] = cos(M_PI * i / PARTS_COUNT) * SCALE_H;
+        vert[vert_id * 3 + 2] = 0.f;
+
+        vert_id = (2 - i%2);
+        vert[vert_id * 3 + 0] = sin(M_PI * (i + 1) / PARTS_COUNT) * SCALE_W;
+        vert[vert_id * 3 + 1] = cos(M_PI * (i + 1) / PARTS_COUNT) * SCALE_H;
+        vert[vert_id * 3 + 2] = 0.f;
+        triangle->setVertices(vert, 3);
+        triangle->setTextureCoord(tex_coords, 3);
+        triangle->setTexture(_screen_texture);
+        triangle->setIndexes(indexes, 3);
+        triangle->setType(GL_TRIANGLE_STRIP);
+        ANode loc = triangle->getLocation();
+        loc->setLocation(0, 0, 1);
+        fan->addObject(triangle);
+    }
+
+    ATexture metal = loadBitmap("images/metal.png");
     _metal_background = new Rectangle();
     _metal_background->setTexture(metal);
-    //_metal_background->setColor(1.0, 1.0, 1.0, 1.0);
-    loc = _metal_background->getLocation();
+    ANode loc = _metal_background->getLocation();
     loc->setScale(20, -20, 1);
     loc->setLocation(-10, 10, 1);
-
+    glDisable(GL_CULL_FACE);
 }
 
 BoxScene::~BoxScene(){
-    delete[] _screen_data;
 }
 
 void BoxScene::sensor(float x, float y, float z){
@@ -143,51 +170,36 @@ Mesh* BoxScene::createCircle(float radius) {
 
 Mesh* BoxScene::createPolygon(GLfloat* vert, int vert_count) {
     Mesh *mesh = this->_createPolygon(vert, vert_count);
-    if(vert_count > 2){
-        mesh = this->_applyTexture(mesh, vert, vert_count, _body_texture);
-    }else{
-        mesh->setType(GL_LINES);
-        mesh->setColorRGB(1.0f, 1.0f, 1.0f);
-    }
+    mesh->setColorRGB(1.0f, 1.0f, 1.0f);
     _root->addObject(mesh);
     return mesh;
 }
 
 void BoxScene::clearScene(){
     _framebuffer->activate();
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    checkGlError("glClearColor");
+    glClearColor(0,0,0,0);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
-
     _screen_buffer->activate();
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
 }
 
 void BoxScene::renderFrame(){
+    ARenderVisitor visitor = new RenderVisitor();
+
     b64assert(_framebuffer->isValid(), "Framebuffe is not valid");
     glViewport(0, 0, 512, 512);
     _framebuffer->activate();
-
-    ARenderVisitor visitor = new RenderVisitor();
     visitor->setProgram(_program);
     _program->activate();
     _program->bindViewMatrix(_framebuffer_view_matrix);
-    fade_out_background->draw(visitor);
     _root->draw(visitor);
 
-    glReadPixels(0, 0, 512, 512,  GL_RGBA, GL_UNSIGNED_BYTE, _screen_data);
-    checkGlError("glReadPixels");
-    _screen_texture->load(512, 512, ARGB_8888, _screen_data);
-
-    _screen_texture->generateMipmap();
     glViewport(0, 0, _w, _h);
     _screen_buffer->activate();
     _program->bindViewMatrix(_view_matrix);
     _metal_background->draw(visitor);
-    background->draw(visitor);
-
+    fan->draw(visitor);
 }
 

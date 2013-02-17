@@ -24,7 +24,7 @@ Node::Node(string name){
 }
 
 Node::~Node(){
-    LOGI("Deleting node %s", _name.c_str());
+
 }
 
 void Node::init(){
@@ -35,7 +35,6 @@ void Node::init(){
     _rotation = GLQuaternion::idt();
     _sx = _sy = _sz = 1.0f;
     _x = _y = _z = 0.f;
-    LOGI("Created node %s", _name.c_str());
 }
 
 std::string f_to_s(float val){
@@ -233,14 +232,6 @@ void Mesh::setTextureCoord(GLfloat *buf, GLint num) {
     _setBuffer(GL_ARRAY_BUFFER, buf, sizeof(GLfloat) * 2 * num, TEXTURE_BUF);
 }
 
-void Mesh::setColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
-    has_color = true;
-    if(_solid_color == 0){
-        _solid_color = new GLfloat[4];
-    }
-    _solid_color[0] = r; _solid_color[1] = g; _solid_color[2] = b; _solid_color[3] = a;
-}
-
 void Mesh::setTextureMultipler(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
     _tex_mult_r = r;
     _tex_mult_g = g;
@@ -253,6 +244,14 @@ void Mesh::setTextureFade(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
     _tex_fade_g = g;
     _tex_fade_b = b;
     _tex_fade_a = a;
+}
+
+void Mesh::setColorRGBA(GLfloat r, GLfloat g, GLfloat b, GLfloat a){
+    has_color = true;
+    if(_solid_color == 0){
+        _solid_color = new GLfloat[4];
+    }
+    _solid_color[0] = r; _solid_color[1] = g; _solid_color[2] = b; _solid_color[3] = a;
 }
 
 void Mesh::setColorRGB(GLfloat r, GLfloat g, GLfloat b){

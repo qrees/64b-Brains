@@ -34,59 +34,44 @@ void BoxWorld::init() {
 
     polygonShape.SetAsBox(0.4f, 0.4f);
 
-    mFixtureDef.shape = &circle;
+    mFixtureDef.shape = &polygonShape;
     mFixtureDef.density = 1.0f;
     mFixtureDef.friction = 0.3f;
     mFixtureDef.restitution = 0.f;
 
-    //b2Body* body = mWorld->CreateBody(&mBodyDef);
-    //body->CreateFixture(&mFixtureDef);
+    b2Vec2 vec[3];
+    vec[0].x = 0;
+    vec[0].x = 2;
+#define FIG_COUNT 20
+#define GROUPS 2
+    int i = FIG_COUNT;
+    while(i--){
+        float pos_x = float(rand() % 100) / 10. - 5;
+        float pos_y = float(rand() % 100) / 10. - 5;
+        float relative_bottom = float(rand()) / RAND_MAX * 4 - 2;
+        float relative_top = float(rand()) / RAND_MAX * 1 + 1.5f;
+        vec[0].y = relative_top;
+        vec[1].x = relative_bottom - 2.f;
+        vec[1].y = -3;
+        vec[2].x = relative_bottom + 2.f;
+        vec[2].y = -3;
+        polygonShape.Set(vec, 3);
+        mBodyDef.position.Set(pos_x, pos_y);
+        b2Body* body = mWorld->CreateBody(&mBodyDef);
+        int category = i / (FIG_COUNT / GROUPS);
+        mFixtureDef.filter.categoryBits = 1 << category;
+        mFixtureDef.filter.maskBits = 1 << category;
+        body->CreateFixture(&mFixtureDef);
 
-
-
-    for(int j = -9; j < -6; j ++){
-        for(int i = -9; i < 9; i+=1){
-            circle.m_radius = 0.4f;
-            unsigned int val = 0;
-            unsigned int bits = 1 << val;
-            mFixtureDef.filter.categoryBits = bits;
-            mFixtureDef.filter.maskBits = bits;
-            mBodyDef.position.Set(i, j); //middle, bottom
-            b2Body* body = mWorld->CreateBody(&mBodyDef);
-            body->CreateFixture(&mFixtureDef);
-        }
     }
 
-    for(int j = -6; j < -3; j ++){
-        for(int i = -9; i < 9; i+=1){
-            circle.m_radius = 0.4f;
-            unsigned int val = 1;
-            unsigned int bits = 1 << val;
-            mFixtureDef.filter.categoryBits = bits;
-            mFixtureDef.filter.maskBits = bits;
-            mBodyDef.position.Set(i, j); //middle, bottom
-            b2Body* body = mWorld->CreateBody(&mBodyDef);
-            body->CreateFixture(&mFixtureDef);
-        }
-    }
-
-    for(int j = -3; j < 0; j ++){
-        for(int i = -9; i < 9; i+=1){
-            circle.m_radius = 0.4f;
-            unsigned int val = 2;
-            unsigned int bits = 1 << val;
-            mFixtureDef.filter.categoryBits = bits;
-            mFixtureDef.filter.maskBits = bits;
-            //circle.m_radius = 0.2f + (float)val * 0.1f;
-            mBodyDef.position.Set(i, j); //middle, bottom
-            b2Body* body = mWorld->CreateBody(&mBodyDef);
-            body->CreateFixture(&mFixtureDef);
-        }
-    }
     edge(-10, -10, 10, -10);
     edge(-10, 10, 10, 10);
     edge(-10, -10, -10, 10);
     edge(10, -10, 10, 10);
+
+    edge(-5, 10, 10, 5);
+    edge(10, -5, -10, -10);
 }
 
 void BoxWorld::onSensor(float x, float y, float z){
@@ -141,6 +126,10 @@ AScene BoxWorld::initScene(int w, int h) {
                         buf[vi*3+2] = 0;
                     }
                     mesh = mScene->createPolygon(buf, vert_count);
+                    float r = float(rand()) / RAND_MAX;
+                    float g = float(rand()) / RAND_MAX;
+                    float b = 1 - r;
+                    mesh->setColorRGBA(r, g, b, 0.7);
                     mBodyPolygonMap[mesh] = body;
                 }
                 break;

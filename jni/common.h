@@ -9,6 +9,7 @@
 #define COMMON_H_
 
 #include "sys/types.h"
+#include <math.h>
 #include <string.h>
 
 using namespace std;
@@ -20,9 +21,8 @@ struct cmp_str
    }
 };
 
-#define PI 3.1415926535897932384626433832795f
-#define toDegrees(angle) (angle * 180.0f / PI)
-#define toRadians(angle) (angle * PI / 180.0f)
+#define toDegrees(angle) (angle * 180.0f / M_PI)
+#define toRadians(angle) (angle * M_PI / 180.0f)
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define null 0

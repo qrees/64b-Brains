@@ -394,7 +394,7 @@ public:
         if ((1 - result) > 0.1) {// Get the angle between the 2 quaternions,
             // and then store the sin() of that angle
             double theta = acos(result);
-            double phase = PI*extraSpins*alpha;
+            double phase = M_PI*extraSpins*alpha;
             double invSinTheta = 1.0f / sin(theta);
 
             // Calculate the scale for q1 and q2, according to the angle and
