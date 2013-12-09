@@ -127,9 +127,9 @@ AScene BoxWorld::initScene(int w, int h) {
                     }
                     mesh = mScene->createPolygon(buf, vert_count);
                     float r = float(rand()) / RAND_MAX;
-                    float g = float(rand()) / RAND_MAX;
-                    float b = 1 - r;
-                    mesh->setColorRGBA(r, g, b, 0.7);
+                    float b = float(rand()) / RAND_MAX;
+                    float g = min(0, 0.5 - r);
+                    mesh->setColorRGBA(r, g, b, 0.8);
                     mBodyPolygonMap[mesh] = body;
                 }
                 break;

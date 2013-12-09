@@ -86,7 +86,6 @@ BoxScene::BoxScene(EventListener* world, GLuint w, GLuint h) :
     ANode loc = _metal_background->getLocation();
     loc->setScale(20, -20, 1);
     loc->setLocation(-10, 10, 1);
-    glDisable(GL_CULL_FACE);
 }
 
 BoxScene::~BoxScene(){
